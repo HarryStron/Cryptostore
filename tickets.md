@@ -9,4 +9,5 @@ The file should be updated every time a new branch is created!
 
 ## Other
 
-**`template`**:<br/>
+**`other-1`**:<br/>
+create a new README file needed by GitBucket to hold all basic information
