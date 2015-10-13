@@ -1,27 +1,54 @@
 import java.sql.*;
 
 public class JDBCControl {
-    public JDBCControl(){
+    private static String DBHost;
+    private static String serverUsername;
+    private static String serverPassword;
+
+    public JDBCControl(String DBHost, String serverUsername, String serverPassword){
+        JDBCControl.DBHost = DBHost;
+        JDBCControl.serverUsername = serverUsername;
+        JDBCControl.serverPassword =  serverPassword;
+    }
+
+    public static boolean checkUserPassword(String user, String password) {
+        boolean verify = false;
+
         try {
-            Connection conn = DriverManager.getConnection("jdbc:mysql://localhost:8888/users", "admin", "locH4al");
+            Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
 
-            Statement stmt = conn.createStatement();
+            String query =  "SELECT id, username, hash " +
+                            "FROM user_credentials";
 
-            String strSelect = "select id, username, password from users";
-            ResultSet rset = stmt.executeQuery(strSelect);
+            Statement statement = connection.prepareStatement(query);
+            ResultSet queryResult = statement.executeQuery(query);
 
-            int rowCount = 0;
-            while(rset.next()) {
-                int id = rset.getInt("id");
-                String username = rset.getString("username");
-                String password = rset.getString("password");
-                System.out.println(id + " : " + username + " : " + password);
-                ++rowCount;
+            while (queryResult.next()) {
+                if (queryResult.getString("username").equals(user)) {
+                    verify = password.equals(queryResult.getString("hash"));
+                }
             }
-            System.out.println("\nTotal number of records: " + rowCount);
 
-        } catch(SQLException ex) {
-            ex.printStackTrace();
+        } catch (SQLException ex) {
+            Error.NO_USER.print();
         }
+
+        return verify;
+    }
+
+    public static boolean createNewUser(String username, String passwdHash) {
+        try {
+            Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
+
+            String query =  "INSERT INTO user_credentials (username, hash) " +
+                            "VALUES (\'" + username + "\', \'" + passwdHash + "\')";
+
+            connection.prepareStatement(query).execute();
+
+        } catch (SQLException ex) {
+            Error.NO_USER.print();
+        }
+
+        return checkUserPassword(username, passwdHash);
     }
 }

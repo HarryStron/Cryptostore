@@ -5,6 +5,12 @@ The file should be updated every time a new branch is created!
 
 ## Features
 
+**`feature-1`**:<br/>
+set up a database and create appropriate class for basic communication/manipulation for it
+
+**`feature-2`**:<br/>
+make server require client authentication on connect and code client to send the credentials on AUTH message received
+
 ## BUGs
 
 ## Other

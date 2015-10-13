@@ -7,7 +7,10 @@ public enum Error {
     FILE_NOT_SENT(6, "The file was not sent"),
     CANNOT_CONNECT(7, "The server cannot connect to client. Check there is only one instance of the server running"),
     SOCKET_CLOSED(8, "The socket is closed"),
-    CANNOT_READ(9, "The server cannot read from the socket");
+    CANNOT_READ(9, "The server cannot read from the socket"),
+    NO_USER(10, "The client username doesn't exist"),
+    WRONG_PASS(11, "The client password was incorrect"),
+    CANNOT_WRITE_DB(12, "The entry to the DB could not be made");
 
     private final int code;
     private final String description;
