@@ -29,6 +29,16 @@ public class ClientThread extends Thread {
 
         transferManager = new TransferManager(clientSocket);
 
+        /** Auth the user **/
+        //transferManager.writeControl(Command.AUTH);
+        // get username size
+        // send OK
+        // get username using listenForFilename
+        // send OK
+        // get password size
+        // send OK
+        // get username using listenForFilename
+        // send READY+start listening OR send ERROR and close connection
         waitForClientRequest();
     }
 
