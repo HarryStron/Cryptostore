@@ -7,17 +7,21 @@ The file should be updated every time a new branch is created!
 
 **`feature-1`**:<br/>
 Set up a database and create appropriate class for basic communication/manipulation of it. Include validators to check the input of the credentials.<br/>
-**_version: v1.1.0_**
+**_v1.1.0_**
 
 **`feature-2`**:<br/>
 Create a new class to hash the passwords.<br/>
-**_ongoing_**
+**_v1.2.0_**
 
 **`feature-3`**:<br/>
+Update JDBCControl class to store/retrieve the salts. Create a method to get existing usernames.<br/>
+**_v1.3.0_**
+
+**`feature-4`**:<br/>
 Make server require client authentication on connect and code client to send the credentials on AUTH message received.<br/>
 **_queued_**
 
-**`feature-4`**:<br/>
+**`feature-5`**:<br/>
 Server should have different directories for each of the users' files.<br/>
 **_queued_**
 
