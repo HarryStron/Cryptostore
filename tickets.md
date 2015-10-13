@@ -6,14 +6,20 @@ The file should be updated every time a new branch is created!
 ## Features
 
 **`feature-1`**:<br/>
-set up a database and create appropriate class for basic communication/manipulation for it
+Set up a database and create appropriate class for basic communication/manipulation of it. Include validators to check the input of the credentials.
 
 **`feature-2`**:<br/>
-make server require client authentication on connect and code client to send the credentials on AUTH message received
+Create a new class to hash the passwords.
+
+**`feature-3`**:<br/>
+Make server require client authentication on connect and code client to send the credentials on AUTH message received.
+
+**`feature-4`**:<br/>
+Server should have different directories for each of the users' files.
 
 ## BUGs
 
 ## Other
 
 **`other-1`**:<br/>
-create a new README file needed by GitBucket to hold all basic information
+Create a new README file needed by GitBucket to hold all basic information.
