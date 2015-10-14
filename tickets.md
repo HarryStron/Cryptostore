@@ -19,7 +19,7 @@ Update JDBCControl class to store/retrieve the salts. Create a method to get exi
 
 **`feature-4`**:<br/>
 Make server require client authentication on connect and code client to send the credentials on AUTH message received.<br/>
-**_ongoing_**
+**_v1.4.0_**
 
 **`feature-5`**:<br/>
 Server should have different directories for each of the users' files.<br/>
@@ -34,8 +34,8 @@ Create a new README file needed by GitBucket to hold all basic information.<br/>
 **_merged_**
 
 **`other-2`**:<br/>
-Refactoring needed to clear up code. Also handle everything using exceptions to make the code more readable with less IF statements.<br/>
-**_queued_**
+Refactoring needed to clean up code. Also handle everything using exceptions to make the code more readable with less IF statements.<br/>
+**_merged_**
 
 **`other-3`**:<br/>
 Change OK, READY and DONE commands to a single command to represent all 3. This reduces the code and makes it easier for errors and exceptions to handle.<br/>
