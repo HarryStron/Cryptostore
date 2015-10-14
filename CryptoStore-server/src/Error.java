@@ -10,7 +10,9 @@ public enum Error {
     CANNOT_READ(9, "The server cannot read from the socket"),
     NO_USER(10, "The client username doesn't exist"),
     WRONG_PASS(11, "The client password was incorrect"),
-    CANNOT_WRITE_DB(12, "The entry to the DB could not be made");
+    CANNOT_WRITE_DB(12, "The entry to the DB could not be made"),
+    CANNOT_AUTH(13, "Client failed authorization to the server"),
+    ZERO_SIZE(14, "Zero length input not allowed");
 
     private final int code;
     private final String description;

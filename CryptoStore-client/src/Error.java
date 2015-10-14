@@ -7,7 +7,8 @@ public enum Error {
     FILE_NOT_SENT(6, "The file was not sent"),
     FILE_NOT_RETRIEVED(7, "The file was not downloaded"),
     CANNOT_CONNECT(8, "The client cannot connect to server"),
-    CANNOT_READ(9, "The client cannot read from the socket");
+    CANNOT_READ(9, "The client cannot read from the socket"),
+    CANNOT_AUTH(10, "Client failed authorization to the server");
 
     private final int code;
     private final String description;

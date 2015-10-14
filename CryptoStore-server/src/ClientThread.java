@@ -8,19 +8,23 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class ClientThread extends Thread {
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private String clientIP;
     private boolean clientIsConnected;
+    private boolean clientIsAuthed;
 
     public ClientThread(SSLSocket clientSocket) {
         super();
         this.clientSocket = clientSocket;
         clientIsConnected = true;
+        clientIsAuthed = false;
         clientIP = clientSocket.getRemoteSocketAddress().toString().substring(1);
-
+        new JDBCControl("jdbc:mysql://mysql.student.sussex.ac.uk:3306/cs391", "cs391", "r127xxhar1");
         clientPrint("Has established a connection!");
     }
 
@@ -30,20 +34,67 @@ public class ClientThread extends Thread {
         transferManager = new TransferManager(clientSocket);
 
         /** Auth the user **/
-        //transferManager.writeControl(Command.AUTH);
-        // get username size
-        // send OK
-        // get username using listenForFilename
-        // send OK
-        // get password size
-        // send OK
-        // get username using listenForFilename
-        // send READY+start listening OR send ERROR and close connection
+        try {
+            transferManager.writeControl(Command.AUTH);
+
+            int usernameSize = singleByteIn(); //TODO long not int
+
+            if (usernameSize > 0) {
+                transferManager.writeControl(Command.OK);
+
+                String username = listenForFilename(usernameSize);
+
+                if (username.length() > 0) {
+                    transferManager.writeControl(Command.OK);
+
+                    int passwordSize = singleByteIn(); //TODO long not int
+
+                    if (passwordSize > 0) {
+                        transferManager.writeControl(Command.OK);
+
+                        String password = listenForFilename(passwordSize);
+
+                        if (password.length() > 0) {
+                            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
+                            if (clientIsAuthed) {
+                                transferManager.writeControl(Command.READY);
+                            } else {
+                                transferManager.writeControl(Command.ERROR);
+                                closeConnection();
+                            }
+                        } else {
+                            transferManager.writeControl(Command.ERROR);
+                            Error.EMPTY_FILENAME.print(); //TODO empty password
+                        }
+                    } else {
+                        transferManager.writeControl(Command.ERROR);
+                        Error.EMPTY_FILENAME.print(); //TODO empty username
+                    }
+                } else {
+                    transferManager.writeControl(Command.ERROR);
+                    Error.EMPTY_FILENAME.print(); //TODO empty username
+                }
+            } else {
+                transferManager.writeControl(Command.ERROR);
+                Error.ZERO_SIZE.print();
+            }
+
+        } catch (IOException e) {
+            Error.CANNOT_AUTH.print();
+            closeConnection();
+        } catch (InvalidKeySpecException e) {
+            Error.CANNOT_AUTH.print();
+            closeConnection();
+        } catch (NoSuchAlgorithmException e) {
+            Error.CANNOT_AUTH.print();
+            closeConnection();
+        }
+
         waitForClientRequest();
     }
 
     private void waitForClientRequest() {
-        while (clientIsConnected) {
+        while (clientIsConnected && clientIsAuthed) {
             /** READ request from client **/
             try {
                 int request = singleByteIn();
@@ -102,6 +153,7 @@ public class ClientThread extends Thread {
 
     private void closeConnection() {
         clientIsConnected = false;
+        clientIsAuthed = false;
         try {
             transferManager.closeStreams();
             clientSocket.close();
