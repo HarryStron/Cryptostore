@@ -19,7 +19,7 @@ Update JDBCControl class to store/retrieve the salts. Create a method to get exi
 
 **`feature-4`**:<br/>
 Make server require client authentication on connect and code client to send the credentials on AUTH message received.<br/>
-**_queued_**
+**_ongoing_**
 
 **`feature-5`**:<br/>
 Server should have different directories for each of the users' files.<br/>
