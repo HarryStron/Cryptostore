@@ -99,8 +99,7 @@ public class ClientManager {
     }
 
     private void okOrException() throws IOException {
-        int response = singleByteIn();
-        if (response == Command.OK.getCode() || response == Command.READY.getCode() || response == Command.DONE.getCode())
+        if (singleByteIn() == Command.OK.getCode())
             return;
         else
             throw new IOException("Communication with server failed");
@@ -185,7 +184,7 @@ public class ClientManager {
 //                int response = singleByteIn();
 //                if (response == Command.READY.getCode()) {
                 okOrException();
-                transferManager.writeControl(Command.READY);
+                transferManager.writeControl(Command.OK);
 
                 FileOutputStream newFile = new FileOutputStream(new File(filename));
                 int sizeOfFile = singleByteIn(); //TODO change to long
@@ -196,7 +195,7 @@ public class ClientManager {
 
                     newFile.write(buffer, 0, buffer.length);
 
-                    transferManager.writeControl(Command.DONE);
+                    transferManager.writeControl(Command.OK);
                 }
 
                 System.out.println(filename + " received!");

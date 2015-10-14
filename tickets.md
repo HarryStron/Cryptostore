@@ -39,4 +39,4 @@ Refactoring needed to clean up code. Also handle everything using exceptions to 
 
 **`other-3`**:<br/>
 Change OK, READY and DONE commands to a single command to represent all 3. This reduces the code and makes it easier for errors and exceptions to handle.<br/>
-**_queued_**
+**_merged_**
