@@ -39,58 +39,52 @@ public class ClientThread extends Thread {
 
             int usernameSize = singleByteIn(); //TODO long not int
 
-            if (usernameSize > 0) {
-                transferManager.writeControl(Command.OK);
+            greaterThanZero(usernameSize);
+            transferManager.writeControl(Command.OK);
 
-                String username = listenForFilename(usernameSize);
+            String username = listenForFilename(usernameSize);
 
-                if (username.length() > 0) {
-                    transferManager.writeControl(Command.OK);
+            greaterThanZero(username.length());
+            transferManager.writeControl(Command.OK);
 
-                    int passwordSize = singleByteIn(); //TODO long not int
+            int passwordSize = singleByteIn(); //TODO long not int
 
-                    if (passwordSize > 0) {
-                        transferManager.writeControl(Command.OK);
+            greaterThanZero(passwordSize);
+            transferManager.writeControl(Command.OK);
 
-                        String password = listenForFilename(passwordSize);
+            String password = listenForFilename(passwordSize);
 
-                        if (password.length() > 0) {
-                            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
-                            if (clientIsAuthed) {
-                                transferManager.writeControl(Command.READY);
-                            } else {
-                                transferManager.writeControl(Command.ERROR);
-                                closeConnection();
-                            }
-                        } else {
-                            transferManager.writeControl(Command.ERROR);
-                            Error.EMPTY_FILENAME.print(); //TODO empty password
-                        }
-                    } else {
-                        transferManager.writeControl(Command.ERROR);
-                        Error.EMPTY_FILENAME.print(); //TODO empty username
-                    }
-                } else {
-                    transferManager.writeControl(Command.ERROR);
-                    Error.EMPTY_FILENAME.print(); //TODO empty username
-                }
+            greaterThanZero(password.length());
+            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
+
+            if (clientIsAuthed) {
+                transferManager.writeControl(Command.READY);
             } else {
                 transferManager.writeControl(Command.ERROR);
-                Error.ZERO_SIZE.print();
+                closeConnection();
             }
 
-        } catch (IOException e) {
-            Error.CANNOT_AUTH.print();
-            closeConnection();
-        } catch (InvalidKeySpecException e) {
-            Error.CANNOT_AUTH.print();
-            closeConnection();
-        } catch (NoSuchAlgorithmException e) {
-            Error.CANNOT_AUTH.print();
+        } catch (Exception e) {
+            Error.CANNOT_AUTH.print(clientIP);
             closeConnection();
         }
 
         waitForClientRequest();
+    }
+
+    private void greaterThanZero(int num) throws Exception {
+        if (num > 0)
+            return;
+        else
+            throw new Exception("The value was not greater than 0");
+    }
+
+    private void okOrException() throws IOException {
+        int response = singleByteIn();
+        if (response == Command.OK.getCode() || response == Command.READY.getCode() || response == Command.DONE.getCode())
+            return;
+        else
+            throw new IOException("Communication with client failed");
     }
 
     private void waitForClientRequest() {
@@ -104,18 +98,14 @@ public class ClientThread extends Thread {
                     transferManager.writeControl(Command.OK);
 
                     int filenameSize = singleByteIn(); //TODO long not int
+                    greaterThanZero(filenameSize);
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename(filenameSize);
 
-                    if (!filename.equals("")) {
-                        transferManager.writeControl(Command.READY);
-                        writeToDisk(filename);
-
-                    } else {
-                        transferManager.writeControl(Command.ERROR);
-                        Error.EMPTY_FILENAME.print(clientIP);
-                    }
+                    greaterThanZero(filename.length());
+                    transferManager.writeControl(Command.READY);
+                    writeToDisk(filename);
 
                 } else if (request == Command.file_from_server.getCode()) {
                     clientPrint("Is trying to retrieve a file.");
@@ -126,17 +116,13 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename(filenameSize);
 
-                    if (!filename.equals("")) {
-                        if (new File(filename).exists()) {
-                            transferManager.writeControl(Command.READY);
-                            sendToClient(filename);
-                        } else {
-                            transferManager.writeControl(Command.ERROR);
-                            Error.FILE_NOT_FOUND.print();
-                        }
+                    greaterThanZero(filename.length());
+                    if (new File(filename).exists()) {
+                        transferManager.writeControl(Command.READY);
+                        sendToClient(filename);
                     } else {
                         transferManager.writeControl(Command.ERROR);
-                        Error.EMPTY_FILENAME.print(clientIP);
+                        Error.FILE_NOT_FOUND.print();
                     }
                 }
 
@@ -145,7 +131,10 @@ public class ClientThread extends Thread {
                     closeConnection();
                 }
             } catch (IOException e) {
-                Error.CLIENT_DISCONECTED.print(clientIP);
+                Error.COMMUNICATION_FAILED.print(clientIP);
+                closeConnection();
+            } catch (Exception e) {
+                Error.ZERO_SIZE.print();
                 closeConnection();
             }
         }
@@ -176,7 +165,6 @@ public class ClientThread extends Thread {
     }
 
     private void writeToDisk(String filename) {
-        if (filename != null) {
             clientPrint("Is sending file: " + filename);
 
             try {
@@ -205,40 +193,27 @@ public class ClientThread extends Thread {
             } catch (FileNotFoundException e) {
                 Error.FILE_NOT_FOUND.print(clientIP);
             }
-        } else {
-            Error.EMPTY_FILENAME.print(clientIP);
-        }
     }
 
     private void sendToClient(String filename) {
-        if (filename != null) {
-            clientPrint("Is requesting file: " + filename);
-            try {
-                if (singleByteIn() == Command.READY.getCode()) {
-                    Path path = Paths.get(filename);
-                    byte[] buffer = Files.readAllBytes(path);
+        clientPrint("Is requesting file: " + filename);
+        try {
+            okOrException();
+            Path path = Paths.get(filename);
+            byte[] buffer = Files.readAllBytes(path);
 
-                    transferManager.writeFileSize(buffer.length);
+            transferManager.writeFileSize(buffer.length);
 
-                    if (singleByteIn() == Command.OK.getCode()) {
-                        if (buffer.length > 0) {
-                            transferManager.write(new FileData(buffer));
+            okOrException();
+            if (buffer.length > 0) {
+                transferManager.write(new FileData(buffer));
 
-                            if (singleByteIn() == Command.DONE.getCode()) {
-                                clientPrint("File \'" + filename + "\' sent successfully!");
-                            }
-                        } else {
-                            clientPrint("File \'" + filename + "\' sent successfully!");
-                        }
-                    }
-                } else {
-                    Error.FILE_NOT_SENT.print(clientIP);
-                }
-            } catch (IOException e) {
-                Error.FILE_NOT_SENT.print(clientIP);
+                okOrException();
             }
-        } else {
-            Error.EMPTY_FILENAME.print(clientIP);
+            clientPrint("File \'" + filename + "\' sent successfully!");
+
+        } catch (IOException e) {
+            Error.FILE_NOT_SENT.print(clientIP);
         }
     }
 

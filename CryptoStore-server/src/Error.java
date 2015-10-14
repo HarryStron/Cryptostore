@@ -12,7 +12,8 @@ public enum Error {
     WRONG_PASS(11, "The client password was incorrect"),
     CANNOT_WRITE_DB(12, "The entry to the DB could not be made"),
     CANNOT_AUTH(13, "Client failed authorization to the server"),
-    ZERO_SIZE(14, "Zero length input not allowed");
+    ZERO_SIZE(14, "Zero length input not allowed"),
+    COMMUNICATION_FAILED(15, "The communication between client and server has failed");
 
     private final int code;
     private final String description;
