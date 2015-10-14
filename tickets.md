@@ -35,7 +35,7 @@ Create a new README file needed by GitBucket to hold all basic information.<br/>
 
 **`other-2`**:<br/>
 Refactoring needed to clean up code. Also handle everything using exceptions to make the code more readable with less IF statements.<br/>
-**_ongoing_**
+**_merged_**
 
 **`other-3`**:<br/>
 Change OK, READY and DONE commands to a single command to represent all 3. This reduces the code and makes it easier for errors and exceptions to handle.<br/>
