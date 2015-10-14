@@ -32,3 +32,11 @@ Server should have different directories for each of the users' files.<br/>
 **`other-1`**:<br/>
 Create a new README file needed by GitBucket to hold all basic information.<br/>
 **_merged_**
+
+**`other-2`**:<br/>
+Refactoring needed to clear up code. Also handle everything using exceptions to make the code more readable with less IF statements.<br/>
+**_queued_**
+
+**`other-3`**:<br/>
+Change OK, READY and DONE commands to a single command to represent all 3. This reduces the code and makes it easier for errors and exceptions to handle.<br/>
+**_queued_**

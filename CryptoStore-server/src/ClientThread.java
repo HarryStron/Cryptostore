@@ -8,6 +8,8 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class ClientThread extends Thread {
     private SSLSocket clientSocket;
@@ -22,7 +24,7 @@ public class ClientThread extends Thread {
         clientIsConnected = true;
         clientIsAuthed = false;
         clientIP = clientSocket.getRemoteSocketAddress().toString().substring(1);
-
+        new JDBCControl("jdbc:mysql://mysql.student.sussex.ac.uk:3306/cs391", "cs391", "r127xxhar1");
         clientPrint("Has established a connection!");
     }
 
@@ -53,8 +55,13 @@ public class ClientThread extends Thread {
                         String password = listenForFilename(passwordSize);
 
                         if (password.length() > 0) {
-                            transferManager.writeControl(Command.READY);
-                            clientIsAuthed = true;
+                            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
+                            if (clientIsAuthed) {
+                                transferManager.writeControl(Command.READY);
+                            } else {
+                                transferManager.writeControl(Command.ERROR);
+                                closeConnection();
+                            }
                         } else {
                             transferManager.writeControl(Command.ERROR);
                             Error.EMPTY_FILENAME.print(); //TODO empty password
@@ -73,6 +80,12 @@ public class ClientThread extends Thread {
             }
 
         } catch (IOException e) {
+            Error.CANNOT_AUTH.print();
+            closeConnection();
+        } catch (InvalidKeySpecException e) {
+            Error.CANNOT_AUTH.print();
+            closeConnection();
+        } catch (NoSuchAlgorithmException e) {
             Error.CANNOT_AUTH.print();
             closeConnection();
         }

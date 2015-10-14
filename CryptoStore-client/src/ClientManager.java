@@ -76,24 +76,34 @@ public class ClientManager {
     private void authenticate() {
         System.out.println("\nAuthenticating. . .");
         try {
-            if (singleByteIn() == Command.AUTH.getCode())
+            if (singleByteIn() == Command.AUTH.getCode()) {
                 transferManager.writeFileSize(username.length());
 
-            if (singleByteIn() == Command.OK.getCode())
+                okOrException();
                 transferManager.writeFileName(username);
 
-            if (singleByteIn() == Command.OK.getCode())
+                okOrException();
                 transferManager.writeFileSize(password.length());
 
-            if (singleByteIn() == Command.OK.getCode())
+                okOrException();
                 transferManager.writeFileName(password);
 
-            if (singleByteIn() == Command.READY.getCode())
+                okOrException();
                 isAUTHed = true;
-
+            } else {
+                throw new IOException();
+            }
         } catch (IOException e) {
             Error.CANNOT_AUTH.print();
         }
+    }
+
+    private void okOrException() throws IOException {
+        int response = singleByteIn();
+        if (response == Command.OK.getCode() || response == Command.READY.getCode())
+            return;
+        else
+            throw new IOException("Communication with server failed");
     }
 
     private String getLocalIP() {
