@@ -1,12 +1,10 @@
 public enum Command {
-    DONE(1, "DONE msg"),
-    OK(2, "OK msg"),
-    READY(3, "READY msg"),
-    ERROR(4, "ERROR msg"),
-    CLOSE(5, "CLOSE connection"),
-    AUTH(6, "AUTH msg"),
-    file_from_server(7, "file form server to client"),
-    file_from_client(8, "file send from client to server");
+    OK(1, "OK msg"),
+    ERROR(2, "ERROR msg"),
+    CLOSE(3, "CLOSE connection"),
+    AUTH(4, "AUTH msg"),
+    file_from_server(5, "file form server to client"),
+    file_from_client(6, "file send from client to server");
 
     private final int code;
     private final String description;

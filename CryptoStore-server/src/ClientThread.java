@@ -58,7 +58,7 @@ public class ClientThread extends Thread {
             clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
 
             if (clientIsAuthed) {
-                transferManager.writeControl(Command.READY);
+                transferManager.writeControl(Command.OK);
             } else {
                 transferManager.writeControl(Command.ERROR);
                 closeConnection();
@@ -80,8 +80,7 @@ public class ClientThread extends Thread {
     }
 
     private void okOrException() throws IOException {
-        int response = singleByteIn();
-        if (response == Command.OK.getCode() || response == Command.READY.getCode() || response == Command.DONE.getCode())
+        if (singleByteIn() == Command.OK.getCode())
             return;
         else
             throw new IOException("Communication with client failed");
@@ -104,7 +103,7 @@ public class ClientThread extends Thread {
                     String filename = listenForFilename(filenameSize);
 
                     greaterThanZero(filename.length());
-                    transferManager.writeControl(Command.READY);
+                    transferManager.writeControl(Command.OK);
                     writeToDisk(filename);
 
                 } else if (request == Command.file_from_server.getCode()) {
@@ -118,7 +117,7 @@ public class ClientThread extends Thread {
 
                     greaterThanZero(filename.length());
                     if (new File(filename).exists()) {
-                        transferManager.writeControl(Command.READY);
+                        transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {
                         transferManager.writeControl(Command.ERROR);
@@ -181,7 +180,7 @@ public class ClientThread extends Thread {
 
                         fileOutputStream.write(buffer, 0, buffer.length);
 
-                        transferManager.writeControl(Command.DONE);
+                        transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
 
                     clientPrint(filename + " received!");
