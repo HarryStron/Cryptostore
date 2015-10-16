@@ -30,7 +30,6 @@ public class ClientThread extends Thread {
 
     public void run() {
         super.run();
-
         transferManager = new TransferManager(clientSocket);
 
         /** Auth the user **/
@@ -43,40 +42,36 @@ public class ClientThread extends Thread {
             transferManager.writeControl(Command.OK);
 
             String username = listenForFilename(usernameSize);
-
             greaterThanZero(username.length());
             transferManager.writeControl(Command.OK);
 
             int passwordSize = singleByteIn(); //TODO long not int
-
             greaterThanZero(passwordSize);
             transferManager.writeControl(Command.OK);
 
             String password = listenForFilename(passwordSize);
-
             greaterThanZero(password.length());
             clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
             } else {
-                transferManager.writeControl(Command.ERROR);
-                closeConnection();
+                throw new Exception("The user couldn't be authorised");
             }
 
+            waitForClientRequest();
+
         } catch (Exception e) {
+            transferManager.writeControl(Command.ERROR);
             Error.CANNOT_AUTH.print(clientIP);
             closeConnection();
         }
-
-        waitForClientRequest();
     }
 
     private void greaterThanZero(int num) throws Exception {
         if (num > 0) {
             return;
         } else {
-            transferManager.writeControl(Command.ERROR);
             throw new Exception("The value was not greater than 0");
         }
     }
@@ -85,7 +80,6 @@ public class ClientThread extends Thread {
         if (singleByteIn() == Command.OK.getCode()) {
             return;
         } else {
-            transferManager.writeControl(Command.ERROR);
             throw new IOException("Communication with client failed");
         }
     }
@@ -105,7 +99,6 @@ public class ClientThread extends Thread {
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename(filenameSize);
-
                     greaterThanZero(filename.length());
                     transferManager.writeControl(Command.OK);
                     writeToDisk(filename);
@@ -118,14 +111,12 @@ public class ClientThread extends Thread {
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename(filenameSize);
-
                     greaterThanZero(filename.length());
                     if (new File(filename).exists()) {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {
-                        transferManager.writeControl(Command.ERROR);
-                        Error.FILE_NOT_FOUND.print();
+                        throw new FileNotFoundException("The file requested could not be found");
                     }
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
@@ -133,11 +124,9 @@ public class ClientThread extends Thread {
                 } else {
                     throw new IOException("Unknown command");
                 }
-            } catch (IOException e) {
-                Error.COMMUNICATION_FAILED.print(clientIP);
-                closeConnection();
             } catch (Exception e) {
-                Error.ZERO_SIZE.print();
+                transferManager.writeControl(Command.ERROR);
+                Error.FILE_NOT_SENT.print();
                 closeConnection();
             }
         }
@@ -160,6 +149,7 @@ public class ClientThread extends Thread {
         try {
             filename = IOUtils.toString(transferManager.read(filenameSize).getData(1), "UTF-8");
         } catch (IOException e) {
+            transferManager.writeControl(Command.ERROR);
             Error.CLIENT_DISCONECTED.print(clientIP);
             closeConnection();
         }
@@ -189,12 +179,16 @@ public class ClientThread extends Thread {
 
                     clientPrint(filename + " received!");
                 } catch (IOException e) {
+                    transferManager.writeControl(Command.ERROR);
                     newFile.delete();
                     Error.CANNOT_SAVE_FILE.print(clientIP);
+                    closeConnection();
                 }
 
             } catch (FileNotFoundException e) {
+                transferManager.writeControl(Command.ERROR);
                 Error.FILE_NOT_FOUND.print(clientIP);
+                closeConnection();
             }
     }
 
@@ -216,6 +210,7 @@ public class ClientThread extends Thread {
             clientPrint("File \'" + filename + "\' sent successfully!");
 
         } catch (IOException e) {
+            transferManager.writeControl(Command.ERROR);
             Error.FILE_NOT_SENT.print(clientIP);
         }
     }

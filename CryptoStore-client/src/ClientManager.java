@@ -94,7 +94,9 @@ public class ClientManager {
                 throw new IOException();
             }
         } catch (IOException e) {
+            transferManager.writeControl(Command.ERROR);
             Error.CANNOT_AUTH.print();
+            closeConnection();
         }
     }
 
@@ -102,7 +104,6 @@ public class ClientManager {
         if (singleByteIn() == Command.OK.getCode()) {
             return;
         } else {
-            transferManager.writeControl(Command.ERROR);
             throw new IOException("Communication with server failed");
         }
     }
@@ -157,9 +158,11 @@ public class ClientManager {
                         System.out.println("File \'" + filename + "\' sent successfully!");
                     }
                 } catch (IOException e) {
+                    transferManager.writeControl(Command.ERROR);
                     Error.FILE_NOT_SENT.print();
                 }
             } else {
+                transferManager.writeControl(Command.ERROR);
                 Error.FILE_NOT_FOUND.print();
             }
 
@@ -169,6 +172,7 @@ public class ClientManager {
 
     public void retrieveFile(String filename) {
         connect();
+
         if (isAUTHed) {
 
             System.out.println("\nDownloading " + filename + " from server. . .");
@@ -190,7 +194,12 @@ public class ClientManager {
 
                 FileOutputStream newFile = new FileOutputStream(new File(filename));
                 int sizeOfFile = singleByteIn(); //TODO change to long
-                transferManager.writeControl(Command.OK);
+
+                if (sizeOfFile >= 0) {
+                    transferManager.writeControl(Command.OK);
+                } else {
+                    throw new IOException("The size of the file cannot be negative");
+                }
 
                 if (sizeOfFile > 0) {
                     byte[] buffer = transferManager.read(sizeOfFile).getData(1);
@@ -207,6 +216,7 @@ public class ClientManager {
 //                    Error.FILE_NOT_RETRIEVED.print();
 //                }
             } catch (IOException e) {
+                transferManager.writeControl(Command.ERROR);
                 Error.FILE_NOT_RETRIEVED.print();
             }
 
