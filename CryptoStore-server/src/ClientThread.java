@@ -35,7 +35,6 @@ public class ClientThread extends Thread {
             transferManager.writeControl(Command.AUTH);
 
             int usernameSize = singleByteIn(); //TODO long not int
-
             greaterThanZero(usernameSize);
             transferManager.writeControl(Command.OK);
 
@@ -97,7 +96,7 @@ public class ClientThread extends Thread {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {
-                        throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription());
+                        throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
 
                 } else if (request == Command.CLOSE.getCode()) {
@@ -105,7 +104,7 @@ public class ClientThread extends Thread {
                     closeConnection();
 
                 } else {
-                    throw new IOException(Error.UNKNOWN_COMMAND.getDescription());
+                    throw new IOException(Error.UNKNOWN_COMMAND.getDescription(clientIP));
                 }
             } catch (Exception e) {
                 handleError(Error.FILE_NOT_SENT, e);
@@ -118,15 +117,10 @@ public class ClientThread extends Thread {
         clientIsAuthed = false;
 
         try {
-            try {
-                transferManager.closeStreams();
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                throw new IOException();
-            }
+            transferManager.closeStreams();
             clientSocket.close();
             System.out.println("Connection closed!");
-        } catch (IOException e) {
+        } catch (Exception e) {
             Error.CLIENT_DISCONNECTED.print(clientIP);
         }
     }
@@ -144,9 +138,8 @@ public class ClientThread extends Thread {
     }
 
     private void writeToDisk(String filename) {
+        clientPrint("Is sending file: " + filename);
         try {
-            clientPrint("Is sending file: " + filename);
-
             try {
                 File newFile = new File(filename);
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
@@ -154,20 +147,24 @@ public class ClientThread extends Thread {
                 try {
                     int sizeOfFile = singleByteIn(); //TODO change to long
 
+                    if (sizeOfFile < 0) {
+                        throw new Exception(Error.NEGATIVE_SIZE.getDescription(clientIP));
+                    }
+
                     transferManager.writeControl(Command.OK);
 
                     if (sizeOfFile > 0) { //if size is > 0 copy the file to server
                         byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-
                         fileOutputStream.write(buffer, 0, buffer.length);
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
 
                     clientPrint(filename + " received!");
+
                 } catch (IOException e) {
                     newFile.delete();
-                    throw new Exception(Error.CANNOT_SAVE_FILE.getDescription());
+                    throw new Exception(Error.CANNOT_SAVE_FILE.getDescription(clientIP));
                 }
             } catch (FileNotFoundException e) {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription(clientIP));
@@ -178,9 +175,8 @@ public class ClientThread extends Thread {
     }
 
     private void sendToClient(String filename) {
+        clientPrint("Is requesting file: " + filename);
         try {
-            clientPrint("Is requesting file: " + filename);
-
             okOrException();
             Path path = Paths.get(filename);
             byte[] buffer = Files.readAllBytes(path);
@@ -208,7 +204,7 @@ public class ClientThread extends Thread {
         try {
             return transferManager.read(0).getData(1)[0];
         } catch (IOException e) {
-            throw new Exception(Error.FAILED_TO_READ.getDescription());
+            throw new Exception(Error.FAILED_TO_READ.getDescription(clientIP));
         }
     }
 
@@ -216,7 +212,7 @@ public class ClientThread extends Thread {
         if (num > 0) {
             return;
         } else {
-            throw new Exception(Error.ZERO_SIZE.getDescription());
+            throw new Exception(Error.ZERO_SIZE.getDescription(clientIP));
         }
     }
 
@@ -224,7 +220,7 @@ public class ClientThread extends Thread {
         if (singleByteIn() == Command.OK.getCode()) {
             return;
         } else {
-            throw new Exception(Error.COMMUNICATION_FAILED.getDescription());
+            throw new Exception(Error.COMMUNICATION_FAILED.getDescription(clientIP));
         }
     }
 
@@ -232,7 +228,10 @@ public class ClientThread extends Thread {
         try {
             transferManager.writeControl(Command.ERROR);
             err1.print(clientIP);
-            System.out.println(err2.getMessage());
+
+            if (err2.getMessage() != null)
+                System.out.println(err2.getMessage()+'\n');
+
             closeConnection();
         } catch (Exception e) {
             System.out.println(e.getMessage());
