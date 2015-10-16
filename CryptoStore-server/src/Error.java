@@ -1,19 +1,25 @@
 public enum Error {
-    FILE_NOT_FOUND(1, "The requested filename doesn't exist"),
-    CLIENT_DISCONECTED(2, "The client is disconnected"),
-    PACKETS_NOT_SENT(3, "The packets could not be sent"),
-    CANNOT_SAVE_FILE(4, "The file could not be saved"),
-    EMPTY_FILENAME(5, "The filename cannot be empty"),
-    FILE_NOT_SENT(6, "The file was not sent"),
-    CANNOT_CONNECT(7, "The server cannot connect to client. Check there is only one instance of the server running"),
-    SOCKET_CLOSED(8, "The socket is closed"),
-    CANNOT_READ(9, "The server cannot read from the socket"),
-    NO_USER(10, "The client username doesn't exist"),
-    WRONG_PASS(11, "The client password was incorrect"),
-    CANNOT_WRITE_DB(12, "The entry to the DB could not be made"),
-    CANNOT_AUTH(13, "Client failed authorization to the server"),
-    ZERO_SIZE(14, "Zero length input not allowed"),
-    COMMUNICATION_FAILED(15, "The communication between client and server has failed");
+    // COMMANDS
+    UNKNOWN_COMMAND(1, "The command received is not recognised"),
+    // AUTH
+    CANNOT_AUTH(2, "Client failed authorization to the server"),
+    NO_USER(3, "The username doesn't exist"),
+    // FILES
+    FILE_NOT_FOUND(4, "The requested filename doesn't exist"),
+    FILE_NOT_SENT(5, "The file was not sent"),
+    FILE_NOT_RECEIVED(6, "The file was not received"),
+    CANNOT_SAVE_FILE(7, "The file could not be saved"),
+    ZERO_SIZE(8, "Zero size values for input are not allowed"),
+    NEGATIVE_SIZE(9, "Negative values for input are not allowed"),
+    // CONNECTION / COMMUNICATION
+    CANNOT_CONNECT(10, "Connection between client and server could not be established"),
+    CLIENT_DISCONNECTED(11, "The client disconnected"),
+    SERER_DISCONNECTED(12, "The server disconnected"),
+    SOCKET_CLOSED(13, "The socket is closed"),
+    FAILED_TO_WRITE(14, "The packets could not be sent"),
+    FAILED_TO_READ(15, "The packets could not be read"),
+    COMMUNICATION_FAILED(16, "The communication between client and server has failed"),
+    FAILED_TO_CLOSE_STREAMS(17, "Failed to close the streams");
 
     private final int code;
     private final String description;
@@ -21,6 +27,14 @@ public enum Error {
     Error(int code, String description) {
         this.code = code;
         this.description = description;
+    }
+
+    public String getDescription(String client) {
+        return "ERROR " + code + ": " + description + '!' + " (" + client + ')';
+    }
+
+    public String getDescription() {
+        return "ERROR " + code + ": " + description + '!';
     }
 
     public void print(String client) {
