@@ -73,17 +73,21 @@ public class ClientThread extends Thread {
     }
 
     private void greaterThanZero(int num) throws Exception {
-        if (num > 0)
+        if (num > 0) {
             return;
-        else
+        } else {
+            transferManager.writeControl(Command.ERROR);
             throw new Exception("The value was not greater than 0");
+        }
     }
 
     private void okOrException() throws IOException {
-        if (singleByteIn() == Command.OK.getCode())
+        if (singleByteIn() == Command.OK.getCode()) {
             return;
-        else
+        } else {
+            transferManager.writeControl(Command.ERROR);
             throw new IOException("Communication with client failed");
+        }
     }
 
     private void waitForClientRequest() {
@@ -123,11 +127,11 @@ public class ClientThread extends Thread {
                         transferManager.writeControl(Command.ERROR);
                         Error.FILE_NOT_FOUND.print();
                     }
-                }
-
-                if (request == Command.CLOSE.getCode()) {
+                } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
                     closeConnection();
+                } else {
+                    throw new IOException("Unknown command");
                 }
             } catch (IOException e) {
                 Error.COMMUNICATION_FAILED.print(clientIP);

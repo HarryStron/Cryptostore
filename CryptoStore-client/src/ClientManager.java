@@ -99,10 +99,12 @@ public class ClientManager {
     }
 
     private void okOrException() throws IOException {
-        if (singleByteIn() == Command.OK.getCode())
+        if (singleByteIn() == Command.OK.getCode()) {
             return;
-        else
+        } else {
+            transferManager.writeControl(Command.ERROR);
             throw new IOException("Communication with server failed");
+        }
     }
 
     private String getLocalIP() {
