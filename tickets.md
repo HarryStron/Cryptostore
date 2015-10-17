@@ -22,18 +22,22 @@ Make server require client authentication on connect and code client to send the
 **_v1.4.0_**
 
 **`feature-5`**:<br/>
-Server should have different directories for each of the users' files.<br/>
+Validate all user input on the server side to prevent attacks.<br/>
+**_ongoing_**
+
+**`feature-6`**:<br/>
+Place files of each user into its personal directory.<br/>
 **_queued_**
 
 ## BUGs
 
 **`bug-1`**:<br/>
 No message is send over to the server (i.e. ERROR msg) when one of the client transfers fail.<br/>
-**_merged_**
+**_v1.4.1_**
 
-**`bug-2`**:<br/>
+**`bug-2`**_(branched off bug-1)_:<br/>
 Print exception messages too for ease of understanding why a problem occured.<br/>
-**_merged_**
+**_v1.4.1_**
 
 ## Other (_not tagged_)
 
