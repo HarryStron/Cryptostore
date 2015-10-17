@@ -23,11 +23,11 @@ Make server require client authentication on connect and code client to send the
 
 **`feature-5`**:<br/>
 Validate all user input on the server side to prevent attacks.<br/>
-**_ongoing_**
+**_v1.5.0_**
 
 **`feature-6`**:<br/>
 Place files of each user into its personal directory.<br/>
-**_queued_**
+**_v1.6.0_**
 
 ## BUGs
 

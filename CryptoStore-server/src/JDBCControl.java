@@ -72,7 +72,7 @@ public class JDBCControl {
             statement.setString(1, username);
             statement.setString(2, passwdHash);
             statement.setString(3, Base64.getEncoder().encodeToString(salt));
-System.out.println(statement.toString());
+
             statement.execute();
 
         } catch (SQLException ex) {
