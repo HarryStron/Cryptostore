@@ -13,6 +13,7 @@ public class ClientThread extends Thread {
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private String clientIP;
+    private String connectedUser;
     private boolean clientIsConnected;
     private boolean clientIsAuthed;
 
@@ -61,6 +62,7 @@ public class ClientThread extends Thread {
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
+                connectedUser = username;
             } else {
                 throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
             }
@@ -154,7 +156,9 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File newFile = new File(filename);
+                File path = new File("UserFiles/"+connectedUser+'/');
+                path.mkdirs();
+                File newFile = new File(path, filename);
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
 
                 try {
@@ -191,7 +195,7 @@ public class ClientThread extends Thread {
         clientPrint("Is requesting file: " + filename);
         try {
             okOrException();
-            Path path = Paths.get(filename);
+            Path path = Paths.get("UserFiles/"+connectedUser+'/'+filename);
             byte[] buffer = Files.readAllBytes(path);
             transferManager.writeFileSize(buffer.length);
 
