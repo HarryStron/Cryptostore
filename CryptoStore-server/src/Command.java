@@ -7,7 +7,7 @@ public enum Command {
     file_from_client(6, "file send from client to server");
 
     private final int code;
-    private final String description;
+    private String description;
 
     Command(int code, String description) {
         this.code = code;

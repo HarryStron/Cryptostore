@@ -40,6 +40,12 @@ public class ClientThread extends Thread {
 
             String username = listenForFilename(usernameSize);
             greaterThanZero(username.length());
+
+            if (!Validator.validateUsername(username))
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            if (!JDBCControl.usernameExists(username))
+                throw new Exception(Error.NO_USER.getDescription(clientIP));
+
             transferManager.writeControl(Command.OK);
 
             int passwordSize = singleByteIn(); //TODO long not int
@@ -48,12 +54,15 @@ public class ClientThread extends Thread {
 
             String password = listenForFilename(passwordSize);
             greaterThanZero(password.length());
+            if (!Validator.validatePassword(password))
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+
             clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
             } else {
-                throw new Exception();
+                throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
             }
 
             waitForClientRequest();
@@ -79,6 +88,8 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename(filenameSize);
                     greaterThanZero(filename.length());
+                    if (!Validator.validateFilename(filename))
+                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
                     transferManager.writeControl(Command.OK);
                     writeToDisk(filename);
 
@@ -91,6 +102,8 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename(filenameSize);
                     greaterThanZero(filename.length());
+                    if (!Validator.validateFilename(filename))
+                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
 
                     if (new File(filename).exists()) {
                         transferManager.writeControl(Command.OK);
