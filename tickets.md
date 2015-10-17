@@ -29,11 +29,11 @@ Server should have different directories for each of the users' files.<br/>
 
 **`bug-1`**:<br/>
 No message is send over to the server (i.e. ERROR msg) when one of the client transfers fail.<br/>
-**_ongoing_**
+**_merged_**
 
 **`bug-2`**:<br/>
 Print exception messages too for ease of understanding why a problem occured.<br/>
-**_queued_**
+**_merged_**
 
 ## Other (_not tagged_)
 
