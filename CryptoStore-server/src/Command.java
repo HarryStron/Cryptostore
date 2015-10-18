@@ -3,8 +3,8 @@ public enum Command {
     ERROR(2, "ERROR msg"),
     CLOSE(3, "CLOSE connection"),
     AUTH(4, "AUTH msg"),
-    file_from_server(5, "file form server to client"),
-    file_from_client(6, "file send from client to server");
+    FILE_FROM_SERVER(5, "file form server to client"),
+    FILE_FROM_CLIENT(6, "file send from client to server");
 
     private final int code;
     private String description;

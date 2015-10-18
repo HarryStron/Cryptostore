@@ -80,7 +80,7 @@ public class ClientThread extends Thread {
             try {
                 int request = singleByteIn();
 
-                if (request == Command.file_from_client.getCode()) {
+                if (request == Command.FILE_FROM_CLIENT.getCode()) {
                     clientPrint("Is trying to send a file.");
                     transferManager.writeControl(Command.OK);
 
@@ -95,7 +95,7 @@ public class ClientThread extends Thread {
                     transferManager.writeControl(Command.OK);
                     writeToDisk(filename);
 
-                } else if (request == Command.file_from_server.getCode()) {
+                } else if (request == Command.FILE_FROM_SERVER.getCode()) {
                     clientPrint("Is trying to retrieve a file.");
                     transferManager.writeControl(Command.OK);
 
