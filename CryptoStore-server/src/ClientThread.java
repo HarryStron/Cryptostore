@@ -58,7 +58,7 @@ public class ClientThread extends Thread {
             if (!Validator.validatePassword(password))
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
 
-            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username), 100000, 32));
+            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username)));
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
