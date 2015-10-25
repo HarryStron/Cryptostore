@@ -1,3 +1,4 @@
+import org.apache.commons.io.FilenameUtils;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -13,27 +14,22 @@ import java.security.spec.KeySpec;
 public class Encryption {
     private static final int NUMBER_OF_ITERATIONS = 100000;
     private static final int KEY_LENGTH = 32*8;
-    private final char[] password;
 
-    public static SecretKey secretKeySpec;
+    public static byte[] saltz;
     public static byte[] iv;
 
-    public Encryption(String password) {
-        this.password = password.toCharArray();
+    private Encryption() {
     }
 
-    public byte[] encryptFile(Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchPaddingException, InvalidKeyException,
-            IOException, BadPaddingException, IllegalBlockSizeException, InvalidParameterSpecException {
+    public static byte[] encryptFile(char[] password, Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException,
+            NoSuchPaddingException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidParameterSpecException {
 
-        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-        KeySpec keySpec = new PBEKeySpec(password, getSalt(), NUMBER_OF_ITERATIONS, KEY_LENGTH);
-        SecretKey secretKey = factory.generateSecret(keySpec);
-        byte[] salt = secretKey.getEncoded();
-        secretKeySpec = new SecretKeySpec(salt, "AES");
+        System.out.println("Encrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+
+        SecretKey secretKey = generateSecretKey(password, saltz = getSalt());
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec);
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
 
         AlgorithmParameters params = cipher.getParameters();
         iv = params.getParameterSpec(IvParameterSpec.class).getIV();
@@ -41,15 +37,29 @@ public class Encryption {
         return cipher.doFinal(Files.readAllBytes(filePath));
     }
 
-    public byte[] decryptFile(Path filePath) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException {
-        /* Decrypt the message, given derived key and initialization vector. */
+    public static byte[] decryptFile(char[] password, Path filePath) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException,
+            BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
+
+        System.out.println("Decrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+
+        SecretKey secretKey = generateSecretKey(password, saltz);
+
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, new IvParameterSpec(iv));
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
 
         return cipher.doFinal(Files.readAllBytes(filePath));
     }
 
-    public static byte[] getSalt() throws NoSuchAlgorithmException {
+    private static SecretKey generateSecretKey(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        KeySpec keySpec = new PBEKeySpec(password, salt, NUMBER_OF_ITERATIONS, KEY_LENGTH);
+        SecretKey secretKey = factory.generateSecret(keySpec);
+        byte[] hash = secretKey.getEncoded();
+
+        return new SecretKeySpec(hash, "AES");
+    }
+
+    private static byte[] getSalt() throws NoSuchAlgorithmException {
         byte[] salt = new byte[16];
         (new SecureRandom()).nextBytes(salt);
         return salt;

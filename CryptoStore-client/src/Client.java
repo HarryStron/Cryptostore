@@ -9,15 +9,13 @@ public class Client {
 //        clientManager.sendFile("test.txt");
 //        clientManager.retrieveFile("test.txt");
 
-        Encryption encryptionManager = new Encryption("password");
-
         try {
-            byte[] filebytes = encryptionManager.encryptFile(Paths.get("test.txt"));
+            byte[] filebytes = Encryption.encryptFile("password".toCharArray(), Paths.get("test.txt"));
             FileOutputStream fos = new FileOutputStream("testEncrypted.txt");
             fos.write(filebytes);
             fos.close();
 
-            byte[] filebytes2 = encryptionManager.decryptFile(Paths.get("testEncrypted.txt"));
+            byte[] filebytes2 = Encryption.decryptFile("password".toCharArray(), Paths.get("testEncrypted.txt"));
             FileOutputStream fos2 = new FileOutputStream("testDecrypted.txt");
             fos2.write(filebytes2);
             fos2.close();
