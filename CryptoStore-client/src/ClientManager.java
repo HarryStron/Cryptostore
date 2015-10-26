@@ -125,7 +125,7 @@ public class ClientManager {
 
                 if (path.toFile().exists()) {
                     try {
-                        transferManager.writeControl(Command.file_from_client);
+                        transferManager.writeControl(Command.FILE_FROM_CLIENT);
 
                         okOrException();
                         transferManager.writeFileSize(filename.length()); //TODO what if a file is too big to be represented with an int?
@@ -172,7 +172,7 @@ public class ClientManager {
                 System.out.println("\nDownloading " + filename + " from server. . .");
 
                 try {
-                    transferManager.writeControl(Command.file_from_server);
+                    transferManager.writeControl(Command.FILE_FROM_SERVER);
 
                     okOrException();
                     transferManager.writeFileSize(filename.length());

@@ -13,6 +13,8 @@ CryptoStore is a solution for securing sensitive files on remote servers. Crypto
   * **NONE of that is actually included now. It is just a draft for myself** TOBE updated..
 
 ### How do I get set up? ###
+* to pull all branches after cloning repo: 
+`for remote in 'git branch -r | grep -v /HEAD'; do git checkout --track $remote ; done`
 
 #### Server ####
 * Set up MySQL (full instructions [here](http://www3.ntu.edu.sg/home/ehchua/programming/java/JDBC_Basic.html))

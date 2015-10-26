@@ -7,11 +7,12 @@ import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
 public class HashGenerator {
-    public static String getHash(String password, byte[] salt,  int iterations,  int derivedKeyLength) throws NoSuchAlgorithmException, InvalidKeySpecException {
-        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, iterations, derivedKeyLength * 8);
+    private static final int NUMBER_OF_ITERATIONS = 100000;
+    private static final int KEY_LENGTH = 32*8;
 
+    public static String getHash(String password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException {
+        KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, NUMBER_OF_ITERATIONS, KEY_LENGTH);
         SecretKeyFactory f = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
-
         byte[] hashBytes = f.generateSecret(spec).getEncoded();
 
         return DatatypeConverter.printHexBinary(hashBytes);

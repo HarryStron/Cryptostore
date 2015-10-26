@@ -29,6 +29,26 @@ Validate all user input on the server side to prevent attacks.<br/>
 Place files of each user into its personal directory.<br/>
 **_v1.6.0_**
 
+**`feature-7`**:<br/>
+Write the encryption class and all its methods.<br/>
+**_v1.7.0_**
+
+**`feature-8`**:<br/>
+Encrypt all files and filenames before sending them and decrypt them when they are returned back from server.<br/>
+**_queued_**
+
+**`feature-9`**:<br/>
+Uses hashes to compare the files on the server with those on the client.<br/>
+**_queued_**
+
+**`feature-10`**:<br/>
+Create a syncronization class and methods to SYNC files between client and server.<br/>
+**_queued_**
+
+**`feature-11`**:<br/>
+Find the optimal points where syncronization should be happening and implement it.<br/>
+**_queued_**
+
 ## BUGs
 
 **`bug-1`**:<br/>
@@ -36,7 +56,7 @@ No message is send over to the server (i.e. ERROR msg) when one of the client tr
 **_v1.4.1_**
 
 **`bug-2`**_(branched off bug-1)_:<br/>
-Print exception messages too for ease of understanding why a problem occured.<br/>
+No exception messages are printed. Need to be displayed for ease of understanding why a problem occured.<br/>
 **_v1.4.1_**
 
 ## Other (_not tagged_)
