@@ -13,13 +13,13 @@ import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
-public class Encryption {
+public class EncryptionManager {
     private static final int NUMBER_OF_ITERATIONS = 100000;
     private static final int KEY_LENGTH = 32*8;
     private static final int SALT_LENGTH = 16;
     private static final int IV_LENGTH = 16; // IV should always be 16 bytes long. DO NOT modify
 
-    private Encryption() {
+    private EncryptionManager() {
     }
 
     public static byte[] encryptFile(char[] password, Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException,

@@ -35,7 +35,7 @@ Write the encryption class and all its methods.<br/>
 
 **`feature-8`**:<br/>
 Encrypt all files and filenames before sending them and decrypt them when they are returned back from server.<br/>
-**_queued_**
+**_ongoing_**
 
 **`feature-9`**:<br/>
 Uses hashes to compare the files on the server with those on the client.<br/>

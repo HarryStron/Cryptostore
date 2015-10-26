@@ -134,7 +134,7 @@ public class ClientManager {
                         transferManager.writeFileName(filename);
 
                         okOrException();
-                        byte[] buffer = Files.readAllBytes(path);
+                        byte[] buffer = EncryptionManager.encryptFile("demo pass".toCharArray(), path);
                         transferManager.writeFileSize(buffer.length);
 
                         okOrException();
