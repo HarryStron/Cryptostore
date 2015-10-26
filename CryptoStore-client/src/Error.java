@@ -22,7 +22,9 @@ public enum Error {
     COMMUNICATION_FAILED(17, "The communication between client and server has failed"),
     FAILED_TO_CLOSE_STREAMS(18, "Failed to close the streams"),
     // VALIDITY
-    INCORRECT_FORM(19, "The input was not of the correct form");
+    INCORRECT_FORM(19, "The input was not of the correct form"),
+    // Encryption
+    CANNOT_DECRYPT(20, "The file could not be decrypted");
 
     private final int code;
     private final String description;

@@ -107,7 +107,10 @@ public class ClientThread extends Thread {
                     if (!Validator.validateFilename(filename))
                         throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
 
-                    if (new File(filename).exists()) {
+                    File path = new File("UserFiles/"+connectedUser+'/');
+                    File requestFile = new File(path, filename);
+
+                    if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {

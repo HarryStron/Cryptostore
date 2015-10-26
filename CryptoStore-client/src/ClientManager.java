@@ -1,3 +1,6 @@
+import javax.crypto.BadPaddingException;
+import javax.crypto.IllegalBlockSizeException;
+import javax.crypto.NoSuchPaddingException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
@@ -8,6 +11,10 @@ import java.net.InetAddress;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.InvalidKeyException;
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 
 public class ClientManager {
     private SSLSocket clientSocket;
@@ -115,7 +122,7 @@ public class ClientManager {
         }
     }
 
-    public void sendFile(String filename) {
+    public void sendFile(String password, String filename) {
         connect();
 
         try {
@@ -134,7 +141,7 @@ public class ClientManager {
                         transferManager.writeFileName(filename);
 
                         okOrException();
-                        byte[] buffer = EncryptionManager.encryptFile("demo pass".toCharArray(), path);
+                        byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
                         transferManager.writeFileSize(buffer.length);
 
                         okOrException();
@@ -163,7 +170,20 @@ public class ClientManager {
         }
     }
 
-    public void retrieveFile(String filename) {
+    public void getFile(String password, String filename) {
+        retrieveFile(filename);
+
+        try {
+            byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+            FileOutputStream fos = new FileOutputStream(filename);
+            fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+            fos.close();
+        } catch (Exception e) {
+            handleError(Error.CANNOT_DECRYPT, e);
+        }
+    }
+
+    private void retrieveFile(String filename) {
         connect();
 
         try {
