@@ -31,7 +31,7 @@ Place files of each user into its personal directory.<br/>
 
 **`feature-7`**:<br/>
 Write the encryption class and all its methods.<br/>
-**_ongoing_**
+**_v1.7.0_**
 
 **`feature-8`**:<br/>
 Encrypt all files and filenames before sending them and decrypt them when they are returned back from server.<br/>
