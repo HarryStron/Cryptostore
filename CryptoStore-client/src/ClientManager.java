@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -115,7 +114,7 @@ public class ClientManager {
         }
     }
 
-    public void sendFile(String filename) {
+    public void sendFile(String password, String filename) {
         connect();
 
         try {
@@ -134,7 +133,7 @@ public class ClientManager {
                         transferManager.writeFileName(filename);
 
                         okOrException();
-                        byte[] buffer = Files.readAllBytes(path);
+                        byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
                         transferManager.writeFileSize(buffer.length);
 
                         okOrException();
@@ -163,7 +162,20 @@ public class ClientManager {
         }
     }
 
-    public void retrieveFile(String filename) {
+    public void getFile(String password, String filename) {
+        retrieveFile(filename);
+
+        try {
+            byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+            FileOutputStream fos = new FileOutputStream(filename);
+            fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+            fos.close();
+        } catch (Exception e) {
+            handleError(Error.CANNOT_DECRYPT, e);
+        }
+    }
+
+    private void retrieveFile(String filename) {
         connect();
 
         try {
