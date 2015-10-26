@@ -39,7 +39,7 @@ public class ClientThread extends Thread {
             greaterThanZero(usernameSize);
             transferManager.writeControl(Command.OK);
 
-            String username = listenForFilename(usernameSize);
+            String username = listenForString(usernameSize);
             greaterThanZero(username.length());
 
             if (!Validator.validateUsername(username))
@@ -53,7 +53,7 @@ public class ClientThread extends Thread {
             greaterThanZero(passwordSize);
             transferManager.writeControl(Command.OK);
 
-            String password = listenForFilename(passwordSize);
+            String password = listenForString(passwordSize);
             greaterThanZero(password.length());
             if (!Validator.validatePassword(password))
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
@@ -84,28 +84,14 @@ public class ClientThread extends Thread {
                     clientPrint("Is trying to send a file.");
                     transferManager.writeControl(Command.OK);
 
-                    int filenameSize = singleByteIn(); //TODO long not int
-                    greaterThanZero(filenameSize);
-                    transferManager.writeControl(Command.OK);
-
-                    String filename = listenForFilename(filenameSize);
-                    greaterThanZero(filename.length());
-                    if (!Validator.validateFilename(filename))
-                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
-                    transferManager.writeControl(Command.OK);
+                    String filename = listenForFilename();
                     writeToDisk(filename);
 
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
                     clientPrint("Is trying to retrieve a file.");
                     transferManager.writeControl(Command.OK);
 
-                    int filenameSize = singleByteIn(); //TODO long not int
-                    transferManager.writeControl(Command.OK);
-
-                    String filename = listenForFilename(filenameSize);
-                    greaterThanZero(filename.length());
-                    if (!Validator.validateFilename(filename))
-                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+                    String filename = listenForFilename();
 
                     File path = new File("UserFiles/"+connectedUser+'/');
                     File requestFile = new File(path, filename);
@@ -143,11 +129,27 @@ public class ClientThread extends Thread {
         }
     }
 
-    private String listenForFilename(int filenameSize) { //TODO long not int
+    private String listenForFilename() throws Exception {
+        int filenameSize = singleByteIn(); //TODO long not int
+        greaterThanZero(filenameSize);
+        transferManager.writeControl(Command.OK);
+
+//System.getProperty("user.dir");
+//System.out.println(new File(filename).getCanonicalPath().equals("/CryptoStore-server/"));
+        String filename = listenForString(filenameSize);
+        greaterThanZero(filename.length());
+        if (!Validator.validateFilename(filename))
+            throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+        transferManager.writeControl(Command.OK);
+
+        return filename;
+    }
+
+    private String listenForString(int size) { //TODO long not int
         String filename = null;
 
         try {
-            filename = IOUtils.toString(transferManager.read(filenameSize).getData(1), "UTF-8");
+            filename = IOUtils.toString(transferManager.read(size).getData(1), "UTF-8");
         } catch (Exception e) {
             handleError(Error.COMMUNICATION_FAILED, e);
         }
