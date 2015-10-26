@@ -85,6 +85,8 @@ public class ClientThread extends Thread {
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename();
+                    transferManager.writeControl(Command.OK);
+
                     writeToDisk(filename);
 
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
@@ -140,7 +142,6 @@ public class ClientThread extends Thread {
         greaterThanZero(filename.length());
         if (!Validator.validateFilename(filename))
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
-        transferManager.writeControl(Command.OK);
 
         return filename;
     }
