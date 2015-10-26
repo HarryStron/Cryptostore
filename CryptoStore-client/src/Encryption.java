@@ -5,10 +5,8 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.InvalidParameterSpecException;
@@ -19,28 +17,28 @@ public class Encryption {
     private static final int NUMBER_OF_ITERATIONS = 100000;
     private static final int KEY_LENGTH = 32*8;
     private static final int SALT_LENGTH = 16;
-
-    public static byte[] iv;
+    private static final int IV_LENGTH = 16; // IV should always be 16 bytes long. DO NOT modify
 
     private Encryption() {
     }
 
-    public static byte[] encryptFile(char[] password, Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException,
-            NoSuchPaddingException, InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidParameterSpecException {
+    public static byte[] encryptFile(char[] password, Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException,
+            InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidParameterSpecException, InvalidAlgorithmParameterException {
 
         System.out.println("Encrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
-        byte[] salt = getSalt();
+        byte[] salt = getRandomBytes(SALT_LENGTH);
         SecretKey secretKey = generateSecretKey(password, salt);
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey);
-
-        AlgorithmParameters params = cipher.getParameters();
-        iv = params.getParameterSpec(IvParameterSpec.class).getIV();
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(getRandomBytes(IV_LENGTH)));
 
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
         outputStream.write(salt);
+
+        AlgorithmParameters params = cipher.getParameters();
+        outputStream.write(params.getParameterSpec(IvParameterSpec.class).getIV());
+
         outputStream.write(cipher.doFinal(Files.readAllBytes(filePath)));
 
         return outputStream.toByteArray();
@@ -51,14 +49,15 @@ public class Encryption {
 
         System.out.println("Decrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
-        byte[] salt = Arrays.copyOf(Files.readAllBytes(filePath), SALT_LENGTH);
+        byte[] fullFile = Files.readAllBytes(filePath);
+        byte[] salt = Arrays.copyOf(fullFile, SALT_LENGTH);
+        byte[] iv =  Arrays.copyOfRange(fullFile, SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+        byte[] ciphertext = Arrays.copyOfRange(fullFile, SALT_LENGTH + IV_LENGTH, fullFile.length);
+
         SecretKey secretKey = generateSecretKey(password, salt);
 
         Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
         cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
-
-        byte[] fullFile = Files.readAllBytes(filePath);
-        byte[] ciphertext = Arrays.copyOfRange(fullFile, SALT_LENGTH, fullFile.length);
 
         return cipher.doFinal(ciphertext);
     }
@@ -72,8 +71,8 @@ public class Encryption {
         return new SecretKeySpec(hash, "AES");
     }
 
-    private static byte[] getSalt() throws NoSuchAlgorithmException {
-        byte[] salt = new byte[SALT_LENGTH];
+    private static byte[] getRandomBytes(int length) throws NoSuchAlgorithmException {
+        byte[] salt = new byte[length];
         (new SecureRandom()).nextBytes(salt);
 
         return salt;
