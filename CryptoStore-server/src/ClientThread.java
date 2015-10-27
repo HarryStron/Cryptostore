@@ -39,7 +39,7 @@ public class ClientThread extends Thread {
             greaterThanZero(usernameSize);
             transferManager.writeControl(Command.OK);
 
-            String username = listenForFilename(usernameSize);
+            String username = listenForString(usernameSize);
             greaterThanZero(username.length());
 
             if (!Validator.validateUsername(username))
@@ -53,7 +53,7 @@ public class ClientThread extends Thread {
             greaterThanZero(passwordSize);
             transferManager.writeControl(Command.OK);
 
-            String password = listenForFilename(passwordSize);
+            String password = listenForString(passwordSize);
             greaterThanZero(password.length());
             if (!Validator.validatePassword(password))
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
@@ -84,31 +84,19 @@ public class ClientThread extends Thread {
                     clientPrint("Is trying to send a file.");
                     transferManager.writeControl(Command.OK);
 
-                    int filenameSize = singleByteIn(); //TODO long not int
-                    greaterThanZero(filenameSize);
+                    String filename = listenForFilename();
                     transferManager.writeControl(Command.OK);
 
-                    String filename = listenForFilename(filenameSize);
-                    greaterThanZero(filename.length());
-                    if (!Validator.validateFilename(filename))
-                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
-                    transferManager.writeControl(Command.OK);
                     writeToDisk(filename);
 
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
                     clientPrint("Is trying to retrieve a file.");
                     transferManager.writeControl(Command.OK);
 
-                    int filenameSize = singleByteIn(); //TODO long not int
-                    transferManager.writeControl(Command.OK);
+                    String filename = listenForFilename();
 
-                    String filename = listenForFilename(filenameSize);
-                    greaterThanZero(filename.length());
-                    if (!Validator.validateFilename(filename))
-                        throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
-
-                    File path = new File("UserFiles/"+connectedUser+'/');
-                    File requestFile = new File(path, filename);
+                    File path = new File("UserFiles/"+connectedUser+'/'+filename.substring(1));
+                    File requestFile = new File(path.toURI());
 
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
@@ -126,6 +114,7 @@ public class ClientThread extends Thread {
                 }
             } catch (Exception e) {
                 handleError(Error.FILE_NOT_SENT, e);
+                closeConnection();
             }
         }
     }
@@ -143,11 +132,27 @@ public class ClientThread extends Thread {
         }
     }
 
-    private String listenForFilename(int filenameSize) { //TODO long not int
+    private String listenForFilename() throws Exception {
+        int filenameSize = singleByteIn(); //TODO long not int
+        greaterThanZero(filenameSize);
+        transferManager.writeControl(Command.OK);
+        String filename = listenForString(filenameSize);
+        greaterThanZero(filename.length());
+        if (!Validator.validateFilename(filename)) {
+            throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+        }
+        if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {
+            throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+        }
+
+        return filename;
+    }
+
+    private String listenForString(int size) { //TODO long not int
         String filename = null;
 
         try {
-            filename = IOUtils.toString(transferManager.read(filenameSize).getData(1), "UTF-8");
+            filename = IOUtils.toString(transferManager.read(size).getData(1), "UTF-8");
         } catch (Exception e) {
             handleError(Error.COMMUNICATION_FAILED, e);
         }
@@ -159,9 +164,8 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File path = new File("UserFiles/"+connectedUser+'/');
-                path.mkdirs();
-                File newFile = new File(path, filename);
+                File newFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1)); //removes leading '.' of the curr dir
+                newFile.getParentFile().mkdirs();
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
 
                 try {

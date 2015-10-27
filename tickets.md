@@ -38,14 +38,18 @@ Encrypt all files and filenames before sending them and decrypt them when they a
 **_v1.8.0_**
 
 **`feature-9`**:<br/>
+Allow user to have sub-directories in the server's main user direcory.<br/>
+**_v1.9.0_**
+
+**`feature-10`**:<br/>
 Uses hashes to compare the files on the server with those on the client.<br/>
 **_queued_**
 
-**`feature-10`**:<br/>
+**`feature-11`**:<br/>
 Create a syncronization class and methods to SYNC files between client and server.<br/>
 **_queued_**
 
-**`feature-11`**:<br/>
+**`feature-12`**:<br/>
 Find the optimal points where syncronization should be happening and implement it.<br/>
 **_queued_**
 

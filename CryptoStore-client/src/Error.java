@@ -24,7 +24,8 @@ public enum Error {
     // VALIDITY
     INCORRECT_FORM(19, "The input was not of the correct form"),
     // Encryption
-    CANNOT_DECRYPT(20, "The file could not be decrypted");
+    CANNOT_DECRYPT(20, "The file could not be decrypted"),
+    CANNOT_ENCRYPT(21, "The file could not be encrypted");
 
     private final int code;
     private final String description;
