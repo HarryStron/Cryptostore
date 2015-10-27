@@ -196,7 +196,9 @@ public class ClientManager {
                     okOrException();
                     transferManager.writeControl(Command.OK);
 
-                    FileOutputStream newFile = new FileOutputStream(new File(filename));
+                    File file = new File(filename);
+                    file.getParentFile().mkdirs();
+                    FileOutputStream fos = new FileOutputStream(new File(filename));
                     int sizeOfFile = singleByteIn(); //TODO change to long
 
                     if (sizeOfFile < 0) {
@@ -207,7 +209,7 @@ public class ClientManager {
 
                     if (sizeOfFile > 0) {
                         byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                        newFile.write(buffer, 0, buffer.length);
+                        fos.write(buffer, 0, buffer.length);
 
                         transferManager.writeControl(Command.OK);
                     }

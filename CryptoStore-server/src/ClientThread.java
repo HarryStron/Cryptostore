@@ -115,6 +115,7 @@ public class ClientThread extends Thread {
                 }
             } catch (Exception e) {
                 handleError(Error.FILE_NOT_SENT, e);
+                closeConnection();
             }
         }
     }
