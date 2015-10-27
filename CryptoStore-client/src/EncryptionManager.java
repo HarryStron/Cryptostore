@@ -9,7 +9,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.*;
 import java.security.spec.InvalidKeySpecException;
-import java.security.spec.InvalidParameterSpecException;
 import java.security.spec.KeySpec;
 import java.util.Arrays;
 
@@ -22,44 +21,48 @@ public class EncryptionManager {
     private EncryptionManager() {
     }
 
-    public static byte[] encryptFile(char[] password, Path filePath) throws NoSuchAlgorithmException, InvalidKeySpecException, NoSuchPaddingException,
-            InvalidKeyException, IOException, BadPaddingException, IllegalBlockSizeException, InvalidParameterSpecException, InvalidAlgorithmParameterException {
+    public static byte[] encryptFile(char[] password, Path filePath) throws Exception {
+        try {
+            System.out.println("Encrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
-        System.out.println("Encrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+            byte[] salt = getRandomBytes(SALT_LENGTH);
+            SecretKey secretKey = generateSecretKey(password, salt);
 
-        byte[] salt = getRandomBytes(SALT_LENGTH);
-        SecretKey secretKey = generateSecretKey(password, salt);
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(getRandomBytes(IV_LENGTH)));
 
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new IvParameterSpec(getRandomBytes(IV_LENGTH)));
+            ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+            outputStream.write(salt);
 
-        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
-        outputStream.write(salt);
+            AlgorithmParameters params = cipher.getParameters();
+            outputStream.write(params.getParameterSpec(IvParameterSpec.class).getIV());
 
-        AlgorithmParameters params = cipher.getParameters();
-        outputStream.write(params.getParameterSpec(IvParameterSpec.class).getIV());
+            outputStream.write(cipher.doFinal(Files.readAllBytes(filePath)));
 
-        outputStream.write(cipher.doFinal(Files.readAllBytes(filePath)));
-
-        return outputStream.toByteArray();
+            return outputStream.toByteArray();
+        } catch (Exception e) {
+            throw new Exception(Error.CANNOT_ENCRYPT.getDescription());
+        }
     }
 
-    public static byte[] decryptFile(char[] password, Path filePath) throws IOException, NoSuchPaddingException, NoSuchAlgorithmException,
-            BadPaddingException, IllegalBlockSizeException, InvalidAlgorithmParameterException, InvalidKeyException, InvalidKeySpecException {
+    public static byte[] decryptFile(char[] password, Path filePath) throws Exception {
+        try {
+            System.out.println("Decrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
-        System.out.println("Decrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+            byte[] fullFile = Files.readAllBytes(filePath);
+            byte[] salt = Arrays.copyOf(fullFile, SALT_LENGTH);
+            byte[] iv = Arrays.copyOfRange(fullFile, SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
+            byte[] ciphertext = Arrays.copyOfRange(fullFile, SALT_LENGTH + IV_LENGTH, fullFile.length);
 
-        byte[] fullFile = Files.readAllBytes(filePath);
-        byte[] salt = Arrays.copyOf(fullFile, SALT_LENGTH);
-        byte[] iv =  Arrays.copyOfRange(fullFile, SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
-        byte[] ciphertext = Arrays.copyOfRange(fullFile, SALT_LENGTH + IV_LENGTH, fullFile.length);
+            SecretKey secretKey = generateSecretKey(password, salt);
 
-        SecretKey secretKey = generateSecretKey(password, salt);
+            Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
+            cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
 
-        Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
-        cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
-
-        return cipher.doFinal(ciphertext);
+            return cipher.doFinal(ciphertext);
+        } catch (Exception e) {
+            throw new Exception(Error.CANNOT_DECRYPT.getDescription());
+        }
     }
 
     private static SecretKey generateSecretKey(char[] password, byte[] salt) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException {

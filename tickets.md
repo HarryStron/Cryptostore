@@ -38,8 +38,8 @@ Encrypt all files and filenames before sending them and decrypt them when they a
 **_v1.8.0_**
 
 **`feature-9`**:<br/>
-Allow user sub-directories.<br/>
-**_ongoing_**
+Allow user to have sub-directories in the server's main user direcory.<br/>
+**_v1.9.0_**
 
 **`feature-10`**:<br/>
 Uses hashes to compare the files on the server with those on the client.<br/>

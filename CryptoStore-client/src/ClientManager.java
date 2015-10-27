@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -146,7 +147,7 @@ public class ClientManager {
                         } else {
                             System.out.println("File \'" + filename + "\' sent successfully!");
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         throw new Exception(e.getMessage());
                     }
                 } else {
@@ -163,15 +164,15 @@ public class ClientManager {
     }
 
     public void getFile(String password, String filename) {
-        retrieveFile(filename);
-
         try {
+            retrieveFile(filename);
+
             byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
             FileOutputStream fos = new FileOutputStream(filename);
             fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
             fos.close();
         } catch (Exception e) {
-            handleError(Error.CANNOT_DECRYPT, e);
+            handleError(Error.CANNOT_SAVE_FILE, e);
         }
     }
 

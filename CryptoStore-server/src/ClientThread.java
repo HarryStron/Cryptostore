@@ -1,4 +1,3 @@
-import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLSocket;
