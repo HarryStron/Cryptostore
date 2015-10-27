@@ -1,3 +1,4 @@
+import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLSocket;
@@ -95,8 +96,8 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename();
 
-                    File path = new File("UserFiles/"+connectedUser+'/');
-                    File requestFile = new File(path, filename);
+                    File path = new File("UserFiles/"+connectedUser+'/'+filename.substring(1));
+                    File requestFile = new File(path.toURI());
 
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
@@ -135,13 +136,14 @@ public class ClientThread extends Thread {
         int filenameSize = singleByteIn(); //TODO long not int
         greaterThanZero(filenameSize);
         transferManager.writeControl(Command.OK);
-
-//System.getProperty("user.dir");
-//System.out.println(new File(filename).getCanonicalPath().equals("/CryptoStore-server/"));
         String filename = listenForString(filenameSize);
         greaterThanZero(filename.length());
-        if (!Validator.validateFilename(filename))
+        if (!Validator.validateFilename(filename)) {
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+        }
+        if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {
+            throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+        }
 
         return filename;
     }
@@ -162,9 +164,8 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File path = new File("UserFiles/"+connectedUser+'/');
-                path.mkdirs();
-                File newFile = new File(path, filename);
+                File newFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1)); //removes leading '.' of the curr dir
+                newFile.getParentFile().mkdirs();
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
 
                 try {
