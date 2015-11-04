@@ -249,15 +249,20 @@ public class ClientManager {
 
     private void handleError(Error err1, Exception err2) {
         try {
-            transferManager.writeControl(Command.ERROR);
             err1.print();
 
             if (err2.getMessage() != null)
                 System.out.println(err2.getMessage()+'\n');
 
-            closeConnection();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+        }
+
+        try {
+            if (transferManager != null)
+                transferManager.writeControl(Command.ERROR);
+        } catch (Exception e) {
+            System.out.println(e.getMessage()+'\n');
         }
     }
 }

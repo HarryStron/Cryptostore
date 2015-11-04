@@ -67,6 +67,10 @@ No exception messages are printed. Need to be displayed for ease of understandin
 The client connects to the server and starts the sending process without encrypting the file before hand. For large files that take time to be encrypted that might cause problems such as timeouts. Also not worth taking up resources such as sockets listening for no particular reason. Encrypt before sending.<br/>
 **_v1.9.1_**
 
+**`bug-4`**:<br/>
+The `handleError()` method at the ClientManager gets into an infinite recursive call if the transferManager instance is not initiated when handling an error. Make sure it is initiated before trying to send an error message to the server.<br/>
+**_v1.9.2_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
