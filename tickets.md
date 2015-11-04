@@ -63,6 +63,10 @@ No message is send over to the server (i.e. ERROR msg) when one of the client tr
 No exception messages are printed. Need to be displayed for ease of understanding why a problem occured.<br/>
 **_v1.4.1_**
 
+**`bug-3`**:<br/>
+The client connects to the server and starts the sending process without encrypting the file before hand. For large files that take time to be encrypted that might cause problems such as timeouts. Also not worth taking up resources such as sockets listening for no particular reason. Encrypt before sending.<br/>
+**_v1.9.1_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
