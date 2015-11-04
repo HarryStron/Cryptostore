@@ -5,7 +5,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -116,54 +115,63 @@ public class ClientManager {
     }
 
     public void sendFile(String password, String filename) {
-        connect();
+        System.out.println("\nSending \'" + filename + "\' to server . . .");
 
         try {
-            if (isAUTHed) {
-                System.out.println("\nSending \'" + filename + "\' to server . . .");
-                Path path = Paths.get(filename);
 
-                if (path.toFile().exists()) {
-                    try {
-                        transferManager.writeControl(Command.FILE_FROM_CLIENT);
+            Path path = Paths.get(filename);
+            if (path.toFile().exists()) {
+                byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
 
-                        okOrException();
-                        transferManager.writeFileSize(filename.length()); //TODO what if a file is too big to be represented with an int?
-
-                        okOrException();
-                        transferManager.writeFileName(filename);
-
-                        okOrException();
-                        byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
-                        transferManager.writeFileSize(buffer.length);
-
-                        okOrException();
-                        if (buffer.length != 0) {
-                            transferManager.write(new FileData(buffer));
-
-                            okOrException();
-                            System.out.println("File \'" + filename + "\' sent successfully!");
-
-                        } else {
-                            System.out.println("File \'" + filename + "\' sent successfully!");
-                        }
-                    } catch (Exception e) {
-                        throw new Exception(e.getMessage());
-                    }
-                } else {
-                    throw new Exception(Error.FILE_NOT_FOUND.getDescription());
-                }
-
-                closeConnection();
+                deliverFile(filename, buffer);
             } else {
-                throw new Exception(Error.CANNOT_AUTH.getDescription());
+                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             }
+
         } catch (Exception e) {
             handleError(Error.FILE_NOT_SENT, e);
         }
     }
 
+    private void deliverFile(String filename, byte[] buffer) throws Exception {
+        connect();
+
+        if (isAUTHed) {
+            try {
+                transferManager.writeControl(Command.FILE_FROM_CLIENT);
+
+                okOrException();
+                transferManager.writeFileSize(filename.length()); //TODO what if a file is too big to be represented with an int?
+
+                okOrException();
+                transferManager.writeFileName(filename);
+
+                okOrException();
+                transferManager.writeFileSize(buffer.length);
+
+                okOrException();
+                if (buffer.length != 0) {
+                    transferManager.write(new FileData(buffer));
+
+                    okOrException();
+                    System.out.println("File \'" + filename + "\' sent successfully!");
+
+                } else {
+                    System.out.println("File \'" + filename + "\' sent successfully!");
+                }
+            } catch (Exception e) {
+                throw new Exception(e.getMessage());
+            }
+
+            closeConnection();
+        } else {
+            throw new Exception(Error.CANNOT_AUTH.getDescription());
+        }
+    }
+
     public void getFile(String password, String filename) {
+        System.out.println("\nDownloading " + filename + " from server. . .");
+
         try {
             retrieveFile(filename);
 
@@ -176,57 +184,50 @@ public class ClientManager {
         }
     }
 
-    private void retrieveFile(String filename) {
+    private void retrieveFile(String filename) throws Exception{
         connect();
 
-        try {
-            if (isAUTHed) {
+        if (isAUTHed) {
+            try {
+                transferManager.writeControl(Command.FILE_FROM_SERVER);
 
-                System.out.println("\nDownloading " + filename + " from server. . .");
-
-                try {
-                    transferManager.writeControl(Command.FILE_FROM_SERVER);
-
-                    okOrException();
-                    transferManager.writeFileSize(filename.length());
+                okOrException();
+                transferManager.writeFileSize(filename.length());
 
 
-                    okOrException();
-                    transferManager.writeFileName(filename);
+                okOrException();
+                transferManager.writeFileName(filename);
 
-                    okOrException();
-                    transferManager.writeControl(Command.OK);
+                okOrException();
+                transferManager.writeControl(Command.OK);
 
-                    File file = new File(filename);
-                    file.getParentFile().mkdirs();
-                    FileOutputStream fos = new FileOutputStream(new File(filename));
-                    int sizeOfFile = singleByteIn(); //TODO change to long
+                File file = new File(filename);
+                file.getParentFile().mkdirs();
+                FileOutputStream fos = new FileOutputStream(new File(filename));
+                int sizeOfFile = singleByteIn(); //TODO change to long
 
-                    if (sizeOfFile < 0) {
-                        throw new IOException(Error.NEGATIVE_SIZE.getDescription());
-                    }
-
-                    transferManager.writeControl(Command.OK);
-
-                    if (sizeOfFile > 0) {
-                        byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                        fos.write(buffer, 0, buffer.length);
-
-                        transferManager.writeControl(Command.OK);
-                    }
-
-                    System.out.println(filename + " received!");
-
-                } catch (IOException e) {
-                    throw new Exception(e.getMessage());
+                if (sizeOfFile < 0) {
+                    throw new IOException(Error.NEGATIVE_SIZE.getDescription());
                 }
 
-                closeConnection();
-            } else {
-                throw new Exception(Error.CANNOT_AUTH.getDescription());
+                transferManager.writeControl(Command.OK);
+
+                if (sizeOfFile > 0) {
+                    byte[] buffer = transferManager.read(sizeOfFile).getData(1);
+                    fos.write(buffer, 0, buffer.length);
+
+                    transferManager.writeControl(Command.OK);
+                }
+
+                System.out.println(filename + " received!");
+
+            } catch (IOException e) {
+                throw new Exception(e.getMessage());
             }
-        } catch (Exception e) {
-            handleError(Error.FILE_NOT_RECEIVED, e);
+
+            closeConnection();
+        } else {
+            throw new Exception(Error.CANNOT_AUTH.getDescription());
         }
     }
 
