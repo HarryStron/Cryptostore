@@ -1,5 +1,8 @@
+package model;
+
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.lang.*;
 import java.nio.ByteBuffer;
 
 public class TransferManager {

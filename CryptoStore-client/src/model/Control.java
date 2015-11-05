@@ -1,3 +1,5 @@
+package model;
+
 public class Control extends Packets {
 
     public Control(byte[] controlBytes) {

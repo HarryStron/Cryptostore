@@ -1,3 +1,5 @@
+package model;
+
 public enum Error {
     // COMMANDS
     UNKNOWN_COMMAND(1, "The command received is not recognised"),

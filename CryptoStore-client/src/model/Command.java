@@ -1,3 +1,5 @@
+package model;
+
 public enum Command {
     OK(1, "OK msg"),
     ERROR(2, "ERROR msg"),

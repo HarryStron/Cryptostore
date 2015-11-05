@@ -1,3 +1,5 @@
+package model;
+
 import org.apache.commons.io.FilenameUtils;
 import javax.crypto.*;
 import javax.crypto.spec.IvParameterSpec;
