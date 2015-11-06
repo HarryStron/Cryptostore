@@ -71,6 +71,10 @@ The client connects to the server and starts the sending process without encrypt
 The `handleError()` method at the ClientManager gets into an infinite recursive call if the transferManager instance is not initiated when handling an error. Make sure it is initiated before trying to send an error message to the server.<br/>
 **_v1.9.2_**
 
+**`bug-5`**:<br/>
+The file output stream is not closed after writing the file bytes.<br/>
+**_v1.9.3_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
