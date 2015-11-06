@@ -218,6 +218,7 @@ public class ClientManager {
 
                     transferManager.writeControl(Command.OK);
                 }
+                fos.close();
 
                 System.out.println(filename + " received!");
 
