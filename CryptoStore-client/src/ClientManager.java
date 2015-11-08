@@ -151,7 +151,7 @@ public class ClientManager {
 
                 okOrException();
                 if (buffer.length != 0) {
-                    transferManager.write(new FileData(buffer));
+                    transferManager.writeFile(new FileData(buffer));
 
                     okOrException();
                     System.out.println("File \'" + filename + "\' sent successfully!");
@@ -204,7 +204,7 @@ public class ClientManager {
                 File file = new File(filename);
                 file.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(new File(filename));
-                int sizeOfFile = getSize(); //TODO change to long
+                int sizeOfFile = getSize();
 
                 if (sizeOfFile < 0) {
                     throw new IOException(Error.NEGATIVE_SIZE.getDescription());

@@ -1,7 +1,6 @@
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class TransferManager {
     private DataInputStream dis;
@@ -30,7 +29,7 @@ public class TransferManager {
         }
     }
 
-    public void writeFileSize(int size) throws Exception { //TODO change that to long
+    public void writeFileSize(int size) throws Exception {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
             //buffer.putLong(0, size);
@@ -68,7 +67,7 @@ public class TransferManager {
                     return new Control(load);
 
                 case 'N':
-                    load = new byte[(int) sizeOfFile]; //TODO this is not right need fixing
+                    load = new byte[(int) sizeOfFile];
                     dis.read(load);
                     return new Filename(load);
 
@@ -79,20 +78,21 @@ public class TransferManager {
 
                 case 'F':
                     if (sizeOfFile > 0) {
-                        load = new byte[(int) sizeOfFile]; //TODO fix
-                        dis.readFully(load);
+                        int pos = 0;
+                        int bytesRead;
+                        load = new byte[(int) sizeOfFile];
+                        byte[] buff = new byte[4096];
 
-//                        byte[] buf = new byte[8000];
-//                        int bytesRead;
-//                        int pos = 0;
-//                        //while ((bytesRead = dis.read(buf, 0, buf.length)) != -1) {
-//                        while ((bytesRead = dis.read(buf, 0, (int)Math.min(buf.length, sizeOfFile))) != -1) {
-//                            System.arraycopy(load, pos, buf, 0, bytesRead);
-//                            pos += bytesRead;
-//                            sizeOfFile -= bytesRead;
-//                            //System.out.println(dis.read(buf, 0, buf.length));
-//                        }
-//                        System.out.println(load[load.length - 1]);
+                        if (sizeOfFile>4096) {
+                            for (int i = 0; i < (int) Math.ceil((double) sizeOfFile / (double) 4096); i++) {
+                                bytesRead = dis.read(buff);
+                                System.arraycopy(buff, 0, load, pos, bytesRead);
+                                pos += bytesRead;
+                                System.out.println(pos);
+                            }
+                        }
+                        bytesRead = dis.read(buff);
+                        System.arraycopy(buff, 0,load, pos, (int)(sizeOfFile%4096));
 
                         return new FileData(load);
 

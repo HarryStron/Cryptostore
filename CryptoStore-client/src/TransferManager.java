@@ -1,6 +1,7 @@
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TransferManager {
     private DataInputStream dis;
@@ -22,7 +23,8 @@ public class TransferManager {
 
             Control controlPkts = new Control(buffer);
 
-            write(controlPkts);
+            dos.write(controlPkts.getData(0));
+            dos.flush();
 
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
@@ -36,33 +38,38 @@ public class TransferManager {
 
             Filename dataPkts = new Filename(buffer.array());
 
-            write(dataPkts);
+            dos.write(dataPkts.getData(0));
+            dos.flush();
+
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
     }
 
-    public void writeFileSize(int size) throws Exception { //TODO change that to long
+    public void writeFileSize(int size) throws Exception {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-            //buffer.putLong(0, size);
             buffer.putInt(size);
-            //byte[] buffer = new byte[Integer.BYTES];
-            //buffer[0] = (byte) size;
-
             FileSize dataPkts = new FileSize(buffer.array());
 
-            write(dataPkts);
+            dos.write(dataPkts.getData(0));
+            dos.flush();
 
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
     }
 
-    public void write(Packets pkts) throws Exception {
+    public void writeFile(Packets pkts) throws Exception {
         try {
-            dos.write(pkts.getData(0));
-            dos.flush();
+            byte[] fullSize = pkts.getData(0);
+            byte[][] chunks = divideArray(fullSize, 4096);
+
+            for (int i=0; i<chunks.length; i++){
+                dos.write(chunks[i]);
+                dos.flush();
+            }
+
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
@@ -80,7 +87,7 @@ public class TransferManager {
                     return new Control(load);
 
                 case 'N':
-                    load = new byte[(int) sizeOfFile]; //TODO this is not right need fixing
+                    load = new byte[(int) sizeOfFile];
                     dis.read(load);
                     return new Filename(load);
 
@@ -91,8 +98,18 @@ public class TransferManager {
 
                 case 'F':
                     if (sizeOfFile > 0) {
-                        load = new byte[(int) sizeOfFile]; //TODO fix
-                        dis.readFully(load);
+                        int pos = 0;
+                        load = new byte[(int) sizeOfFile];
+                        byte[] buff = new byte[4096];
+                        //iterate to the chunk before last as the last one might not be full block
+                        for (int i=0; i<(int)Math.ceil((double)sizeOfFile/(double)4096)-1; i++){
+                            int bytesRead = dis.read(buff);
+                            System.arraycopy(buff, 0, load, pos, bytesRead);
+                            pos += bytesRead;
+                        }
+                        dis.read(buff);
+                        System.arraycopy(buff, 0,load, pos, (int)(sizeOfFile%4096));
+
                         return new FileData(load);
 
                     } else {
@@ -115,5 +132,17 @@ public class TransferManager {
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_CLOSE_STREAMS.getDescription());
         }
+    }
+
+    private byte[][] divideArray(byte[] source, int chunkSize) {
+        byte[][] chunks = new byte[(int)Math.ceil(source.length / (double)chunkSize)][chunkSize];
+        int srcPos = 0;
+
+        for(int i = 0; i < chunks.length; i++) {
+            chunks[i] = Arrays.copyOfRange(source, srcPos, srcPos + chunkSize);
+            srcPos += chunkSize;
+        }
+
+        return chunks;
     }
 }

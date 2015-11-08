@@ -149,7 +149,7 @@ public class ClientThread extends Thread {
         return filename;
     }
 
-    private String listenForString(int size) { //TODO long not int
+    private String listenForString(int size) {
         String filename = null;
 
         try {
