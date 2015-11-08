@@ -62,8 +62,8 @@ public class TransferManager {
 
     public void writeFile(Packets pkts) throws Exception {
         try {
-            byte[] fullSize = pkts.getData(0);
-            byte[][] chunks = divideArray(fullSize, 4096);
+            byte[] fullSizedFile = pkts.getData(0);
+            byte[][] chunks = divideArray(fullSizedFile, 4096);
 
             for (int i=0; i<chunks.length; i++){
                 dos.write(chunks[i]);

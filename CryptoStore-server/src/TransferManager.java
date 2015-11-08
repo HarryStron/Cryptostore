@@ -1,6 +1,7 @@
 import javax.net.ssl.SSLSocket;
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TransferManager {
     private DataInputStream dis;
@@ -32,10 +33,7 @@ public class TransferManager {
     public void writeFileSize(int size) throws Exception {
         try {
             ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
-            //buffer.putLong(0, size);
             buffer.putInt(size);
-            //byte[] buffer = new byte[Integer.BYTES];
-            //buffer[0] = (byte) size;
 
             FileSize dataPkts = new FileSize(buffer.array());
 
@@ -50,6 +48,21 @@ public class TransferManager {
         try {
             dos.write(pkts.getData(0));
             dos.flush();
+        } catch (IOException e) {
+            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
+        }
+    }
+
+    public void writeFile(Packets pkts) throws Exception {
+        try {
+            byte[] fullSizedFile = pkts.getData(0);
+            byte[][] chunks = divideArray(fullSizedFile, 4096);
+
+            for (int i=0; i<chunks.length; i++){
+                dos.write(chunks[i]);
+                dos.flush();
+            }
+
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
@@ -116,5 +129,17 @@ public class TransferManager {
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_CLOSE_STREAMS.getDescription());
         }
+    }
+
+    private byte[][] divideArray(byte[] source, int chunkSize) {
+        byte[][] chunks = new byte[(int)Math.ceil(source.length / (double)chunkSize)][chunkSize];
+        int srcPos = 0;
+
+        for(int i = 0; i < chunks.length; i++) {
+            chunks[i] = Arrays.copyOfRange(source, srcPos, srcPos + chunkSize);
+            srcPos += chunkSize;
+        }
+
+        return chunks;
     }
 }

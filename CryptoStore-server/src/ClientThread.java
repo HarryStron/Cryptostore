@@ -210,7 +210,7 @@ public class ClientThread extends Thread {
 
             okOrException();
             if (buffer.length > 0) {
-                transferManager.write(new FileData(buffer));
+                transferManager.writeFile(new FileData(buffer));
 
                 okOrException();
             }
