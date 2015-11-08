@@ -44,12 +44,13 @@ public class TransferManager {
 
     public void writeFileSize(int size) throws Exception { //TODO change that to long
         try {
-            //ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+            ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
             //buffer.putLong(0, size);
-            byte[] buffer = new byte[1];
-            buffer[0] = (byte) size;
+            buffer.putInt(size);
+            //byte[] buffer = new byte[Integer.BYTES];
+            //buffer[0] = (byte) size;
 
-            FileSize dataPkts = new FileSize(buffer);
+            FileSize dataPkts = new FileSize(buffer.array());
 
             write(dataPkts);
 
@@ -91,7 +92,7 @@ public class TransferManager {
                 case 'F':
                     if (sizeOfFile > 0) {
                         load = new byte[(int) sizeOfFile]; //TODO fix
-                        dis.read(load);
+                        dis.readFully(load);
                         return new FileData(load);
 
                     } else {

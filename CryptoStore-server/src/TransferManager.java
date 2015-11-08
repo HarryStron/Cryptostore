@@ -1,5 +1,7 @@
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TransferManager {
     private DataInputStream dis;
@@ -30,12 +32,13 @@ public class TransferManager {
 
     public void writeFileSize(int size) throws Exception { //TODO change that to long
         try {
-            //ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
+            ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
             //buffer.putLong(0, size);
-            byte[] buffer = new byte[1];
-            buffer[0] = (byte) size;
+            buffer.putInt(size);
+            //byte[] buffer = new byte[Integer.BYTES];
+            //buffer[0] = (byte) size;
 
-            FileSize dataPkts = new FileSize(buffer);
+            FileSize dataPkts = new FileSize(buffer.array());
 
             write(dataPkts);
 
@@ -77,7 +80,20 @@ public class TransferManager {
                 case 'F':
                     if (sizeOfFile > 0) {
                         load = new byte[(int) sizeOfFile]; //TODO fix
-                        dis.read(load);
+                        dis.readFully(load);
+
+//                        byte[] buf = new byte[8000];
+//                        int bytesRead;
+//                        int pos = 0;
+//                        //while ((bytesRead = dis.read(buf, 0, buf.length)) != -1) {
+//                        while ((bytesRead = dis.read(buf, 0, (int)Math.min(buf.length, sizeOfFile))) != -1) {
+//                            System.arraycopy(load, pos, buf, 0, bytesRead);
+//                            pos += bytesRead;
+//                            sizeOfFile -= bytesRead;
+//                            //System.out.println(dis.read(buf, 0, buf.length));
+//                        }
+//                        System.out.println(load[load.length - 1]);
+
                         return new FileData(load);
 
                     } else {

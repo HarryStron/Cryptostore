@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -35,7 +36,7 @@ public class ClientThread extends Thread {
             /** Auth the user **/
             transferManager.writeControl(Command.AUTH);
 
-            int usernameSize = singleByteIn(); //TODO long not int
+            int usernameSize = getSize(); //ERROR
             greaterThanZero(usernameSize);
             transferManager.writeControl(Command.OK);
 
@@ -49,7 +50,7 @@ public class ClientThread extends Thread {
 
             transferManager.writeControl(Command.OK);
 
-            int passwordSize = singleByteIn(); //TODO long not int
+            int passwordSize = getSize();
             greaterThanZero(passwordSize);
             transferManager.writeControl(Command.OK);
 
@@ -78,7 +79,7 @@ public class ClientThread extends Thread {
         while (clientIsConnected && clientIsAuthed) {
             /** READ request from client **/
             try {
-                int request = singleByteIn();
+                int request = getCommand();
 
                 if (request == Command.FILE_FROM_CLIENT.getCode()) {
                     clientPrint("Is trying to send a file.");
@@ -133,7 +134,7 @@ public class ClientThread extends Thread {
     }
 
     private String listenForFilename() throws Exception {
-        int filenameSize = singleByteIn(); //TODO long not int
+        int filenameSize = getSize();
         greaterThanZero(filenameSize);
         transferManager.writeControl(Command.OK);
         String filename = listenForString(filenameSize);
@@ -169,7 +170,7 @@ public class ClientThread extends Thread {
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
 
                 try {
-                    int sizeOfFile = singleByteIn(); //TODO change to long
+                    int sizeOfFile = getSize();
 
                     if (sizeOfFile < 0) {
                         throw new Exception(Error.NEGATIVE_SIZE.getDescription(clientIP));
@@ -180,6 +181,7 @@ public class ClientThread extends Thread {
                     if (sizeOfFile > 0) { //if size is > 0 copy the file to server
                         byte[] buffer = transferManager.read(sizeOfFile).getData(1);
                         fileOutputStream.write(buffer, 0, buffer.length);
+                        fileOutputStream.close();
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
@@ -224,11 +226,21 @@ public class ClientThread extends Thread {
         System.out.println(out);
     }
 
-    private int singleByteIn() throws Exception {
+    private int getCommand() throws Exception {
         try {
             return transferManager.read(0).getData(1)[0];
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_READ.getDescription(clientIP));
+        }
+    }
+
+    private int getSize() throws Exception {
+        try {
+            byte[] bytes = transferManager.read(0).getData(1);
+            ByteBuffer wrapped = ByteBuffer.wrap(bytes);
+            return wrapped.getInt();
+        } catch (Exception e) {
+            throw new Exception(Error.FAILED_TO_READ.getDescription());
         }
     }
 
@@ -241,7 +253,7 @@ public class ClientThread extends Thread {
     }
 
     private void okOrException() throws Exception {
-        if (singleByteIn() == Command.OK.getCode()) {
+        if (getCommand() == Command.OK.getCode()) {
             return;
         } else {
             throw new Exception(Error.COMMUNICATION_FAILED.getDescription(clientIP));

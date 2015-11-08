@@ -75,6 +75,10 @@ The `handleError()` method at the ClientManager gets into an infinite recursive 
 The file output stream is not closed after writing the file bytes.<br/>
 **_v1.9.3_**
 
+**`bug-6`**:<br/>
+Failure to transmit files bigger than .<br/>
+**_ongoing_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>

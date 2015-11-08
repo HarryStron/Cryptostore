@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -75,7 +76,7 @@ public class ClientManager {
     private void authenticate() {
         System.out.println("\nAuthenticating. . .");
         try {
-            if (singleByteIn() == Command.AUTH.getCode()) {
+            if (getCommand() == Command.AUTH.getCode()) {
                 transferManager.writeFileSize(username.length());
 
                 okOrException();
@@ -118,7 +119,6 @@ public class ClientManager {
         System.out.println("\nSending \'" + filename + "\' to server . . .");
 
         try {
-
             Path path = Paths.get(filename);
             if (path.toFile().exists()) {
                 byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
@@ -141,7 +141,7 @@ public class ClientManager {
                 transferManager.writeControl(Command.FILE_FROM_CLIENT);
 
                 okOrException();
-                transferManager.writeFileSize(filename.length()); //TODO what if a file is too big to be represented with an int?
+                transferManager.writeFileSize(filename.length());
 
                 okOrException();
                 transferManager.writeFileName(filename);
@@ -204,7 +204,7 @@ public class ClientManager {
                 File file = new File(filename);
                 file.getParentFile().mkdirs();
                 FileOutputStream fos = new FileOutputStream(new File(filename));
-                int sizeOfFile = singleByteIn(); //TODO change to long
+                int sizeOfFile = getSize(); //TODO change to long
 
                 if (sizeOfFile < 0) {
                     throw new IOException(Error.NEGATIVE_SIZE.getDescription());
@@ -232,7 +232,7 @@ public class ClientManager {
         }
     }
 
-    private int singleByteIn() throws Exception {
+    private int getCommand() throws Exception {
         try {
             return transferManager.read(0).getData(1)[0];
         } catch (IOException e) {
@@ -240,8 +240,18 @@ public class ClientManager {
         }
     }
 
+    private int getSize() throws Exception {
+        try {
+            byte[] bytes = transferManager.read(0).getData(1);
+            ByteBuffer wrapped = ByteBuffer.wrap(bytes);
+            return wrapped.getInt();
+        } catch (Exception e) {
+            throw new Exception(Error.FAILED_TO_READ.getDescription());
+        }
+    }
+
     private void okOrException() throws Exception {
-        if (singleByteIn() == Command.OK.getCode()) {
+        if (getCommand() == Command.OK.getCode()) {
             return;
         } else {
             throw new Exception(Error.COMMUNICATION_FAILED.getDescription());
