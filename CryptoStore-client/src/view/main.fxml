@@ -16,20 +16,20 @@
         <HBox alignment="TOP_CENTER" fillHeight="false" prefHeight="21.0" prefWidth="800.0">
           <children>
             <TextArea disable="true" editable="false" focusTraversable="false" opacity="1.0" text="User:" wrapText="false" />
-            <TextArea disable="true" editable="false" focusTraversable="false" opacity="1.0" wrapText="false" />
+            <TextArea fx:id="userStatus" disable="true" editable="false" focusTraversable="false" opacity="1.0" wrapText="false" />
             <TextArea disable="true" editable="false" focusTraversable="false" opacity="1.0" text="Last sync:" wrapText="false" />
-            <TextArea disable="true" editable="false" focusTraversable="false" opacity="1.0" visible="true" wrapText="false" />
+            <TextArea fx:id="lastSync" disable="true" editable="false" focusTraversable="false" opacity="1.0" visible="true" wrapText="false" />
           </children>
         </HBox>
       </bottom>
       <center>
         <TabPane prefHeight="200.0" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" BorderPane.alignment="TOP_CENTER">
           <tabs>
-            <Tab text="Storage">
+            <Tab fx:id="storageTab" text="Storage">
               <content>
-                <AnchorPane id="Content" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="200.0">
+                <AnchorPane id="Content" fx:id="storagePane" minHeight="-Infinity" minWidth="-Infinity" prefHeight="180.0" prefWidth="200.0">
                   <children>
-                    <SplitPane disable="false" dividerPositions="0.29949874686716793" focusTraversable="true" prefHeight="464.0" prefWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                    <SplitPane fx:id="splitPane" disable="false" dividerPositions="0.29949874686716793" focusTraversable="true" prefHeight="464.0" prefWidth="800.0" style="-fx-border-width: 0;" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                       <items>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0" />
@@ -39,9 +39,9 @@
                 </AnchorPane>
               </content>
             </Tab>
-            <Tab text="Settings">
+            <Tab fx:id="settingsTab" text="Settings">
               <content>
-                <AnchorPane id="Content" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
+                <AnchorPane id="Content" fx:id="settingsPane" minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0" />
               </content>
             </Tab>
           </tabs>
