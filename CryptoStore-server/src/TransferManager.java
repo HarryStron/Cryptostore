@@ -1,7 +1,10 @@
 import javax.net.ssl.SSLSocket;
 import java.io.*;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 public class TransferManager {
+    private static final int BLOCK_SIZE = 4096;
     private DataInputStream dis;
     private DataOutputStream dos;
 
@@ -21,33 +24,40 @@ public class TransferManager {
 
             Control controlPkts = new Control(buffer);
 
-            write(controlPkts);
-
-        } catch (IOException e) {
-            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
-        }
-    }
-
-    public void writeFileSize(int size) throws Exception { //TODO change that to long
-        try {
-            //ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
-            //buffer.putLong(0, size);
-            byte[] buffer = new byte[1];
-            buffer[0] = (byte) size;
-
-            FileSize dataPkts = new FileSize(buffer);
-
-            write(dataPkts);
-
-        } catch (IOException e) {
-            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
-        }
-    }
-
-    public void write(Packets pkts) throws Exception {
-        try {
-            dos.write(pkts.getData(0));
+            dos.write(controlPkts.getData(0));
             dos.flush();
+
+        } catch (IOException e) {
+            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
+        }
+    }
+
+    public void writeFileSize(int size) throws Exception {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(Integer.BYTES);
+            buffer.putInt(size);
+
+            FileSize dataPkts = new FileSize(buffer.array());
+
+            dos.write(dataPkts.getData(0));
+            dos.flush();
+
+        } catch (IOException e) {
+            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
+        }
+    }
+
+    public void writeFile(Packets pkts) throws Exception {
+        try {
+            byte[] fullSizedFile = pkts.getData(1);
+            byte[][] chunks = divideArray(fullSizedFile, BLOCK_SIZE);
+
+            dos.write(pkts.getData(0)[0]); //send type separately
+            for (int i=0; i<chunks.length; i++){
+                dos.write(chunks[i]);
+                dos.flush();
+            }
+
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
@@ -65,7 +75,7 @@ public class TransferManager {
                     return new Control(load);
 
                 case 'N':
-                    load = new byte[(int) sizeOfFile]; //TODO this is not right need fixing
+                    load = new byte[(int) sizeOfFile];
                     dis.read(load);
                     return new Filename(load);
 
@@ -76,8 +86,25 @@ public class TransferManager {
 
                 case 'F':
                     if (sizeOfFile > 0) {
-                        load = new byte[(int) sizeOfFile]; //TODO fix
-                        dis.read(load);
+                        int pos = 0;
+                        int bytesRead;
+                        load = new byte[(int) sizeOfFile];
+                        byte[] buff = new byte[BLOCK_SIZE];
+
+                        if (sizeOfFile>BLOCK_SIZE) {
+                            System.out.println((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE));
+                            for (int i = 0; i < ((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE))-1; i++) {
+                                bytesRead = dis.read(buff);
+                                System.arraycopy(buff, 0, load, pos, bytesRead);
+                                pos += bytesRead;
+                            }
+                        }
+                        dis.read(buff);
+                        if ((sizeOfFile%BLOCK_SIZE)!=0) {
+                            System.arraycopy(buff, 0, load, pos, (int) sizeOfFile-pos);
+                        } else {
+                            System.arraycopy(buff, 0, load, pos, BLOCK_SIZE);
+                        }
                         return new FileData(load);
 
                     } else {
@@ -100,5 +127,17 @@ public class TransferManager {
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_CLOSE_STREAMS.getDescription());
         }
+    }
+
+    private byte[][] divideArray(byte[] source, int chunkSize) {
+        byte[][] chunks = new byte[(int)Math.ceil(source.length / (double)chunkSize)][chunkSize];
+        int srcPos = 0;
+
+        for(int i = 0; i < chunks.length; i++) {
+            chunks[i] = Arrays.copyOfRange(source, srcPos, srcPos + chunkSize);
+            srcPos += chunkSize;
+        }
+
+        return chunks;
     }
 }
