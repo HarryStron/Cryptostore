@@ -4,6 +4,7 @@ import java.nio.ByteBuffer;
 import java.util.Arrays;
 
 public class TransferManager {
+    private static final int BLOCK_SIZE = 4096;
     private DataInputStream dis;
     private DataOutputStream dos;
 
@@ -23,7 +24,8 @@ public class TransferManager {
 
             Control controlPkts = new Control(buffer);
 
-            write(controlPkts);
+            dos.write(controlPkts.getData(0));
+            dos.flush();
 
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
@@ -37,17 +39,9 @@ public class TransferManager {
 
             FileSize dataPkts = new FileSize(buffer.array());
 
-            write(dataPkts);
-
-        } catch (IOException e) {
-            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
-        }
-    }
-
-    public void write(Packets pkts) throws Exception {
-        try {
-            dos.write(pkts.getData(0));
+            dos.write(dataPkts.getData(0));
             dos.flush();
+
         } catch (IOException e) {
             throw new Exception(Error.FAILED_TO_WRITE.getDescription());
         }
@@ -55,9 +49,10 @@ public class TransferManager {
 
     public void writeFile(Packets pkts) throws Exception {
         try {
-            byte[] fullSizedFile = pkts.getData(0);
-            byte[][] chunks = divideArray(fullSizedFile, 4096);
+            byte[] fullSizedFile = pkts.getData(1);
+            byte[][] chunks = divideArray(fullSizedFile, BLOCK_SIZE);
 
+            dos.write(pkts.getData(0)[0]); //send type separately
             for (int i=0; i<chunks.length; i++){
                 dos.write(chunks[i]);
                 dos.flush();
@@ -94,19 +89,22 @@ public class TransferManager {
                         int pos = 0;
                         int bytesRead;
                         load = new byte[(int) sizeOfFile];
-                        byte[] buff = new byte[4096];
+                        byte[] buff = new byte[BLOCK_SIZE];
 
-                        if (sizeOfFile>4096) {
-                            for (int i = 0; i < (int) Math.ceil((double) sizeOfFile / (double) 4096); i++) {
+                        if (sizeOfFile>BLOCK_SIZE) {
+                            System.out.println((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE));
+                            for (int i = 0; i < ((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE))-1; i++) {
                                 bytesRead = dis.read(buff);
                                 System.arraycopy(buff, 0, load, pos, bytesRead);
                                 pos += bytesRead;
-                                System.out.println(pos);
                             }
                         }
-                        bytesRead = dis.read(buff);
-                        System.arraycopy(buff, 0,load, pos, (int)(sizeOfFile%4096));
-
+                        dis.read(buff);
+                        if ((sizeOfFile%BLOCK_SIZE)!=0) {
+                            System.arraycopy(buff, 0, load, pos, (int) sizeOfFile-pos);
+                        } else {
+                            System.arraycopy(buff, 0, load, pos, BLOCK_SIZE);
+                        }
                         return new FileData(load);
 
                     } else {
