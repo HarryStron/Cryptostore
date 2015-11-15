@@ -5,41 +5,26 @@ import java.util.UUID;
 public class FilenameManager {
     private static final String HASHMAP_PATH = "./hashMap";
 
-    public static String randomiseAndStore(String path) throws IOException, ClassNotFoundException {
-        String[] components = decomposePath(path);
-        String[] encryptedComponent = new String[components.length];
-
-        for (int i=0; i<components.length-1; i++) {
-            encryptedComponent[i] = generateRandomName(5);
-        }
-        encryptedComponent[encryptedComponent.length-1] = generateRandomName(5)+'.'+generateRandomName(3);
-
-        String newPath = ".";
-        for (String s : encryptedComponent) {
-            newPath = newPath.concat('/'+s);
-        }
+    /** Returns the newly generated encryption for the path given or the previously generated encryption
+     * if path already exists **/
+    public static String randomisePath(String path) throws IOException, ClassNotFoundException {
+        String encryptedPath = "./"+generateRandomName();
 
         HashMap<String, String> hashMap = getHashMap();
-        if (hashMap.containsValue(newPath)) {
-            return randomiseAndStore(path);
+        if (hashMap.containsValue(encryptedPath)) {
+            return randomisePath(path);
 
         } else {
             if (!hashMap.containsKey(path)) {
-                hashMap.put(path, newPath);
-
-                if (storeToFile(hashMap)) {
-                    return newPath;
-                } else {
-                    return null;
-                }
+                return encryptedPath;
             } else {
-                return null;
+                return hashMap.get(path);
             }
         }
     }
 
-    /** Returns null if not exists **/
-    public static String fileLookup(String path) {
+    /** Returns null if file does not exist **/
+    public static String pathLookup(String path) {
         try {
             return getHashMap().get(path);
         } catch (IOException e) {
@@ -65,8 +50,11 @@ public class FilenameManager {
         }
     }
 
-    private static boolean storeToFile(HashMap<String, String> hashMap) {
+    public static boolean storeToFile(String filename, String encryptedFilename) {
         try {
+            HashMap<String, String> hashMap = getHashMap();
+            hashMap.put(filename, encryptedFilename);
+
             File file = new File(HASHMAP_PATH);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
@@ -75,30 +63,15 @@ public class FilenameManager {
 
             return true;
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
     }
 
-    private static String[] decomposePath(String path) {
-        path = path.replace("./", " ");
-        path = path.replace("/", " ");
-
-        String[] pathComponents  = path.trim().split(" ");
-
-        generateRandomName(5);
-
-        return pathComponents;
-    }
-
     /** Max value is 10 and Min value is 3 ELSE defaults to 5 **/
-    private static String generateRandomName(int length) {
-        if (length>10 || length<3) {
-            length = 5;
-        }
-
+    private static String generateRandomName() {
         String randName = UUID.randomUUID().toString();
-        randName = randName.replace("-", "").substring(0, length);
+        randName = randName.replace("-", "").substring(0, 10);
 
         return randName;
     }
