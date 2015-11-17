@@ -123,7 +123,11 @@ public class ClientManager {
             if (path.toFile().exists()) {
                 byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
 
-                deliverFile(filename, buffer);
+                String encryptedFilename = FilenameManager.randomisePath(filename);
+                deliverFile(encryptedFilename, buffer);
+                if(!FilenameManager.storeToFile(filename, encryptedFilename)) {
+                    System.out.println("Storing the mapping of the file failed!");
+                }
             } else {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             }
@@ -173,18 +177,23 @@ public class ClientManager {
         System.out.println("\nDownloading " + filename + " from server. . .");
 
         try {
-            retrieveFile(filename);
+            String encryptedFilename = FilenameManager.pathLookup(filename);
+            if (encryptedFilename == null) {
+                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+            } else {
+                retrieveFile(filename, encryptedFilename);
 
-            byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
-            FileOutputStream fos = new FileOutputStream(filename);
-            fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-            fos.close();
+                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+                fos.close();
+            }
         } catch (Exception e) {
-            handleError(Error.CANNOT_SAVE_FILE, e);
+            handleError(Error.CANNOT_RECEIVE_FILE, e);
         }
     }
 
-    private void retrieveFile(String filename) throws Exception{
+    private void retrieveFile(String filename, String encryptedFilename) throws Exception{
         connect();
 
         if (isAUTHed) {
@@ -192,11 +201,11 @@ public class ClientManager {
                 transferManager.writeControl(Command.FILE_FROM_SERVER);
 
                 okOrException();
-                transferManager.writeFileSize(filename.length());
+                transferManager.writeFileSize(encryptedFilename.length());
 
 
                 okOrException();
-                transferManager.writeFileName(filename);
+                transferManager.writeFileName(encryptedFilename);
 
                 okOrException();
                 transferManager.writeControl(Command.OK);

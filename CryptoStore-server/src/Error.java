@@ -10,19 +10,23 @@ public enum Error {
     FILE_NOT_SENT(6, "The file was not sent"),
     FILE_NOT_RECEIVED(7, "The file was not received"),
     CANNOT_SAVE_FILE(8, "The file could not be saved"),
-    ZERO_SIZE(9, "Zero size values for input are not allowed"),
-    NEGATIVE_SIZE(10, "Negative values for input are not allowed"),
+    CANNOT_RECEIVE_FILE(9, "The file could not be received from the server"),
+    ZERO_SIZE(10, "Zero size values for input are not allowed"),
+    NEGATIVE_SIZE(11, "Negative values for input are not allowed"),
     // CONNECTION / COMMUNICATION
-    CANNOT_CONNECT(11, "Connection between client and server could not be established"),
-    CLIENT_DISCONNECTED(12, "The client disconnected"),
-    SERER_DISCONNECTED(13, "The server disconnected"),
-    SOCKET_CLOSED(14, "The socket is closed"),
-    FAILED_TO_WRITE(15, "The packets could not be sent"),
-    FAILED_TO_READ(16, "The packets could not be read"),
-    COMMUNICATION_FAILED(17, "The communication between client and server has failed"),
-    FAILED_TO_CLOSE_STREAMS(18, "Failed to close the streams"),
+    CANNOT_CONNECT(12, "Connection between client and server could not be established"),
+    CLIENT_DISCONNECTED(13, "The client disconnected"),
+    SERER_DISCONNECTED(14, "The server disconnected"),
+    SOCKET_CLOSED(15, "The socket is closed"),
+    FAILED_TO_WRITE(16, "The packets could not be sent"),
+    FAILED_TO_READ(17, "The packets could not be read"),
+    COMMUNICATION_FAILED(18, "The communication between client and server has failed"),
+    FAILED_TO_CLOSE_STREAMS(19, "Failed to close the streams"),
     // VALIDITY
-    INCORRECT_FORM(19, "The input was not of the correct form");
+    INCORRECT_FORM(20, "The input was not of the correct form"),
+    // Encryption
+    CANNOT_DECRYPT(21, "The file could not be decrypted"),
+    CANNOT_ENCRYPT(22, "The file could not be encrypted");
 
     private final int code;
     private final String description;
