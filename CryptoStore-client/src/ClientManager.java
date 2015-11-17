@@ -15,16 +15,25 @@ public class ClientManager {
     private String host;
     private int hostPort;
     private String username;
-    private String password;
+    private String userPassword;
     private boolean isAUTHed;
 
-    public ClientManager(String username, String password, String host, int hostPort) {
+    public ClientManager(String username, String userPassword, String host, int hostPort, String encryptionPassword) {
         setCertificates();
         this.username = username;
-        this.password = password;
+        this.userPassword = userPassword;
         this.host = host;
         this.hostPort = hostPort;
         isAUTHed = false;
+
+        setUp(encryptionPassword);
+    }
+
+    private void setUp(String encryptionPassword) {
+        System.out.println("Synchronising the filenames encryption file. . .");
+
+        getFile(encryptionPassword, FilenameManager.HASHMAP_PATH);
+        //TODO if hashmap not retrieved notify that might use data and terminate the app ("contact server provider")
     }
 
     private void setCertificates() {
@@ -83,10 +92,10 @@ public class ClientManager {
                 transferManager.writeFileName(username);
 
                 okOrException();
-                transferManager.writeFileSize(password.length());
+                transferManager.writeFileSize(userPassword.length());
 
                 okOrException();
-                transferManager.writeFileName(password);
+                transferManager.writeFileName(userPassword);
 
                 okOrException();
                 isAUTHed = true;
@@ -115,13 +124,13 @@ public class ClientManager {
         }
     }
 
-    public void sendFile(String password, String filename) {
+    public void sendFile(String encryptionPassword, String filename) {
         System.out.println("\nSending \'" + filename + "\' to server . . .");
 
         try {
             Path path = Paths.get(filename);
             if (path.toFile().exists()) {
-                byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
+                byte[] buffer = EncryptionManager.encryptFile(encryptionPassword.toCharArray(), path);
 
                 String encryptedFilename = FilenameManager.randomisePath(filename);
                 deliverFile(encryptedFilename, buffer);
@@ -173,21 +182,23 @@ public class ClientManager {
         }
     }
 
-    public void getFile(String password, String filename) {
+    public void getFile(String encryptionPassword, String filename) {
         System.out.println("\nDownloading " + filename + " from server. . .");
 
         try {
-            String encryptedFilename = FilenameManager.pathLookup(filename);
-            if (encryptedFilename == null) {
-                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
-            } else {
+            if (!filename.equals(FilenameManager.HASHMAP_PATH)) {
+                String encryptedFilename = FilenameManager.pathLookup(filename);
                 retrieveFile(filename, encryptedFilename);
-
-                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
-                FileOutputStream fos = new FileOutputStream(filename);
-                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-                fos.close();
+            } else {
+                retrieveFile(filename, filename);
             }
+
+
+            byte[] decryptedFile = EncryptionManager.decryptFile(encryptionPassword.toCharArray(), Paths.get(filename));
+            FileOutputStream fos = new FileOutputStream(filename);
+            fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+            fos.close();
+
         } catch (Exception e) {
             handleError(Error.CANNOT_RECEIVE_FILE, e);
         }

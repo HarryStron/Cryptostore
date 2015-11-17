@@ -1,13 +1,14 @@
 import java.io.*;
+import java.lang.*;
 import java.util.HashMap;
 import java.util.UUID;
 
 public class FilenameManager {
-    private static final String HASHMAP_PATH = "./hashMap";
+    public static final String HASHMAP_PATH = "./MAPPED_ENCRYPTION";
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption
      * if path already exists **/
-    public static String randomisePath(String path) throws IOException, ClassNotFoundException {
+    public static String randomisePath(String path) throws Exception {
         String encryptedPath = "./"+generateRandomName();
 
         HashMap<String, String> hashMap = getHashMap();
@@ -23,18 +24,11 @@ public class FilenameManager {
         }
     }
 
-    /** Returns null if file does not exist **/
-    public static String pathLookup(String path) {
-        try {
-            return getHashMap().get(path);
-        } catch (IOException e) {
-            return null;
-        } catch (ClassNotFoundException e) {
-            return null;
-        }
+    public static String pathLookup(String path) throws Exception {
+        return getHashMap().get(path);
     }
 
-    private static HashMap<String, String> getHashMap() throws IOException, ClassNotFoundException {
+    private static HashMap<String, String> getHashMap() throws Exception {
         try{
             File file = new File(HASHMAP_PATH);
             FileInputStream fis = new FileInputStream(file);
@@ -44,14 +38,7 @@ public class FilenameManager {
 
             return map;
         } catch (FileNotFoundException e) {
-            File file = new File(HASHMAP_PATH);
-            file.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(new HashMap<>());
-            objectOutputStream.close();
-
-            return new HashMap<>(); //can safely return empty map as lookup will behave like the mapping was not found
+            throw new Exception(Error.HASHMAP_NOT_EXISTS.getDescription());
         }
     }
 

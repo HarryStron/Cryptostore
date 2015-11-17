@@ -39,6 +39,8 @@ public class EncryptionManager {
 
             outputStream.write(cipher.doFinal(Files.readAllBytes(filePath)));
 
+            System.out.println("The file has been encrypted!");
+
             return outputStream.toByteArray();
         } catch (Exception e) {
             throw new Exception(Error.CANNOT_ENCRYPT.getDescription());

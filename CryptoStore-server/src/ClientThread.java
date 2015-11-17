@@ -1,14 +1,12 @@
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLSocket;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class ClientThread extends Thread {
     private SSLSocket clientSocket;
@@ -96,8 +94,11 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename();
 
-                    File path = new File("UserFiles/"+connectedUser+'/'+filename.substring(1));
-                    File requestFile = new File(path.toURI());
+                    File requestFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1));
+
+                    if (filename.equals(FilenameManager.HASHMAP_PATH) && !requestFile.exists()) {
+                        FilenameManager.makeHashmapFile(requestFile);
+                    }
 
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
@@ -139,7 +140,8 @@ public class ClientThread extends Thread {
         transferManager.writeControl(Command.OK);
         String filename = listenForString(filenameSize);
         greaterThanZero(filename.length());
-        if (!Validator.validateFilename(filename)) {
+
+        if (!filename.equals(FilenameManager.HASHMAP_PATH) && !Validator.validateFilename(filename)) {
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
         }
         if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {
