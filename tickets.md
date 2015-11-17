@@ -42,14 +42,22 @@ Allow user to have sub-directories in the server's main user direcory.<br/>
 **_v1.9.0_**
 
 **`feature-10`**:<br/>
-Uses hashes to compare the files on the server with those on the client.<br/>
-**_queued_**
+Create a mapping to represend filenames in such a way that they do not reveal anything about their contents and use it to send and receive files. ATTENTION: this will make the server side store everything as a flat directory!<br/>
+**_v1.10.0_**
 
 **`feature-11`**:<br/>
-Create a syncronization class and methods to SYNC files between client and server.<br/>
+Encrypt the file storing the hashmap. Pull it when the client is started and push it after sending a file to the server.<br/>
 **_queued_**
 
 **`feature-12`**:<br/>
+Uses hashes to compare the files on the server with those on the client.<br/>
+**_queued_**
+
+**`feature-13`**:<br/>
+Create a syncronization class and methods to SYNC files between client and server.<br/>
+**_queued_**
+
+**`feature-14`**:<br/>
 Find the optimal points where syncronization should be happening and implement it.<br/>
 **_queued_**
 
@@ -92,3 +100,7 @@ Refactoring needed to clean up code. Also handle everything using exceptions to 
 **`other-3`**:<br/>
 Change OK, READY and DONE commands to a single command to represent all 3. This reduces the code and makes it easier for errors and exceptions to handle.<br/>
 **_merged_**
+
+**`other-4`**:<br/>
+Create a testing suite to test the so far functionality using mocking.<br/>
+**_queued_**
