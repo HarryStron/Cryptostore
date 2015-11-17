@@ -44,7 +44,12 @@ public class FilenameManager {
 
             return map;
         } catch (FileNotFoundException e) {
-            new File(HASHMAP_PATH).createNewFile();
+            File file = new File(HASHMAP_PATH);
+            file.createNewFile();
+            FileOutputStream fileOutputStream = new FileOutputStream(file);
+            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+            objectOutputStream.writeObject(new HashMap<>());
+            objectOutputStream.close();
 
             return new HashMap<>(); //can safely return empty map as lookup will behave like the mapping was not found
         }
