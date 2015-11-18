@@ -3,7 +3,7 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class FilenameManager {
-    private static final String HASHMAP_PATH = "./hashMap";
+    public static final String HASHMAP_PATH = "./ENCRYPTION_MAPPING";
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption
      * if path already exists **/

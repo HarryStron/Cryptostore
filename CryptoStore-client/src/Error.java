@@ -13,20 +13,21 @@ public enum Error {
     CANNOT_RECEIVE_FILE(9, "The file could not be received from the server"),
     ZERO_SIZE(10, "Zero size values for input are not allowed"),
     NEGATIVE_SIZE(11, "Negative values for input are not allowed"),
+    HASHMAP_NOT_FOUND(12, "The filename mapping was not found"),
     // CONNECTION / COMMUNICATION
-    CANNOT_CONNECT(12, "Connection between client and server could not be established"),
-    CLIENT_DISCONNECTED(13, "The client disconnected"),
-    SERER_DISCONNECTED(14, "The server disconnected"),
-    SOCKET_CLOSED(15, "The socket is closed"),
-    FAILED_TO_WRITE(16, "The packets could not be sent"),
-    FAILED_TO_READ(17, "The packets could not be read"),
-    COMMUNICATION_FAILED(18, "The communication between client and server has failed"),
-    FAILED_TO_CLOSE_STREAMS(19, "Failed to close the streams"),
+    CANNOT_CONNECT(13, "Connection between client and server could not be established"),
+    CLIENT_DISCONNECTED(14, "The client disconnected"),
+    SERER_DISCONNECTED(15, "The server disconnected"),
+    SOCKET_CLOSED(16, "The socket is closed"),
+    FAILED_TO_WRITE(17, "The packets could not be sent"),
+    FAILED_TO_READ(18, "The packets could not be read"),
+    COMMUNICATION_FAILED(19, "The communication between client and server has failed"),
+    FAILED_TO_CLOSE_STREAMS(20, "Failed to close the streams"),
     // VALIDITY
-    INCORRECT_FORM(20, "The input was not of the correct form"),
+    INCORRECT_FORM(21, "The input was not of the correct form"),
     // Encryption
-    CANNOT_DECRYPT(21, "The file could not be decrypted"),
-    CANNOT_ENCRYPT(22, "The file could not be encrypted");
+    CANNOT_DECRYPT(22, "The file could not be decrypted"),
+    CANNOT_ENCRYPT(23, "The file could not be encrypted");
 
     private final int code;
     private final String description;
