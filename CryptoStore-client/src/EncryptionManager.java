@@ -23,7 +23,7 @@ public class EncryptionManager {
 
     public static byte[] encryptFile(char[] password, Path filePath) throws Exception {
         try {
-            System.out.println("Encrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+            System.out.println("\nEncrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
             byte[] salt = getRandomBytes(SALT_LENGTH);
             SecretKey secretKey = generateSecretKey(password, salt);
@@ -39,8 +39,6 @@ public class EncryptionManager {
 
             outputStream.write(cipher.doFinal(Files.readAllBytes(filePath)));
 
-            System.out.println("The file has been encrypted!");
-
             return outputStream.toByteArray();
         } catch (Exception e) {
             throw new Exception(Error.CANNOT_ENCRYPT.getDescription());
@@ -49,7 +47,7 @@ public class EncryptionManager {
 
     public static byte[] decryptFile(char[] password, Path filePath) throws Exception {
         try {
-            System.out.println("Decrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+            System.out.println("\nDecrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
 
             byte[] fullFile = Files.readAllBytes(filePath);
             byte[] salt = Arrays.copyOf(fullFile, SALT_LENGTH);

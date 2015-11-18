@@ -47,7 +47,7 @@ Create a mapping to represend filenames in such a way that they do not reveal an
 
 **`feature-11`**:<br/>
 Encrypt the file storing the hashmap. Pull it when the client is started and push it after sending a file to the server.<br/>
-**_queued_**
+**_v1.11.0_**
 
 **`feature-12`**:<br/>
 Implement deleting of a remote file.<br/>

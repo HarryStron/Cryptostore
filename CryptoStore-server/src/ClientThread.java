@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.util.HashMap;
 
 public class ClientThread extends Thread {
+    public static final String HASHMAP_PATH = "./ENCRYPTION_MAPPING";
+
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private String clientIP;
@@ -94,11 +96,7 @@ public class ClientThread extends Thread {
 
                     String filename = listenForFilename();
 
-                    File requestFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1));
-
-                    if (filename.equals(FilenameManager.HASHMAP_PATH) && !requestFile.exists()) {
-                        FilenameManager.makeHashmapFile(requestFile);
-                    }
+                    File requestFile = new File("UserFiles/"+connectedUser+'/'+filename);
 
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
@@ -140,8 +138,7 @@ public class ClientThread extends Thread {
         transferManager.writeControl(Command.OK);
         String filename = listenForString(filenameSize);
         greaterThanZero(filename.length());
-
-        if (!filename.equals(FilenameManager.HASHMAP_PATH) && !Validator.validateFilename(filename)) {
+        if (!filename.equals(HASHMAP_PATH) && !Validator.validateFilename(filename)) {
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
         }
         if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {

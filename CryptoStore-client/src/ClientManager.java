@@ -4,10 +4,13 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.HashMap;
 
 public class ClientManager {
     private SSLSocket clientSocket;
@@ -18,22 +21,13 @@ public class ClientManager {
     private String userPassword;
     private boolean isAUTHed;
 
-    public ClientManager(String username, String userPassword, String host, int hostPort, String encryptionPassword) {
+    public ClientManager(String username, String password, String host, int hostPort) {
         setCertificates();
         this.username = username;
-        this.userPassword = userPassword;
+        this.userPassword = password;
         this.host = host;
         this.hostPort = hostPort;
         isAUTHed = false;
-
-        setUp(encryptionPassword);
-    }
-
-    private void setUp(String encryptionPassword) {
-        System.out.println("Synchronising the filenames encryption file. . .");
-
-        getFile(encryptionPassword, FilenameManager.HASHMAP_PATH);
-        //TODO if hashmap not retrieved notify that might use data and terminate the app ("contact server provider")
     }
 
     private void setCertificates() {
@@ -124,19 +118,47 @@ public class ClientManager {
         }
     }
 
-    public void sendFile(String encryptionPassword, String filename) {
-        System.out.println("\nSending \'" + filename + "\' to server . . .");
+    private void getEncryptionMapping(String password) {
+        System.out.println("\nUpdating filename encryption-mapping. . .");
 
+        getFile(password, FilenameManager.HASHMAP_PATH);
+
+        File hashmapFile = new File(FilenameManager.HASHMAP_PATH);
+        if (!hashmapFile.exists()) {
+            try {
+                hashmapFile.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(hashmapFile);
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                objectOutputStream.writeObject(new HashMap<>());
+                objectOutputStream.close();
+
+                System.out.println("New encryption-mapping created!");
+            } catch (Exception e) {
+                handleError(Error.CANNOT_SAVE_FILE, e);
+            }
+        }
+    }
+
+    public void sendFile(String password, String filename) {
+        getEncryptionMapping(password);
+
+        System.out.println("\nSending \'" + filename + "\' to server . . .");
         try {
             Path path = Paths.get(filename);
             if (path.toFile().exists()) {
-                byte[] buffer = EncryptionManager.encryptFile(encryptionPassword.toCharArray(), path);
+                byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
 
                 String encryptedFilename = FilenameManager.randomisePath(filename);
+                connect();
                 deliverFile(encryptedFilename, buffer);
                 if(!FilenameManager.storeToFile(filename, encryptedFilename)) {
                     System.out.println("Storing the mapping of the file failed!");
                 }
+                byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(FilenameManager.HASHMAP_PATH));
+
+                deliverFile(FilenameManager.HASHMAP_PATH, mapBuffer);
+
+                closeConnection();
             } else {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             }
@@ -147,8 +169,6 @@ public class ClientManager {
     }
 
     private void deliverFile(String filename, byte[] buffer) throws Exception {
-        connect();
-
         if (isAUTHed) {
             try {
                 transferManager.writeControl(Command.FILE_FROM_CLIENT);
@@ -167,46 +187,54 @@ public class ClientManager {
                     transferManager.writeFile(new FileData(buffer));
 
                     okOrException();
-                    System.out.println("File \'" + filename + "\' sent successfully!");
+                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
 
                 } else {
-                    System.out.println("File \'" + filename + "\' sent successfully!");
+                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
                 }
             } catch (Exception e) {
                 throw new Exception(e.getMessage());
             }
-
-            closeConnection();
         } else {
             throw new Exception(Error.CANNOT_AUTH.getDescription());
         }
     }
 
-    public void getFile(String encryptionPassword, String filename) {
-        System.out.println("\nDownloading " + filename + " from server. . .");
+    public void getFile(String password, String filename) {
+        connect();
 
         try {
+            System.out.println("\nUpdating filename encryption-mapping. . .");
+            retrieveFile(FilenameManager.HASHMAP_PATH, FilenameManager.HASHMAP_PATH);
+
+            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(FilenameManager.HASHMAP_PATH));
+            FileOutputStream fileOutputStream = new FileOutputStream(FilenameManager.HASHMAP_PATH);
+            fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
+            fileOutputStream.close();
+
             if (!filename.equals(FilenameManager.HASHMAP_PATH)) {
+                System.out.println("\nDownloading " + filename + " from server. . .");
+
                 String encryptedFilename = FilenameManager.pathLookup(filename);
-                retrieveFile(filename, encryptedFilename);
-            } else {
-                retrieveFile(filename, filename);
+                if (encryptedFilename == null) {
+                    throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+                } else {
+                    retrieveFile(filename, encryptedFilename);
+
+                    byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+                    FileOutputStream fos = new FileOutputStream(filename);
+                    fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+                    fos.close();
+                }
             }
-
-
-            byte[] decryptedFile = EncryptionManager.decryptFile(encryptionPassword.toCharArray(), Paths.get(filename));
-            FileOutputStream fos = new FileOutputStream(filename);
-            fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-            fos.close();
-
         } catch (Exception e) {
             handleError(Error.CANNOT_RECEIVE_FILE, e);
         }
+
+        closeConnection();
     }
 
-    private void retrieveFile(String filename, String encryptedFilename) throws Exception{
-        connect();
-
+    private void retrieveFile(String filename, String encryptedFilename) throws Exception {
         if (isAUTHed) {
             try {
                 transferManager.writeControl(Command.FILE_FROM_SERVER);
@@ -245,8 +273,6 @@ public class ClientManager {
             } catch (IOException e) {
                 throw new Exception(e.getMessage());
             }
-
-            closeConnection();
         } else {
             throw new Exception(Error.CANNOT_AUTH.getDescription());
         }

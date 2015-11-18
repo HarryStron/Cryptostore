@@ -13,7 +13,7 @@ public enum Error {
     CANNOT_RECEIVE_FILE(9, "The file could not be received from the server"),
     ZERO_SIZE(10, "Zero size values for input are not allowed"),
     NEGATIVE_SIZE(11, "Negative values for input are not allowed"),
-    HASHMAP_NOT_EXISTS(12, "The mapping for the encryption of the filenames doesn't exist"),
+    HASHMAP_NOT_FOUND(12, "The filename mapping was not found"),
     // CONNECTION / COMMUNICATION
     CANNOT_CONNECT(13, "Connection between client and server could not be established"),
     CLIENT_DISCONNECTED(14, "The client disconnected"),
