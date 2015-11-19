@@ -129,6 +129,7 @@ public class ClientManager {
         File hashmapFile = new File(filenameManager.HASHMAP_PATH);
         if (!hashmapFile.exists()) {
             try {
+                hashmapFile.getParentFile().mkdirs();
                 hashmapFile.createNewFile();
                 FileOutputStream fileOutputStream = new FileOutputStream(hashmapFile);
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
