@@ -47,17 +47,21 @@ Create a mapping to represend filenames in such a way that they do not reveal an
 
 **`feature-11`**:<br/>
 Encrypt the file storing the hashmap. Pull it when the client is started and push it after sending a file to the server.<br/>
-**_queued_**
+**_v1.11.0_**
 
 **`feature-12`**:<br/>
-Uses hashes to compare the files on the server with those on the client.<br/>
+Implement deleting of a remote file.<br/>
 **_queued_**
 
 **`feature-13`**:<br/>
-Create a syncronization class and methods to SYNC files between client and server.<br/>
+Uses hashes to compare the files on the server with those on the client.<br/>
 **_queued_**
 
 **`feature-14`**:<br/>
+Create a syncronization class and methods to SYNC files between client and server.<br/>
+**_queued_**
+
+**`feature-15`**:<br/>
 Find the optimal points where syncronization should be happening and implement it.<br/>
 **_queued_**
 

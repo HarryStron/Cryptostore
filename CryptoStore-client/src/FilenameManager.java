@@ -3,11 +3,15 @@ import java.util.HashMap;
 import java.util.UUID;
 
 public class FilenameManager {
-    private static final String HASHMAP_PATH = "./hashMap";
+    public String HASHMAP_PATH;
+
+    public FilenameManager(String username) {
+        HASHMAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
+    }
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption
      * if path already exists **/
-    public static String randomisePath(String path) throws IOException, ClassNotFoundException {
+    public String randomisePath(String path) throws IOException, ClassNotFoundException {
         String encryptedPath = "./"+generateRandomName();
 
         HashMap<String, String> hashMap = getHashMap();
@@ -24,7 +28,7 @@ public class FilenameManager {
     }
 
     /** Returns null if file does not exist **/
-    public static String pathLookup(String path) {
+    public String pathLookup(String path) {
         try {
             return getHashMap().get(path);
         } catch (IOException e) {
@@ -34,28 +38,17 @@ public class FilenameManager {
         }
     }
 
-    private static HashMap<String, String> getHashMap() throws IOException, ClassNotFoundException {
-        try{
-            File file = new File(HASHMAP_PATH);
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            HashMap<String, String> map = (HashMap<String, String>) ois.readObject();
-            ois.close();
+    private HashMap<String, String> getHashMap() throws IOException, ClassNotFoundException {
+        File file = new File(HASHMAP_PATH);
+        FileInputStream fis = new FileInputStream(file);
+        ObjectInputStream ois = new ObjectInputStream(fis);
+        HashMap<String, String> map = (HashMap<String, String>) ois.readObject();
+        ois.close();
 
-            return map;
-        } catch (FileNotFoundException e) {
-            File file = new File(HASHMAP_PATH);
-            file.createNewFile();
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(new HashMap<>());
-            objectOutputStream.close();
-
-            return new HashMap<>(); //can safely return empty map as lookup will behave like the mapping was not found
-        }
+        return map;
     }
 
-    public static boolean storeToFile(String filename, String encryptedFilename) {
+    public boolean storeToFile(String filename, String encryptedFilename) {
         try {
             HashMap<String, String> hashMap = getHashMap();
             hashMap.put(filename, encryptedFilename);
@@ -74,7 +67,7 @@ public class FilenameManager {
     }
 
     /** Max value is 10 and Min value is 3 ELSE defaults to 5 **/
-    private static String generateRandomName() {
+    private String generateRandomName() {
         String randName = UUID.randomUUID().toString();
         randName = randName.replace("-", "").substring(0, 10);
 
