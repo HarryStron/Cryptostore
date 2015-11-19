@@ -54,14 +54,18 @@ Implement deleting of a remote file.<br/>
 **_queued_**
 
 **`feature-13`**:<br/>
-Uses hashes to compare the files on the server with those on the client.<br/>
+Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
 **_queued_**
 
 **`feature-14`**:<br/>
-Create a syncronization class and methods to SYNC files between client and server.<br/>
+Uses hashes to compare the files on the server with those on the client.<br/>
 **_queued_**
 
 **`feature-15`**:<br/>
+Create a syncronization class and methods to SYNC files between client and server.<br/>
+**_queued_**
+
+**`feature-16`**:<br/>
 Find the optimal points where syncronization should be happening and implement it.<br/>
 **_queued_**
 
@@ -90,6 +94,10 @@ The file output stream is not closed after writing the file bytes.<br/>
 **`bug-6`**:<br/>
 Failure to transmit files bigger than a few MBs long. Split the data into chunks and send separately.<br/>
 **_v1.9.4_**
+
+**`bug-7`**:<br/>
+Change hashmaps to a biderectional data type. It is needed by server for deletion of files.<br/>
+**_ongoing_**
 
 ## Other (_not tagged_)
 

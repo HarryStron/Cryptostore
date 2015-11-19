@@ -282,6 +282,8 @@ public class ClientManager {
         }
     }
 
+    public void deleteFile() {}
+
     private int getCommand() throws Exception {
         try {
             return transferManager.read(0).getData(1)[0];
