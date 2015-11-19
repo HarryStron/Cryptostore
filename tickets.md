@@ -97,7 +97,8 @@ Failure to transmit files bigger than a few MBs long. Split the data into chunks
 
 **`bug-7`**:<br/>
 Change hashmaps to a biderectional data type. It is needed by server for deletion of files.<br/>
-**_ongoing_**
+**_v1.11.1_**
+
 
 ## Other (_not tagged_)
 

@@ -1,12 +1,11 @@
 import java.io.*;
-import java.util.HashMap;
 import java.util.UUID;
 
 public class FilenameManager {
-    public String HASHMAP_PATH;
+    public String MAP_PATH;
 
     public FilenameManager(String username) {
-        HASHMAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
+        MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
     }
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption
@@ -14,23 +13,33 @@ public class FilenameManager {
     public String randomisePath(String path) throws IOException, ClassNotFoundException {
         String encryptedPath = "./"+generateRandomName();
 
-        HashMap<String, String> hashMap = getHashMap();
-        if (hashMap.containsValue(encryptedPath)) {
+        FileMap map = getMap();
+        if (map.containsEncrypted(encryptedPath)) {
             return randomisePath(path);
 
         } else {
-            if (!hashMap.containsKey(path)) {
+            if (!map.containsOriginal(path)) {
                 return encryptedPath;
             } else {
-                return hashMap.get(path);
+                return map.getEncryptedFromOriginal(path);
             }
         }
     }
 
     /** Returns null if file does not exist **/
-    public String pathLookup(String path) {
+    public String getEncryptedPath(String path) {
+        return getMap().getEncryptedFromOriginal(path);
+    }
+
+    private FileMap getMap() {
         try {
-            return getHashMap().get(path);
+            File file = new File(MAP_PATH);
+            FileInputStream fis = new FileInputStream(file);
+            ObjectInputStream ois = new ObjectInputStream(fis);
+            FileMap map = (FileMap) ois.readObject();
+            ois.close();
+
+            return map;
         } catch (IOException e) {
             return null;
         } catch (ClassNotFoundException e) {
@@ -38,25 +47,15 @@ public class FilenameManager {
         }
     }
 
-    private HashMap<String, String> getHashMap() throws IOException, ClassNotFoundException {
-        File file = new File(HASHMAP_PATH);
-        FileInputStream fis = new FileInputStream(file);
-        ObjectInputStream ois = new ObjectInputStream(fis);
-        HashMap<String, String> map = (HashMap<String, String>) ois.readObject();
-        ois.close();
-
-        return map;
-    }
-
     public boolean storeToFile(String filename, String encryptedFilename) {
         try {
-            HashMap<String, String> hashMap = getHashMap();
-            hashMap.put(filename, encryptedFilename);
+            FileMap map = getMap();
+            map.addMapping(filename, encryptedFilename);
 
-            File file = new File(HASHMAP_PATH);
+            File file = new File(MAP_PATH);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(hashMap);
+            objectOutputStream.writeObject(map);
             objectOutputStream.close();
 
             return true;
