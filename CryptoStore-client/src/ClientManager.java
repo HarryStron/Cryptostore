@@ -9,10 +9,9 @@ import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class ClientManager {
-    private final String HASHMAP = "./ENCRYPTION_MAPPING";
+    private final String MAP = "./ENCRYPTION_MAPPING";
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -124,16 +123,16 @@ public class ClientManager {
     private void getEncryptionMapping(String password) {
         System.out.println("\nUpdating filename encryption-mapping. . .");
 
-        getFile(password, filenameManager.HASHMAP_PATH);
+        getFile(password, filenameManager.MAP_PATH);
 
-        File hashmapFile = new File(filenameManager.HASHMAP_PATH);
-        if (!hashmapFile.exists()) {
+        File mapFile = new File(filenameManager.MAP_PATH);
+        if (!mapFile.exists()) {
             try {
-                hashmapFile.getParentFile().mkdirs();
-                hashmapFile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(hashmapFile);
+                mapFile.getParentFile().mkdirs();
+                mapFile.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                objectOutputStream.writeObject(new HashMap<>());
+                objectOutputStream.writeObject(new FileMap());
                 objectOutputStream.close();
 
                 System.out.println("New encryption-mapping created!");
@@ -158,9 +157,9 @@ public class ClientManager {
                 if(!filenameManager.storeToFile(filename, encryptedFilename)) {
                     System.out.println("Storing the mapping of the file failed!");
                 }
-                byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.HASHMAP_PATH));
+                byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
 
-                deliverFile(HASHMAP, mapBuffer);
+                deliverFile(MAP, mapBuffer);
 
                 closeConnection();
             } else {
@@ -209,17 +208,17 @@ public class ClientManager {
 
         try {
             System.out.println("\nUpdating filename encryption-mapping. . .");
-            retrieveFile(filenameManager.HASHMAP_PATH, HASHMAP);
+            retrieveFile(filenameManager.MAP_PATH, MAP);
 
-            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.HASHMAP_PATH));
-            FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.HASHMAP_PATH);
+            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+            FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.MAP_PATH);
             fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
             fileOutputStream.close();
 
-            if (!filename.equals(filenameManager.HASHMAP_PATH)) {
+            if (!filename.equals(filenameManager.MAP_PATH)) {
                 System.out.println("\nDownloading " + filename + " from server. . .");
 
-                String encryptedFilename = filenameManager.pathLookup(filename);
+                String encryptedFilename = filenameManager.getEncryptedPath(filename);
                 if (encryptedFilename == null) {
                     throw new Exception(Error.FILE_NOT_FOUND.getDescription());
                 } else {
