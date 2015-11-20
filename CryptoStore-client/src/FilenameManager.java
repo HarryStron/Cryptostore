@@ -47,11 +47,22 @@ public class FilenameManager {
         }
     }
 
-    public boolean storeToFile(String filename, String encryptedFilename) {
-        try {
-            FileMap map = getMap();
-            map.addMapping(filename, encryptedFilename);
+    public boolean addToMap(String filename, String encryptedFilename) {
+        FileMap map = getMap();
+        map.addMapping(filename, encryptedFilename);
 
+        return store(map);
+    }
+
+    public boolean removeFromMap(String filename) {
+        FileMap map = getMap();
+        map.removeMapping(filename, map.getEncryptedFromOriginal(filename));
+
+        return store(map);
+    }
+
+    private boolean store(FileMap map) {
+        try {
             File file = new File(MAP_PATH);
             FileOutputStream fileOutputStream = new FileOutputStream(file);
             ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);

@@ -15,6 +15,11 @@ public class FileMap implements Serializable {
         encrypted.add(encryptedPath);
     }
 
+    public void removeMapping (String originalPath, String encryptedPath) {
+        original.remove(originalPath);
+        encrypted.remove(encryptedPath);
+    }
+
     public boolean containsOriginal (String path) {
         return original.contains(path);
     }
