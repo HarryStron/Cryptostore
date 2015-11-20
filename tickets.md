@@ -51,7 +51,7 @@ Encrypt the file storing the hashmap. Pull it when the client is started and pus
 
 **`feature-12`**:<br/>
 Implement deleting of a remote file.<br/>
-**_queued_**
+**_v1.12.0_**
 
 **`feature-13`**:<br/>
 Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
