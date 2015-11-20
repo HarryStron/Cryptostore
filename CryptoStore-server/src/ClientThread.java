@@ -82,7 +82,7 @@ public class ClientThread extends Thread {
                 int request = getCommand();
 
                 if (request == Command.FILE_FROM_CLIENT.getCode()) {
-                    clientPrint("Is trying to send a file.");
+                    clientPrint("Is requesting to send a file.");
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename();
@@ -91,7 +91,7 @@ public class ClientThread extends Thread {
                     writeToDisk(filename);
 
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
-                    clientPrint("Is trying to retrieve a file.");
+                    clientPrint("Is requesting to retrieve a file.");
                     transferManager.writeControl(Command.OK);
 
                     String filename = listenForFilename();
@@ -101,6 +101,21 @@ public class ClientThread extends Thread {
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
+                    } else {
+                        throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
+                    }
+
+                } else if (request == Command.DELETE.getCode()) {
+                    clientPrint("Is requesting to delete a file");
+                    transferManager.writeControl(Command.OK);
+
+                    String filename = listenForFilename();
+
+                    File requestFile = new File("UserFiles/"+connectedUser+'/'+filename);
+
+                    if (requestFile.exists()) {
+                        transferManager.writeControl(Command.OK);
+                        deleteFile(filename);
                     } else {
                         throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
@@ -217,6 +232,16 @@ public class ClientThread extends Thread {
 
         } catch (Exception e) {
             handleError(Error.FILE_NOT_SENT, e);
+        }
+    }
+
+    private void deleteFile (String filename) {
+        clientPrint("Is deleting file: " + filename);
+
+        if (new File("UserFiles/"+connectedUser+'/'+filename).delete()) {
+            clientPrint("File \'" + filename + "\' deleted successfully!");
+        } else {
+            Error.DELETE_FAIL.print(clientIP);
         }
     }
 

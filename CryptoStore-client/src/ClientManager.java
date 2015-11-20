@@ -120,12 +120,12 @@ public class ClientManager {
         }
     }
 
-    private void getEncryptionMapping(String password) {
+    public void getEncryptionMapping(String password) {
         System.out.println("\nUpdating filename encryption-mapping. . .");
 
         getFile(password, filenameManager.MAP_PATH);
 
-        File mapFile = new File(filenameManager.MAP_PATH);
+        File mapFile = new File(filenameManager.MAP_PATH); //TODO move this block to the FilenameManager! Might use again
         if (!mapFile.exists()) {
             try {
                 mapFile.getParentFile().mkdirs();
@@ -154,7 +154,7 @@ public class ClientManager {
                 String encryptedFilename = filenameManager.randomisePath(filename);
                 connect();
                 deliverFile(encryptedFilename, buffer);
-                if(!filenameManager.storeToFile(filename, encryptedFilename)) {
+                if(!filenameManager.addToMap(filename, encryptedFilename)) {
                     System.out.println("Storing the mapping of the file failed!");
                 }
                 byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
@@ -281,7 +281,76 @@ public class ClientManager {
         }
     }
 
-    public void deleteFile() {}
+    public void deleteFile(String password, String filename) {
+        connect();
+
+        System.out.println("\nDeleting " + filename + ". . .");
+        try{
+            if (deleteFromServer(filename)) {
+                if (deleteLocalFile(filename)) {
+                    System.out.println("\n" + filename + " has been deleted!");
+
+                    byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+
+                    deliverFile(MAP, mapBuffer);
+                } else {
+                    throw new Exception(Error.LOCAL_DELETE_FAIL.getDescription());
+                }
+            } else {
+                throw new Exception(Error.SERVER_DELETE_FAIL.getDescription());
+            }
+        } catch (Exception e) {
+            handleError(Error.DELETE_FAIL, e);
+        }
+        closeConnection();
+    }
+
+    private boolean deleteFromServer(String filename) throws Exception {
+        System.out.println("\nDeleting " + filename + " from the server. . .");
+
+        String encryptedFilename = filenameManager.getEncryptedPath(filename);
+        if (isAUTHed) {
+            try {
+                transferManager.writeControl(Command.DELETE);
+
+                okOrException();
+                transferManager.writeFileSize(encryptedFilename.length());
+
+
+                okOrException();
+                transferManager.writeFileName(encryptedFilename);
+
+                okOrException();
+
+                System.out.println(filename + " deleted from server!");
+
+                return true;
+            } catch (IOException e) {
+                throw new Exception(e.getMessage());
+            }
+        } else {
+            throw new Exception(Error.CANNOT_AUTH.getDescription());
+        }
+    }
+
+    private boolean deleteLocalFile (String filename) {
+        System.out.println("\nDeleting " + filename + " from local machine. . .");
+
+        if (new File(filename).delete()) {
+            System.out.println("\nRemoving file from filename encryption map. . .");
+
+            if (filenameManager.removeFromMap(filename)) {
+                System.out.println("\nMapping removed!");
+                // even if the deletion of the entry fails the file is already deleted so no point returning false.
+                // Just inform the user!
+            } else {
+                System.out.println("\nFailed to remove mapping!");
+            }
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     private int getCommand() throws Exception {
         try {
