@@ -66,6 +66,24 @@ public class FilenameManager {
         return store(map);
     }
 
+    public void createMapIfNotExists () throws Exception {
+        File mapFile = new File(MAP_PATH);
+        if (!mapFile.exists()) {
+            try {
+                mapFile.getParentFile().mkdirs();
+                mapFile.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                objectOutputStream.writeObject(new FileMap());
+                objectOutputStream.close();
+
+                System.out.println("New encryption-mapping created!");
+            } catch (Exception e) {
+                throw new Exception(Error.CANNOT_SAVE_FILE.getDescription());
+            }
+        }
+    }
+
     private boolean store(FileMap map) {
         try {
             File file = new File(MAP_PATH);

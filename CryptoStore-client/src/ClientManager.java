@@ -12,9 +12,12 @@ import java.nio.file.Paths;
 
 public class ClientManager {
     private final String MAP = "./ENCRYPTION_MAPPING";
+    private final String SYNC = "./SYNC_INFO";
+
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
+//    private SyncManager syncManager;
     private String host;
     private int hostPort;
     private String username;
@@ -30,6 +33,7 @@ public class ClientManager {
         isAUTHed = false;
 
         filenameManager = new FilenameManager(username);
+//        syncManager = new SyncManager();
     }
 
     private void setCertificates() {
@@ -134,20 +138,10 @@ public class ClientManager {
             handleError(Error.CANNOT_RECEIVE_FILE, e);
         }
 
-        File mapFile = new File(filenameManager.MAP_PATH); //TODO move this block to the FilenameManager! Might use again
-        if (!mapFile.exists()) {
-            try {
-                mapFile.getParentFile().mkdirs();
-                mapFile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                objectOutputStream.writeObject(new FileMap());
-                objectOutputStream.close();
-
-                System.out.println("New encryption-mapping created!");
-            } catch (Exception e) {
-                handleError(Error.CANNOT_SAVE_FILE, e);
-            }
+        try {
+            filenameManager.createMapIfNotExists();
+        } catch (Exception e) {
+            Error.CANNOT_SAVE_FILE.print();
         }
     }
 

@@ -11,7 +11,7 @@ public class Client {
         clientManager1.getFile(encryptionPassword, "./Admin1/test1.txt");
         clientManager1.sendFile(encryptionPassword, "./Admin1/test1.txt");
         clientManager1.getFile(encryptionPassword, "./Admin1/test1.txt");
-        clientManager1.deleteFile(encryptionPassword, "./Admin1/test1.txt");
+//        clientManager1.deleteFile(encryptionPassword, "./Admin1/test1.txt");
         clientManager1.closeConnection();
 
 //        clientManager2.connect(encryptionPassword);
