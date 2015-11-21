@@ -54,18 +54,14 @@ Implement deleting of a remote file.<br/>
 **_v1.12.0_**
 
 **`feature-13`**:<br/>
-Uses hashes to compare the files on the server with those on the client.<br/>
-**_queued_**
-
-**`feature-14`**:<br/>
 Create a syncronization class and methods to SYNC files between client and server.<br/>
 **_queued_**
 
-**`feature-15`**:<br/>
+**`feature-14`**:<br/>
 Find the optimal points where syncronization should be happening and implement it.<br/>
 **_queued_**
 
-**`feature-16`**:<br/>
+**`feature-15`**:<br/>
 Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
 **_queued_**
 
