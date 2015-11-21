@@ -102,7 +102,12 @@ public class ClientThread extends Thread {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {
-                        throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
+                        if (!filename.equals(HASHMAP_PATH)) {
+                            throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
+                        } else {
+                            System.out.println("The filename mapping does not exist. If this user has files on server make sure you resolve this issue, else ignore!");
+                            transferManager.writeControl(Command.ERROR);
+                        }
                     }
 
                 } else if (request == Command.DELETE.getCode()) {
@@ -129,7 +134,6 @@ public class ClientThread extends Thread {
                 }
             } catch (Exception e) {
                 handleError(Error.FILE_NOT_SENT, e);
-                closeConnection();
             }
         }
     }
@@ -292,9 +296,10 @@ public class ClientThread extends Thread {
             if (err2.getMessage() != null)
                 System.out.println(err2.getMessage()+'\n');
 
-            closeConnection();
+            transferManager.flush();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            closeConnection();
         }
     }
 }

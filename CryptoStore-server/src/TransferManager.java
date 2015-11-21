@@ -17,6 +17,14 @@ public class TransferManager {
         }
     }
 
+    public void flush() {
+        try {
+            dos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void writeControl(Command command) throws Exception {
         try {
             byte[] buffer = new byte[1];

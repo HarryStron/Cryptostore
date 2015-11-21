@@ -29,10 +29,18 @@ public class FileMap implements Serializable {
     }
 
     public String getOriginalFromEncrypted (String path) {
-        return original.get(encrypted.indexOf(path));
+        if (encrypted.indexOf(path) < 0) {
+            return null;
+        } else {
+            return original.get(encrypted.indexOf(path));
+        }
     }
 
     public String getEncryptedFromOriginal (String path) {
-        return encrypted.get(original.indexOf(path));
+        if (original.indexOf(path) < 0) {
+            return null;
+        } else {
+            return encrypted.get(original.indexOf(path));
+        }
     }
 }

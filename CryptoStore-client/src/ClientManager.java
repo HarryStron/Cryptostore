@@ -49,18 +49,19 @@ public class ClientManager {
         System.out.println("Protocol: " + session.getProtocol());
     }
 
-    private void connect() {
+    public void connect(String password) {
         System.out.println("\nConnecting with server. . .");
 
         try {
             clientSocket = establishConnection(host, hostPort, 5600); //TODO change the local port to whatever is going to be my in/out port
-
             reportStatus(clientSocket);
 
             transferManager = new TransferManager(clientSocket);
 
             authenticate();
+            System.out.println("\nConnected!");
 
+            getEncryptionMapping(password);
         } catch (Exception e) {
             handleError(Error.CANNOT_CONNECT, e);
         }
@@ -107,7 +108,7 @@ public class ClientManager {
         return "127.0.0.1"; //TODO change that with a method that returns the NAT IP address
     }
 
-    private void closeConnection() {
+    public void closeConnection() {
         try {
             isAUTHed = false;
             transferManager.writeControl(Command.CLOSE);
@@ -123,7 +124,15 @@ public class ClientManager {
     public void getEncryptionMapping(String password) {
         System.out.println("\nUpdating filename encryption-mapping. . .");
 
-        getFile(password, filenameManager.MAP_PATH);
+        try {
+            retrieveFile(filenameManager.MAP_PATH, MAP);
+            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+            FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.MAP_PATH);
+            fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
+            fileOutputStream.close();
+        } catch (Exception e) {
+            handleError(Error.CANNOT_RECEIVE_FILE, e);
+        }
 
         File mapFile = new File(filenameManager.MAP_PATH); //TODO move this block to the FilenameManager! Might use again
         if (!mapFile.exists()) {
@@ -143,8 +152,6 @@ public class ClientManager {
     }
 
     public void sendFile(String password, String filename) {
-        getEncryptionMapping(password);
-
         System.out.println("\nSending \'" + filename + "\' to server . . .");
         try {
             Path path = Paths.get(filename);
@@ -152,16 +159,18 @@ public class ClientManager {
                 byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
 
                 String encryptedFilename = filenameManager.randomisePath(filename);
-                connect();
                 deliverFile(encryptedFilename, buffer);
-                if(!filenameManager.addToMap(filename, encryptedFilename)) {
-                    System.out.println("Storing the mapping of the file failed!");
+
+                // if mapping already exists font create another entry
+                if (filenameManager.getOriginalPath(encryptedFilename) == null) {
+                    if (!filenameManager.addToMap(filename, encryptedFilename)) {
+                        System.out.println("Storing the mapping of the file failed!");
+                    }
                 }
+
                 byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
 
                 deliverFile(MAP, mapBuffer);
-
-                closeConnection();
             } else {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             }
@@ -204,37 +213,23 @@ public class ClientManager {
     }
 
     public void getFile(String password, String filename) {
-        connect();
-
         try {
-            System.out.println("\nUpdating filename encryption-mapping. . .");
-            retrieveFile(filenameManager.MAP_PATH, MAP);
+            System.out.println("\nDownloading " + filename + " from server. . .");
 
-            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
-            FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.MAP_PATH);
-            fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
-            fileOutputStream.close();
+            String encryptedFilename = filenameManager.getEncryptedPath(filename);
+            if (encryptedFilename == null) {
+                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+            } else {
+                retrieveFile(filename, encryptedFilename);
 
-            if (!filename.equals(filenameManager.MAP_PATH)) {
-                System.out.println("\nDownloading " + filename + " from server. . .");
-
-                String encryptedFilename = filenameManager.getEncryptedPath(filename);
-                if (encryptedFilename == null) {
-                    throw new Exception(Error.FILE_NOT_FOUND.getDescription());
-                } else {
-                    retrieveFile(filename, encryptedFilename);
-
-                    byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
-                    FileOutputStream fos = new FileOutputStream(filename);
-                    fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-                    fos.close();
-                }
+                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+                fos.close();
             }
         } catch (Exception e) {
             handleError(Error.CANNOT_RECEIVE_FILE, e);
         }
-
-        closeConnection();
     }
 
     private void retrieveFile(String filename, String encryptedFilename) throws Exception {
@@ -244,7 +239,6 @@ public class ClientManager {
 
                 okOrException();
                 transferManager.writeFileSize(encryptedFilename.length());
-
 
                 okOrException();
                 transferManager.writeFileName(encryptedFilename);
@@ -282,8 +276,6 @@ public class ClientManager {
     }
 
     public void deleteFile(String password, String filename) {
-        connect();
-
         System.out.println("\nDeleting " + filename + ". . .");
         try{
             if (deleteFromServer(filename)) {
@@ -302,7 +294,6 @@ public class ClientManager {
         } catch (Exception e) {
             handleError(Error.DELETE_FAIL, e);
         }
-        closeConnection();
     }
 
     private boolean deleteFromServer(String filename) throws Exception {
@@ -388,10 +379,10 @@ public class ClientManager {
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
-
         try {
             if (transferManager != null)
-                transferManager.writeControl(Command.ERROR);
+                transferManager.flush();
+//                transferManager.writeControl(Command.ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage()+'\n');
         }

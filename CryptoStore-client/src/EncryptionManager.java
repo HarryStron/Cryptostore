@@ -59,6 +59,7 @@ public class EncryptionManager {
             Cipher cipher = Cipher.getInstance("AES/CBC/PKCS5Padding");
             cipher.init(Cipher.DECRYPT_MODE, secretKey, new IvParameterSpec(iv));
 
+            System.out.println("File decrypted!");
             return cipher.doFinal(ciphertext);
         } catch (Exception e) {
             throw new Exception(Error.CANNOT_DECRYPT.getDescription());

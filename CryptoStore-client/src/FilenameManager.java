@@ -31,6 +31,11 @@ public class FilenameManager {
         return getMap().getEncryptedFromOriginal(path);
     }
 
+    /** Returns null if file does not exist **/
+    public String getOriginalPath(String path) {
+        return getMap().getOriginalFromEncrypted(path);
+    }
+
     private FileMap getMap() {
         try {
             File file = new File(MAP_PATH);
@@ -41,9 +46,9 @@ public class FilenameManager {
 
             return map;
         } catch (IOException e) {
-            return null;
+            return new FileMap();
         } catch (ClassNotFoundException e) {
-            return null;
+            return new FileMap();
         }
     }
 
