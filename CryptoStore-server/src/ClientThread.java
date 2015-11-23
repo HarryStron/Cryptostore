@@ -8,9 +8,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ClientThread extends Thread {
-    public static final String HASHMAP_PATH = "./ENCRYPTION_MAPPING";
-    public static final String SYNC_PATH = "./SYNC_INFO";
-
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private SyncManager syncManager;
@@ -111,12 +108,7 @@ public class ClientThread extends Thread {
                         transferManager.writeControl(Command.OK);
                         sendToClient(filename);
                     } else {
-                        if (!filename.equals(HASHMAP_PATH)) {
-                            throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
-                        } else {
-                            System.out.println("The filename mapping does not exist. If this user has files on server make sure you resolve this issue, else ignore!");
-                            transferManager.writeControl(Command.ERROR);
-                        }
+                        throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
 
                 } else if (request == Command.DELETE.getCode()) {
@@ -203,7 +195,7 @@ public class ClientThread extends Thread {
         transferManager.writeControl(Command.OK);
         String filename = listenForString(filenameSize);
         greaterThanZero(filename.length());
-        if (!filename.equals(HASHMAP_PATH) && !Validator.validateFilename(filename)) {
+        if (!Validator.validateFilename(filename)) {
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
         }
         if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {

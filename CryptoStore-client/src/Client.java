@@ -11,9 +11,12 @@ public class Client {
 
 //        ClientManager.getAllUserFiles((new File("./Admin1/")).toPath()).forEach(System.out::println);
         clientManager1.connect(encryptionPassword);
-//        clientManager1.download(encryptionPassword, "./Admin1/test1.txt");
 //        clientManager1.upload(encryptionPassword, "./Admin1/test1.txt");
-//        clientManager1.download(encryptionPassword, "./Admin1/test1.txt");
+//        clientManager1.upload(encryptionPassword, new FilenameManager("Admin1").MAP_PATH);
+//        clientManager1.upload(encryptionPassword, "./Admin1/Admin2/test2.txt");
+//        clientManager1.upload(encryptionPassword, new FilenameManager("Admin1").MAP_PATH);
+        clientManager1.download(encryptionPassword, "./Admin1/test1.txt");
+        clientManager1.download(encryptionPassword, "./Admin1/Admin2/test2.txt");
 //        clientManager1.deleteFile(encryptionPassword, "./Admin1/test1.txt");
         clientManager1.closeConnection();
 

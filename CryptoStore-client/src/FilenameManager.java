@@ -3,6 +3,7 @@ import java.util.UUID;
 
 public class FilenameManager {
     public String MAP_PATH;
+    private final String HEX_MAP_PATH = "./aaaaaaaaaa";
 
     public FilenameManager(String username) {
         MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
@@ -46,10 +47,8 @@ public class FilenameManager {
 
             return map;
         } catch (IOException e) {
-            System.out.println("Failed to retrieve local map file!");
             return new FileMap();
         } catch (ClassNotFoundException e) {
-            System.out.println("Failed to retrieve local map file!");
             return new FileMap();
         }
     }
@@ -68,7 +67,8 @@ public class FilenameManager {
         return store(map);
     }
 
-    public void createMapIfNotExists () throws Exception {
+    /** returns true if it exists false otherwise **/
+    public boolean createMapIfNotExists () throws Exception {
         File mapFile = new File(MAP_PATH);
         if (!mapFile.exists()) {
             try {
@@ -76,14 +76,18 @@ public class FilenameManager {
                 mapFile.createNewFile();
                 FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                objectOutputStream.writeObject(new FileMap());
+                FileMap fileMap = new FileMap();
+                fileMap.addMapping(MAP_PATH, HEX_MAP_PATH);
+                objectOutputStream.writeObject(fileMap);
                 objectOutputStream.close();
 
                 System.out.println("New encryption-mapping created!");
+                return false;
             } catch (Exception e) {
                 throw new Exception(Error.CANNOT_SAVE_FILE.getDescription());
             }
         }
+        return true;
     }
 
     private boolean store(FileMap map) {
