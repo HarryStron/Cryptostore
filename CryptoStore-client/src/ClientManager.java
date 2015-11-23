@@ -192,7 +192,7 @@ public class ClientManager {
                             }
                     } else {
                         transferManager.writeControl(Command.SKIP);
-                        getFile(originalPath, filename);
+                        tempList.put(originalPath, filename);
                     }
 
                 }
