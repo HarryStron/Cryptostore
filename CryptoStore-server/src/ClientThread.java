@@ -6,13 +6,14 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class ClientThread extends Thread {
     public static final String HASHMAP_PATH = "./ENCRYPTION_MAPPING";
+    public static final String SYNC_PATH = "./SYNC_INFO";
 
     private SSLSocket clientSocket;
     private TransferManager transferManager;
+    private SyncManager syncManager;
     private String clientIP;
     private String connectedUser;
     private boolean clientIsConnected;
@@ -59,13 +60,21 @@ public class ClientThread extends Thread {
             if (!Validator.validatePassword(password))
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
 
-            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username)));
+            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getPBKDF2(password, JDBCControl.getSalt(username)));
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
                 connectedUser = username;
             } else {
                 throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
+            }
+
+            //SETUP SYNC file for user
+            syncManager = new SyncManager(connectedUser);
+            try {
+                syncManager.createFileIfNotExists();
+            } catch (Exception e) {
+                Error.CANNOT_SAVE_FILE.print();
             }
 
             waitForClientRequest();
@@ -121,9 +130,46 @@ public class ClientThread extends Thread {
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
                         deleteFile(filename);
+
+                        syncManager.updateEntry(filename, null, false);
                     } else {
                         throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
+
+                } else if (request == Command.SYNC.getCode()) {
+                    clientPrint("Is requesting to SYNC his files");
+                    SyncFile syncFile = syncManager.getSyncFile();
+                    transferManager.writeFileSize(syncFile.getVersion()); //sends version of SYNC file
+
+                    int response = getCommand();
+
+                    if (response == Command.OK.getCode()) {
+                        transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                        okOrException();
+
+                        for (String s : syncFile.getFiles()) {
+                            transferManager.writeFileSize(s.length());
+                            okOrException();
+
+                            transferManager.writeFileName(s);
+                            response = getCommand();
+                            if (response == Command.OK.getCode()) {
+                                transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
+                                okOrException();
+
+                                transferManager.writeFileName(syncFile.getHashOfFile(s));
+                                okOrException();
+
+                            } else if (response == Command.SKIP.getCode()) {
+                                //do nothing
+                            }
+                        }
+
+                        System.out.println("SYNC completed!");
+                    } else if (response == Command.SKIP.getCode()){
+                        System.out.println("Client already up to date!");
+                    }
+
 
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
@@ -203,6 +249,8 @@ public class ClientThread extends Thread {
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
+
+                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(newFile.toURI())), true);
 
                     clientPrint(filename + " received!");
 

@@ -55,6 +55,21 @@ public class TransferManager {
         }
     }
 
+    public void writeFileName(String filename) throws Exception {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(filename.getBytes().length);
+            buffer.put(filename.getBytes());
+
+            Filename dataPkts = new Filename(buffer.array());
+
+            dos.write(dataPkts.getData(0));
+            dos.flush();
+
+        } catch (IOException e) {
+            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
+        }
+    }
+
     public void writeFile(Packets pkts) throws Exception {
         try {
             byte[] fullSizedFile = pkts.getData(1);

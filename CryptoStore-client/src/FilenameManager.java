@@ -36,7 +36,7 @@ public class FilenameManager {
         return getMap().getOriginalFromEncrypted(path);
     }
 
-    private FileMap getMap() {
+    public FileMap getMap() {
         try {
             File file = new File(MAP_PATH);
             FileInputStream fis = new FileInputStream(file);
@@ -46,8 +46,10 @@ public class FilenameManager {
 
             return map;
         } catch (IOException e) {
+            System.out.println("Failed to retrieve local map file!");
             return new FileMap();
         } catch (ClassNotFoundException e) {
+            System.out.println("Failed to retrieve local map file!");
             return new FileMap();
         }
     }

@@ -1,14 +1,19 @@
+import org.apache.commons.io.IOUtils;
+
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.InetAddress;
 import java.nio.ByteBuffer;
+import java.nio.file.DirectoryStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 public class ClientManager {
     private final String MAP = "./ENCRYPTION_MAPPING";
@@ -17,7 +22,7 @@ public class ClientManager {
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
-//    private SyncManager syncManager;
+    private SyncManager syncManager;
     private String host;
     private int hostPort;
     private String username;
@@ -33,7 +38,7 @@ public class ClientManager {
         isAUTHed = false;
 
         filenameManager = new FilenameManager(username);
-//        syncManager = new SyncManager();
+        syncManager = new SyncManager(username);
     }
 
     private void setCertificates() {
@@ -66,6 +71,9 @@ public class ClientManager {
             System.out.println("\nConnected!");
 
             getEncryptionMapping(password);
+
+            syncWithServer();
+
         } catch (Exception e) {
             handleError(Error.CANNOT_CONNECT, e);
         }
@@ -125,11 +133,11 @@ public class ClientManager {
         }
     }
 
-    public void getEncryptionMapping(String password) {
+    private void getEncryptionMapping(String password) {
         System.out.println("\nUpdating filename encryption-mapping. . .");
 
         try {
-            retrieveFile(filenameManager.MAP_PATH, MAP);
+            getFile(filenameManager.MAP_PATH, MAP);
             byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
             FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.MAP_PATH);
             fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
@@ -145,26 +153,154 @@ public class ClientManager {
         }
     }
 
-    public void sendFile(String password, String filename) {
+    private void syncWithServer() {
+        System.out.println("\nSynchronising with server. . .");
+        try {
+            transferManager.writeControl(Command.SYNC);
+
+            SyncFile syncFile = syncManager.getSyncFile();
+
+            ArrayList<String> serverFileList = new ArrayList<>();
+
+            int serverVersion = getSize();
+
+            int localVersion = syncFile.getVersion();
+            if (localVersion != serverVersion) {
+                transferManager.writeControl(Command.OK);
+                int numberOfFiles = getSize();
+                transferManager.writeControl(Command.OK);
+
+                HashMap<String, String> tempList = new HashMap<>();
+                for (int i = 0; i < numberOfFiles; i++) {
+                    String filename = listenForString();
+                    String originalPath = filenameManager.getOriginalPath(filename);
+
+                    if (originalPath!=null) {
+                        serverFileList.add(originalPath);
+                    }
+
+                    if ((new File(originalPath)).exists()) { //If the file is new there is no need to ask for the hash
+                        transferManager.writeControl(Command.OK);
+
+                        String fileHash = listenForString();
+                        transferManager.writeControl(Command.OK);
+
+                            if (fileHash.equals(syncFile.getHashOfFile(filename))) {
+                                break; //should break out of loop!
+                            } else {
+                                tempList.put(originalPath, filename);
+                            }
+                    } else {
+                        transferManager.writeControl(Command.SKIP);
+                        getFile(originalPath, filename);
+                    }
+
+                }
+
+                for (String s : tempList.values()) {
+                    getFile(s, tempList.get(s));
+                }
+
+                ArrayList<Path> localFiles = getAllUserFiles((new File("./"+username+"/")).toPath());
+                for (Path p : localFiles) {
+                    if (serverFileList.contains(p.toString())) {
+                        serverFileList.remove(p);
+                    }
+                }
+
+                syncFile.setVersion(serverVersion);
+//                scan the user directory and find which files are not in the serverFileList.
+//                then remove all those files from the local directory.
+//                as a last step update the local sync file version to serverVersion
+
+            } else {
+                transferManager.writeControl(Command.SKIP);
+                System.out.println("The client is already up to date");
+            }
+
+
+            //scan all files in the directory and if more than the serverFileList contains then find whitch and delete as it should
+
+//            int serverVersion = getCommand();
+//            transferManager.writeControl(Command.OK);
+//            okOrException();
+//
+//            SyncFile syncFile = syncManager.getSyncFile();
+//            int localVersion = syncFile.getVersion();
+//            String serverHash;
+//            String localHash;
+//
+//            if (serverVersion > localVersion) {
+//                for (String file : syncFile.getFiles()) {
+//                    transferManager.writeFileSize(file.length());
+//                    okOrException();
+//
+//                    transferManager.writeFileName(file);
+//                    serverHash = listenForString(HASH_LENGTH);
+//                    transferManager.writeControl(Command.OK);
+//
+//                    localHash = syncFile.getHashOfFile(file);
+//
+//                    if (!localHash.equals(serverHash)) {
+//                        getFile(filenameManager.getOriginalPath(file), file);
+//                    }
+//                }
+//            }
+            System.out.println("Synchronisation Completed!");
+
+
+        } catch (Exception e) {
+            handleError(Error.CANNOT_SYNC, e);
+        }
+
+
+    }
+    static ArrayList<Path> pathsInDir = new ArrayList<>();
+    public static ArrayList<Path> getAllUserFiles(Path path) throws IOException {
+
+
+        DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
+
+        for(Path filePath : newDirectoryStream) {
+            if(Files.isDirectory(filePath)) {
+                getAllUserFiles(filePath);
+            } else {
+                pathsInDir.add(filePath);
+            }
+        }
+
+        return pathsInDir;
+    }
+
+    public void upload(String password, String filename) {
         System.out.println("\nSending \'" + filename + "\' to server . . .");
         try {
             Path path = Paths.get(filename);
             if (path.toFile().exists()) {
-                byte[] buffer = EncryptionManager.encryptFile(password.toCharArray(), path);
+                //SEND FILE
+                byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
 
                 String encryptedFilename = filenameManager.randomisePath(filename);
-                deliverFile(encryptedFilename, buffer);
+                sendFile(encryptedFilename, encryptedFileBytes);
 
-                // if mapping already exists font create another entry
+                //UPDATE & SEND MAP
+                // if mapping already exists don't create another entry
                 if (filenameManager.getOriginalPath(encryptedFilename) == null) {
                     if (!filenameManager.addToMap(filename, encryptedFilename)) {
                         System.out.println("Storing the mapping of the file failed!");
+                    } else { //TODO should find a way to abort instead if ignoring the failure
+                        byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+                        sendFile(MAP, mapBuffer);
                     }
                 }
 
-                byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+                //UPDATE & SEND SYNC_INFO
+                if(!syncManager.updateEntry(encryptedFilename, encryptedFileBytes, true)) {
+                    System.out.println("Updating the sync file failed!");
+                } else { //TODO should find a way to abort instead if ignoring the failure
+                    //sendFile(SYNC, Files.readAllBytes(Paths.get(syncManager.SYNC_PATH)));
+                }
 
-                deliverFile(MAP, mapBuffer);
             } else {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             }
@@ -174,7 +310,7 @@ public class ClientManager {
         }
     }
 
-    private void deliverFile(String filename, byte[] buffer) throws Exception {
+    private void sendFile(String filename, byte[] buffer) throws Exception {
         if (isAUTHed) {
             try {
                 transferManager.writeControl(Command.FILE_FROM_CLIENT);
@@ -206,7 +342,7 @@ public class ClientManager {
         }
     }
 
-    public void getFile(String password, String filename) {
+    public void download(String password, String filename) {
         try {
             System.out.println("\nDownloading " + filename + " from server. . .");
 
@@ -214,9 +350,9 @@ public class ClientManager {
             if (encryptedFilename == null) {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
             } else {
-                retrieveFile(filename, encryptedFilename);
+                getFile(filename, encryptedFilename);
 
-                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename));
+                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename)); //TODO create method. It is used more than once!
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
                 fos.close();
@@ -226,7 +362,7 @@ public class ClientManager {
         }
     }
 
-    private void retrieveFile(String filename, String encryptedFilename) throws Exception {
+    private void getFile(String filename, String encryptedFilename) throws Exception {
         if (isAUTHed) {
             try {
                 transferManager.writeControl(Command.FILE_FROM_SERVER);
@@ -276,9 +412,12 @@ public class ClientManager {
                 if (deleteLocalFile(filename)) {
                     System.out.println("\n" + filename + " has been deleted!");
 
+                    //Update and send filename mapping
                     byte[] mapBuffer = EncryptionManager.encryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
+                    sendFile(MAP, mapBuffer);
 
-                    deliverFile(MAP, mapBuffer);
+                    //send sync file
+                    sendFile(SYNC, Files.readAllBytes(Paths.get(syncManager.SYNC_PATH)));
                 } else {
                     throw new Exception(Error.LOCAL_DELETE_FAIL.getDescription());
                 }
@@ -326,9 +465,14 @@ public class ClientManager {
 
             if (filenameManager.removeFromMap(filename)) {
                 System.out.println("\nMapping removed!");
-                // even if the deletion of the entry fails the file is already deleted so no point returning false.
-                // Just inform the user!
-            } else {
+
+                //Update sync file
+                if (syncManager.updateEntry(filenameManager.getEncryptedPath(filename), null, false)) {
+                    System.out.println("\nSync file updated!");
+                } else {//TODO should find a way to abort instead if ignoring the failure
+                    System.out.println("\nFailed to remove entry fro sync file!");
+                }
+            } else {//TODO should find a way to abort instead if ignoring the failure
                 System.out.println("\nFailed to remove mapping!");
             }
             return true;
@@ -363,6 +507,29 @@ public class ClientManager {
         }
     }
 
+    private String listenForString() throws Exception {
+        int filenameSize = getSize();
+        greaterThanZero(filenameSize);
+        transferManager.writeControl(Command.OK);
+
+        String filename = listenForString(filenameSize);
+        greaterThanZero(filename.length());
+
+        return filename;
+    }
+
+    private String listenForString(int size) {
+        String filename = null;
+
+        try {
+            filename = IOUtils.toString(transferManager.read(size).getData(1), "UTF-8");
+        } catch (Exception e) {
+            handleError(Error.COMMUNICATION_FAILED, e);
+        }
+
+        return filename;
+    }
+
     private void handleError(Error err1, Exception err2) {
         try {
             err1.print();
@@ -379,6 +546,14 @@ public class ClientManager {
 //                transferManager.writeControl(Command.ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage()+'\n');
+        }
+    }
+
+    private void greaterThanZero(int num) throws Exception {
+        if (num > 0) {
+            return;
+        } else {
+            throw new Exception(Error.ZERO_SIZE.getDescription());
         }
     }
 }

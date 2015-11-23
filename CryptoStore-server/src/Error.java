@@ -30,7 +30,9 @@ public enum Error {
     INCORRECT_FORM(23, "The input was not of the correct form"),
     // Encryption
     CANNOT_DECRYPT(24, "The file could not be decrypted"),
-    CANNOT_ENCRYPT(25, "The file could not be encrypted");
+    CANNOT_ENCRYPT(25, "The file could not be encrypted"),
+    //SYNC
+    CANNOT_SYNC(26, "The synchronisation failed");
 
     private final int code;
     private final String description;
