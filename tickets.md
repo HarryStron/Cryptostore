@@ -95,10 +95,6 @@ Failure to transmit files bigger than a few MBs long. Split the data into chunks
 Change hashmaps to a biderectional data type. It is needed by server for deletion of files.<br/>
 **_v1.11.1_**
 
-**`bug-8`**:<br/>
-Encryption mapping (as a path) is not mapped within encryption mapping (as a file) causing problems with null pointers when trying to sync.<br/>
-**_same as branch: feature-13_**
-
 
 ## Other (_not tagged_)
 

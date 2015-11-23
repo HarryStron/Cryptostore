@@ -143,10 +143,6 @@ public class ClientManager {
 
         try {
             download(password, filenameManager.MAP_PATH);
-//            byte[] decryptedMap = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filenameManager.MAP_PATH));
-//            FileOutputStream fileOutputStream = new FileOutputStream(filenameManager.MAP_PATH);
-//            fileOutputStream.write(decryptedMap); /** WARNING: will overwrite existing file with same name **/
-//            fileOutputStream.close();
         } catch (Exception e) {
             upload(password, filenameManager.MAP_PATH); //TODO if downloading fails not because the file does not exist this will delete all the existing mappings
             handleError(Error.CANNOT_RECEIVE_FILE, e);
@@ -387,11 +383,8 @@ public class ClientManager {
                 if (deleteLocalFile(filename)) {
                     System.out.println("\n" + filename + " has been deleted!");
 
-                    //Update and send filename mapping
-//                    download(password, filenameManager.MAP_PATH);
+                    upload(password, filenameManager.MAP_PATH);
 
-                    //send sync file
-                    sendFile(SYNC, Files.readAllBytes(Paths.get(syncManager.SYNC_PATH)));
                 } else {
                     throw new Exception(Error.LOCAL_DELETE_FAIL.getDescription());
                 }

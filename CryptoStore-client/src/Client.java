@@ -15,7 +15,7 @@ public class Client {
 //        clientManager1.uploadFileAndMap(encryptionPassword, "./Admin1/Admin2/test2.txt");
 //        clientManager1.download(encryptionPassword, "./Admin1/test1.txt");
 //        clientManager1.download(encryptionPassword, "./Admin1/Admin2/test2.txt");
-//        clientManager1.deleteFile(encryptionPassword, "./Admin1/test1.txt");
+        clientManager1.deleteFile(encryptionPassword, "./Admin1/Admin2/test2.txt");
         clientManager1.closeConnection();
 
 //        clientManager2.connect(encryptionPassword);
