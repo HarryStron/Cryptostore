@@ -238,7 +238,13 @@ public class ClientManager {
         return pathsInDir;
     }
 
-    public boolean upload(String password, String filename) {
+    public void uploadFileAndMap(String password, String filename) {
+        if (upload(password, filename)) {
+            upload(password, filenameManager.MAP_PATH);
+        }
+    }
+
+    private boolean upload(String password, String filename) {
         System.out.println("\nSending \'" + filename + "\' to server . . .");
         try {
             Path path = Paths.get(filename);
