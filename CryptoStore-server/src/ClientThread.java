@@ -131,8 +131,7 @@ public class ClientThread extends Thread {
                 } else if (request == Command.SYNC.getCode()) {
                     clientPrint("Is requesting to SYNC his files");
                     SyncFile syncFile = syncManager.getSyncFile();
-                    transferManager.writeFileSize(syncFile.getVersion()); //sends version of SYNC file
-
+//                    transferManager.writeFileSize(syncFile.getVersion()); //sends version of SYNC file
                     int response = getCommand();
 
                     if (response == Command.OK.getCode()) {
@@ -150,23 +149,22 @@ public class ClientThread extends Thread {
                                 okOrException();
 
                                 transferManager.writeFileName(syncFile.getHashOfFile(s));
-                                okOrException();
-
+                                try { //need to break out of the loop if the client already has the version of tha file
+                                    okOrException();
+                                } catch (Exception e) {
+                                    break;
+                                }
                             } else if (response == Command.SKIP.getCode()) {
                                 //do nothing
                             }
                         }
-
                         System.out.println("SYNC completed!");
                     } else if (response == Command.SKIP.getCode()){
                         System.out.println("Client already up to date!");
                     }
-
-
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
                     closeConnection();
-
                 } else {
                     throw new IOException(Error.UNKNOWN_COMMAND.getDescription(clientIP));
                 }

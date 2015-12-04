@@ -34,16 +34,12 @@ public class SyncFile implements Serializable {
         //add new
         fileList.add(filename);
         hashList.add(hash);
-
-        version++;
     }
 
     public void removepair(String filename) {
         if (fileList.contains(filename)) {
             hashList.remove(fileList.indexOf(filename));
             fileList.remove(filename);
-
-            version++;
         }
     }
 

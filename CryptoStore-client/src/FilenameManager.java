@@ -3,7 +3,7 @@ import java.util.UUID;
 
 public class FilenameManager {
     public String MAP_PATH;
-    private final String HEX_MAP_PATH = "./aaaaaaaaaa";
+    private final String HEX_MAP_PATH = "./0000000000";
 
     public FilenameManager(String username) {
         MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
@@ -37,7 +37,7 @@ public class FilenameManager {
         return getMap().getOriginalFromEncrypted(path);
     }
 
-    public FileMap getMap() {
+    private FileMap getMap() {
         try {
             File file = new File(MAP_PATH);
             FileInputStream fis = new FileInputStream(file);
@@ -51,6 +51,12 @@ public class FilenameManager {
         } catch (ClassNotFoundException e) {
             return new FileMap();
         }
+    }
+
+    public boolean containsOriginal(String filename) {
+        FileMap map = getMap();
+
+        return map.containsOriginal(filename);
     }
 
     public boolean addToMap(String filename, String encryptedFilename) {

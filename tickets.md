@@ -58,10 +58,6 @@ Create a syncronization class and methods to SYNC files between client and serve
 **_queued_**
 
 **`feature-14`**:<br/>
-Find the optimal points where syncronization should be happening and implement it.<br/>
-**_queued_**
-
-**`feature-15`**:<br/>
 Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
 **_queued_**
 

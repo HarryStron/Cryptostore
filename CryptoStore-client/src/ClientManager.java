@@ -13,11 +13,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
 
 public class ClientManager {
-    private final String SYNC = "./SYNC_INFO";
-
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -158,10 +155,11 @@ public class ClientManager {
 
             ArrayList<String> serverFileList = new ArrayList<>();
 
-            int serverVersion = getSize();
+//            int serverVersion = getSize();
 
-            int localVersion = syncManager.getVersion();
-            if (localVersion != serverVersion) {
+//            int localVersion = syncManager.getVersion();
+//System.out.println(localVersion + " : " + serverVersion);
+//            if (localVersion != serverVersion) {
                 transferManager.writeControl(Command.OK);
                 int numberOfFiles = getSize();
                 transferManager.writeControl(Command.OK);
@@ -177,13 +175,14 @@ public class ClientManager {
                         transferManager.writeControl(Command.OK);
 
                         String fileHash = listenForString();
-                        transferManager.writeControl(Command.OK);
 
-                            if (fileHash.equals(syncFile.getHashOfFile(filename))) {
-                                break; //should break out of loop!
-                            } else {
-                                tempList.add(originalPath);
-                            }
+                        if (fileHash.equals(syncFile.getHashOfFile(filename))) {
+                            transferManager.writeControl(Command.SKIP);
+                            break; //should break out of loop!
+                        } else {
+                            transferManager.writeControl(Command.OK);
+                            tempList.add(originalPath);
+                        }
                     } else {
                         transferManager.writeControl(Command.SKIP);
                         tempList.add(originalPath);
@@ -202,12 +201,12 @@ public class ClientManager {
                     }
                 }
 
-                syncManager.setVersion(serverVersion);
+//                syncManager.setVersion(serverVersion);
 
-            } else {
-                transferManager.writeControl(Command.SKIP);
-                System.out.println("The client is already up to date");
-            }
+//            } else {
+//                transferManager.writeControl(Command.SKIP);
+//                System.out.println("The client is already up to date");
+//            }
             System.out.println("Synchronisation Completed!");
 
 
@@ -217,10 +216,9 @@ public class ClientManager {
 
 
     }
+
     static ArrayList<Path> pathsInDir = new ArrayList<>();
     public static ArrayList<Path> getAllUserFiles(Path path) throws IOException {
-
-
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
@@ -251,7 +249,7 @@ public class ClientManager {
                 String encryptedFilename = filenameManager.randomisePath(filename);
                 sendFile(encryptedFilename, encryptedFileBytes);
 
-                //UPDATE & SEND MAP
+                //UPDATE MAP
                 // if mapping already exists don't create another entry
                 if (filenameManager.getOriginalPath(encryptedFilename) == null) {
                     if (!filenameManager.addToMap(filename, encryptedFilename)) {
@@ -318,15 +316,16 @@ public class ClientManager {
             } else {
                 getFile(filename, encryptedFilename);
 
-                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename)); //TODO create method. It is used more than once!
-                FileOutputStream fos = new FileOutputStream(filename);
-                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-                fos.close();
-
                 //UPDATE SYNC FILE
                 if(!syncManager.updateEntry(encryptedFilename, Files.readAllBytes(Paths.get(filename)), true)) {
                     System.out.println("Updating the sync file failed!");
                 }
+
+                //decrypt after update SYNC file. File needs to be same as in server in order to produce same hash
+                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename)); //TODO create method. It is used more than once!
+                FileOutputStream fos = new FileOutputStream(filename);
+                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
+                fos.close();
             }
         } catch (Exception e) {
             handleError(Error.CANNOT_RECEIVE_FILE, e);
@@ -379,6 +378,10 @@ public class ClientManager {
     public void deleteFile(String password, String filename) {
         System.out.println("\nDeleting " + filename + ". . .");
         try{
+            if (!filenameManager.containsOriginal(filename)) {
+                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+            }
+
             if (deleteFromServer(filename)) {
                 if (deleteLocalFile(filename)) {
                     System.out.println("\n" + filename + " has been deleted!");
@@ -400,6 +403,7 @@ public class ClientManager {
         System.out.println("\nDeleting " + filename + " from the server. . .");
 
         String encryptedFilename = filenameManager.getEncryptedPath(filename);
+
         if (isAUTHed) {
             try {
                 transferManager.writeControl(Command.DELETE);
