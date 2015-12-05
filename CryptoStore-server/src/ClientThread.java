@@ -6,13 +6,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.HashMap;
 
 public class ClientThread extends Thread {
-    public static final String HASHMAP_PATH = "./ENCRYPTION_MAPPING";
-
     private SSLSocket clientSocket;
     private TransferManager transferManager;
+    private SyncManager syncManager;
     private String clientIP;
     private String connectedUser;
     private boolean clientIsConnected;
@@ -59,13 +57,21 @@ public class ClientThread extends Thread {
             if (!Validator.validatePassword(password))
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
 
-            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getHash(password, JDBCControl.getSalt(username)));
+            clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getPBKDF2(password, JDBCControl.getSalt(username)));
 
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
                 connectedUser = username;
             } else {
                 throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
+            }
+
+            //SETUP SYNC file for user
+            syncManager = new SyncManager(connectedUser);
+            try {
+                syncManager.createFileIfNotExists();
+            } catch (Exception e) {
+                Error.CANNOT_SAVE_FILE.print();
             }
 
             waitForClientRequest();
@@ -116,20 +122,41 @@ public class ClientThread extends Thread {
                     if (requestFile.exists()) {
                         transferManager.writeControl(Command.OK);
                         deleteFile(filename);
+
+                        syncManager.updateEntry(filename, null, false);
                     } else {
                         throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
 
+                } else if (request == Command.SYNC.getCode()) {
+                    clientPrint("Is requesting to SYNC his files");
+                    SyncFile syncFile = syncManager.getSyncFile();
+
+                    transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                    okOrException();
+
+                    for (String s : syncFile.getFiles()) {
+                        transferManager.writeFileSize(s.length());
+                        okOrException();
+
+                        transferManager.writeFileName(s);
+                        if (getCommand() == Command.OK.getCode()) {
+                            transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
+                            okOrException();
+
+                            transferManager.writeFileName(syncFile.getHashOfFile(s));
+                            okOrException();
+                        } //If the response is any other i.e. SKIP the hash of that file will be ignored
+                    }
+                    System.out.println("SYNC completed!");
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
                     closeConnection();
-
                 } else {
                     throw new IOException(Error.UNKNOWN_COMMAND.getDescription(clientIP));
                 }
             } catch (Exception e) {
                 handleError(Error.FILE_NOT_SENT, e);
-                closeConnection();
             }
         }
     }
@@ -153,7 +180,7 @@ public class ClientThread extends Thread {
         transferManager.writeControl(Command.OK);
         String filename = listenForString(filenameSize);
         greaterThanZero(filename.length());
-        if (!filename.equals(HASHMAP_PATH) && !Validator.validateFilename(filename)) {
+        if (!Validator.validateFilename(filename)) {
             throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
         }
         if (!new File(filename).getCanonicalPath().startsWith(System.getProperty("user.dir"))) {
@@ -199,6 +226,8 @@ public class ClientThread extends Thread {
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
+
+                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(newFile.toURI())), true);
 
                     clientPrint(filename + " received!");
 
@@ -292,9 +321,10 @@ public class ClientThread extends Thread {
             if (err2.getMessage() != null)
                 System.out.println(err2.getMessage()+'\n');
 
-            closeConnection();
+            transferManager.flush();
         } catch (Exception e) {
             System.out.println(e.getMessage());
+            closeConnection();
         }
     }
 }

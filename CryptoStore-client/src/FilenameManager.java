@@ -3,6 +3,7 @@ import java.util.UUID;
 
 public class FilenameManager {
     public String MAP_PATH;
+    private final String HEX_MAP_PATH = "./0000000000";
 
     public FilenameManager(String username) {
         MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
@@ -31,6 +32,11 @@ public class FilenameManager {
         return getMap().getEncryptedFromOriginal(path);
     }
 
+    /** Returns null if file does not exist **/
+    public String getOriginalPath(String path) {
+        return getMap().getOriginalFromEncrypted(path);
+    }
+
     private FileMap getMap() {
         try {
             File file = new File(MAP_PATH);
@@ -41,10 +47,16 @@ public class FilenameManager {
 
             return map;
         } catch (IOException e) {
-            return null;
+            return new FileMap();
         } catch (ClassNotFoundException e) {
-            return null;
+            return new FileMap();
         }
+    }
+
+    public boolean containsOriginal(String filename) {
+        FileMap map = getMap();
+
+        return map.containsOriginal(filename);
     }
 
     public boolean addToMap(String filename, String encryptedFilename) {
@@ -59,6 +71,29 @@ public class FilenameManager {
         map.removeMapping(filename, map.getEncryptedFromOriginal(filename));
 
         return store(map);
+    }
+
+    /** returns true if it exists false otherwise **/
+    public boolean createMapIfNotExists () throws Exception {
+        File mapFile = new File(MAP_PATH);
+        if (!mapFile.exists()) {
+            try {
+                mapFile.getParentFile().mkdirs();
+                mapFile.createNewFile();
+                FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
+                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
+                FileMap fileMap = new FileMap();
+                fileMap.addMapping(MAP_PATH, HEX_MAP_PATH);
+                objectOutputStream.writeObject(fileMap);
+                objectOutputStream.close();
+
+                System.out.println("New encryption-mapping created!");
+                return false;
+            } catch (Exception e) {
+                throw new Exception(Error.CANNOT_SAVE_FILE.getDescription());
+            }
+        }
+        return true;
     }
 
     private boolean store(FileMap map) {

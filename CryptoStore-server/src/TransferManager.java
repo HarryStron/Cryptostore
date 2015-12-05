@@ -17,6 +17,14 @@ public class TransferManager {
         }
     }
 
+    public void flush() {
+        try {
+            dos.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public void writeControl(Command command) throws Exception {
         try {
             byte[] buffer = new byte[1];
@@ -38,6 +46,21 @@ public class TransferManager {
             buffer.putInt(size);
 
             FileSize dataPkts = new FileSize(buffer.array());
+
+            dos.write(dataPkts.getData(0));
+            dos.flush();
+
+        } catch (IOException e) {
+            throw new Exception(Error.FAILED_TO_WRITE.getDescription());
+        }
+    }
+
+    public void writeFileName(String filename) throws Exception {
+        try {
+            ByteBuffer buffer = ByteBuffer.allocate(filename.getBytes().length);
+            buffer.put(filename.getBytes());
+
+            Filename dataPkts = new Filename(buffer.array());
 
             dos.write(dataPkts.getData(0));
             dos.flush();

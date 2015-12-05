@@ -54,19 +54,11 @@ Implement deleting of a remote file.<br/>
 **_v1.12.0_**
 
 **`feature-13`**:<br/>
-Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
-**_queued_**
-
-**`feature-14`**:<br/>
-Uses hashes to compare the files on the server with those on the client.<br/>
-**_queued_**
-
-**`feature-15`**:<br/>
 Create a syncronization class and methods to SYNC files between client and server.<br/>
 **_queued_**
 
-**`feature-16`**:<br/>
-Find the optimal points where syncronization should be happening and implement it.<br/>
+**`feature-14`**:<br/>
+Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
 **_queued_**
 
 ## BUGs
@@ -75,9 +67,9 @@ Find the optimal points where syncronization should be happening and implement i
 No message is send over to the server (i.e. ERROR msg) when one of the client transfers fail.<br/>
 **_v1.4.1_**
 
-**`bug-2`**_(branched off bug-1)_:<br/>
+**`bug-2`**:<br/>
 No exception messages are printed. Need to be displayed for ease of understanding why a problem occured.<br/>
-**_v1.4.1_**
+**_same as branch: bug-1_**
 
 **`bug-3`**:<br/>
 The client connects to the server and starts the sending process without encrypting the file before hand. For large files that take time to be encrypted that might cause problems such as timeouts. Also not worth taking up resources such as sockets listening for no particular reason. Encrypt before sending.<br/>
