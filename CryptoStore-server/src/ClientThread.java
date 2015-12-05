@@ -131,37 +131,24 @@ public class ClientThread extends Thread {
                 } else if (request == Command.SYNC.getCode()) {
                     clientPrint("Is requesting to SYNC his files");
                     SyncFile syncFile = syncManager.getSyncFile();
-//                    transferManager.writeFileSize(syncFile.getVersion()); //sends version of SYNC file
-                    int response = getCommand();
 
-                    if (response == Command.OK.getCode()) {
-                        transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                    transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                    okOrException();
+
+                    for (String s : syncFile.getFiles()) {
+                        transferManager.writeFileSize(s.length());
                         okOrException();
 
-                        for (String s : syncFile.getFiles()) {
-                            transferManager.writeFileSize(s.length());
+                        transferManager.writeFileName(s);
+                        if (getCommand() == Command.OK.getCode()) {
+                            transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
                             okOrException();
 
-                            transferManager.writeFileName(s);
-                            response = getCommand();
-                            if (response == Command.OK.getCode()) {
-                                transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
-                                okOrException();
-
-                                transferManager.writeFileName(syncFile.getHashOfFile(s));
-                                try { //need to break out of the loop if the client already has the version of tha file
-                                    okOrException();
-                                } catch (Exception e) {
-                                    break;
-                                }
-                            } else if (response == Command.SKIP.getCode()) {
-                                //do nothing
-                            }
-                        }
-                        System.out.println("SYNC completed!");
-                    } else if (response == Command.SKIP.getCode()){
-                        System.out.println("Client already up to date!");
+                            transferManager.writeFileName(syncFile.getHashOfFile(s));
+                            okOrException();
+                        } //If the response is any other i.e. SKIP the hash of that file will be ignored
                     }
+                    System.out.println("SYNC completed!");
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
                     closeConnection();

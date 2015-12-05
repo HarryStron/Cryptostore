@@ -155,66 +155,46 @@ public class ClientManager {
 
             ArrayList<String> serverFileList = new ArrayList<>();
 
-//            int serverVersion = getSize();
+            int numberOfFiles = getSize();
+            transferManager.writeControl(Command.OK);
 
-//            int localVersion = syncManager.getVersion();
-//System.out.println(localVersion + " : " + serverVersion);
-//            if (localVersion != serverVersion) {
-                transferManager.writeControl(Command.OK);
-                int numberOfFiles = getSize();
-                transferManager.writeControl(Command.OK);
+            ArrayList<String> tempList = new ArrayList<>();
+            for (int i = 0; i < numberOfFiles; i++) {
+                String filename = listenForString();
+                String originalPath = filenameManager.getOriginalPath(filename);
 
-                ArrayList<String> tempList = new ArrayList<>();
-                for (int i = 0; i < numberOfFiles; i++) {
-                    String filename = listenForString();
-                    String originalPath = filenameManager.getOriginalPath(filename);
+                serverFileList.add(originalPath);
 
-                    serverFileList.add(originalPath);
+                if ((new File(originalPath)).exists()) { //If the file is new there is no need to ask for the hash
+                    transferManager.writeControl(Command.OK);
 
-                    if ((new File(originalPath)).exists()) { //If the file is new there is no need to ask for the hash
-                        transferManager.writeControl(Command.OK);
+                    String fileHash = listenForString();
+                    transferManager.writeControl(Command.OK);
 
-                        String fileHash = listenForString();
-
-                        if (fileHash.equals(syncFile.getHashOfFile(filename))) {
-                            transferManager.writeControl(Command.SKIP);
-                            break; //should break out of loop!
-                        } else {
-                            transferManager.writeControl(Command.OK);
-                            tempList.add(originalPath);
-                        }
-                    } else {
-                        transferManager.writeControl(Command.SKIP);
+                    if (!fileHash.equals(syncFile.getHashOfFile(filename))) {
                         tempList.add(originalPath);
                     }
-
+                } else {
+                    transferManager.writeControl(Command.SKIP);
+                    tempList.add(originalPath);
                 }
+            }
 
-                for (String s : tempList) {
-                    download(password, s);
+            for (String s : tempList) {
+                download(password, s);
+            }
+
+            ArrayList<Path> localFiles = getAllUserFiles((new File("./"+username+"/")).toPath());
+            for (Path p : localFiles) {
+                if (serverFileList.contains(p.toString())) {
+                    serverFileList.remove(p);
                 }
-
-                ArrayList<Path> localFiles = getAllUserFiles((new File("./"+username+"/")).toPath());
-                for (Path p : localFiles) {
-                    if (serverFileList.contains(p.toString())) {
-                        serverFileList.remove(p);
-                    }
-                }
-
-//                syncManager.setVersion(serverVersion);
-
-//            } else {
-//                transferManager.writeControl(Command.SKIP);
-//                System.out.println("The client is already up to date");
-//            }
+            }
             System.out.println("Synchronisation Completed!");
-
 
         } catch (Exception e) {
             handleError(Error.CANNOT_SYNC, e);
         }
-
-
     }
 
     static ArrayList<Path> pathsInDir = new ArrayList<>();
