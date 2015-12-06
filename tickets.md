@@ -55,10 +55,10 @@ Implement deleting of a remote file.<br/>
 
 **`feature-13`**:<br/>
 Create a syncronization class and methods to SYNC files between client and server.<br/>
-**_queued_**
+**_v1.13.0_**
 
 **`feature-14`**:<br/>
-Automatic scanning of user directory for files to sync insead of user making the selection.<br/>
+.<br/>
 **_queued_**
 
 ## BUGs
@@ -107,5 +107,5 @@ Change OK, READY and DONE commands to a single command to represent all 3. This 
 **_merged_**
 
 **`other-4`**:<br/>
-Create a testing suite to test the so far functionality using mocking.<br/>
-**_queued_**
+Create basic tests for SYNC, Upload, Download and Delete.<br/>
+**_merged_**
