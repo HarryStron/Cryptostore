@@ -108,4 +108,4 @@ Change OK, READY and DONE commands to a single command to represent all 3. This 
 
 **`other-4`**:<br/>
 Create basic tests for SYNC, Upload, Download and Delete.<br/>
-**_queued_**
+**_merged_**
