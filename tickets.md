@@ -91,6 +91,10 @@ Failure to transmit files bigger than a few MBs long. Split the data into chunks
 Change hashmaps to a biderectional data type. It is needed by server for deletion of files.<br/>
 **_v1.11.1_**
 
+**`bug-8`**:<br/>
+On file deletion, filemap entries are deleted prior to sync-file updating causing null pointers because the filenames cannot be translated to their encrypted form. Updating of sync-file must happen before the corresponding filename entry is deleted from the file map.<br/>
+**_ongoing_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
