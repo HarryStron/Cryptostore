@@ -91,7 +91,6 @@ Failure to transmit files bigger than a few MBs long. Split the data into chunks
 Change hashmaps to a biderectional data type. It is needed by server for deletion of files.<br/>
 **_v1.11.1_**
 
-
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
@@ -108,4 +107,8 @@ Change OK, READY and DONE commands to a single command to represent all 3. This 
 
 **`other-4`**:<br/>
 Create basic tests for SYNC, Upload, Download and Delete.<br/>
+**_merged_**
+
+**`other-5`**:<br/>
+Refactoring.<br/>
 **_merged_**
