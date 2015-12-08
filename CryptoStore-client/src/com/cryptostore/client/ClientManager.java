@@ -212,7 +212,7 @@ public class ClientManager {
         }
     }
 
-    public ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
+    private ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
