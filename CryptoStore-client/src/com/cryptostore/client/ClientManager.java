@@ -212,7 +212,7 @@ public class ClientManager {
         }
     }
 
-    public ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
+    private ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
@@ -428,16 +428,16 @@ public class ClientManager {
         if (new File(filename).delete()) {
             System.out.println("\nRemoving file from filename encryption map. . .");
 
-            if (filenameManager.removeFromMap(filename)) {
-                System.out.println("\nMapping removed!");
+            if (syncManager.updateEntry(filenameManager.getEncryptedPath(filename), null, false)) {
+                System.out.println("\nSync file updated!");
 
-                if (syncManager.updateEntry(filenameManager.getEncryptedPath(filename), null, false)) {
-                    System.out.println("\nSync file updated!");
+                if (filenameManager.removeFromMap(filename)) {
+                    System.out.println("\nMapping removed!");
                 } else {//TODO should find a way to abort instead if ignoring the failure
-                    System.out.println("\nFailed to remove entry fro sync file!");
+                    System.out.println("\nFailed to remove mapping!");
                 }
             } else {//TODO should find a way to abort instead if ignoring the failure
-                System.out.println("\nFailed to remove mapping!");
+                System.out.println("\nFailed to remove entry fro sync file!");
             }
             return true;
         } else {
