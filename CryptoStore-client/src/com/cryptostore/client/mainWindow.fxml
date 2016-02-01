@@ -15,15 +15,18 @@
       <bottom>
         <HBox prefHeight="-1.0" prefWidth="600.0" spacing="10.0" BorderPane.alignment="CENTER_LEFT">
           <children>
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="User: Admin1">
+            <Text id="userField" strokeType="OUTSIDE" strokeWidth="0.0" text="User:">
               <HBox.margin>
                 <Insets fx:id="x1" />
               </HBox.margin>
             </Text>
-            <Separator prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Status: Connected" HBox.margin="$x1" />
-            <Separator prefHeight="-1.0" prefWidth="-1.0" HBox.hgrow="ALWAYS" />
-            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Space used: 10MB" HBox.margin="$x1" />
+            <Text fx:id="userField" strokeType="OUTSIDE" strokeWidth="0.0" text="" />
+            <Separator prefHeight="-1.0" prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Status:" />
+            <Text fx:id="statusField" strokeType="OUTSIDE" strokeWidth="0.0" text="" HBox.margin="$x1" />
+            <Separator prefHeight="-1.0" prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Space used:" />
+            <Text id="spaceUsed" fx:id="spaceUsedField" scaleX="1.0" scaleY="1.000007972955734" strokeType="OUTSIDE" strokeWidth="0.0" text="" HBox.margin="$x1" />
           </children>
           <padding>
             <Insets bottom="5.0" left="5.0" right="5.0" top="5.0" fx:id="x2" />
@@ -37,7 +40,7 @@
         <HBox padding="$x2" prefHeight="-1.0" prefWidth="600.0" spacing="10.0" BorderPane.alignment="CENTER_RIGHT">
           <children>
             <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBackbuttonClick" text="Back" />
-            <Separator prefWidth="-1.0" HBox.hgrow="ALWAYS" />
+            <Separator prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS" />
             <Button fx:id="addBtn" mnemonicParsing="false" onAction="#handleAddButtonClick" text="Add File..." />
             <Button fx:id="deleteBtn" contentDisplay="CENTER" mnemonicParsing="false" text="Delete" HBox.hgrow="NEVER" HBox.margin="$x1" />
           </children>

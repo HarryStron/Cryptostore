@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
 import javafx.scene.input.MouseButton;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -14,32 +15,45 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ViewController {
+    private static final String HOST = "localhost";
+    private static final int PORT = 5555;
+
     private ClientManager clientManager;
+    private String username;
     public static Stage stage;
 
     public TextField usernameField;
-    public PasswordField passwordField;
+    public PasswordField userPassField;
+    public PasswordField encryptionPassField;
+    public TextArea alertField;
 
     public Button backBtn;
     public Button addBtn;
     public Button deleteBtn;
     public ListView listView;
+    public Text userField;
+    public Text statusField;
+    public Text spaceUsedField;
+
 
     /** SETUP **/
 
     public void init() {
         setListAndHandler();
+
+        userField.setText(username);
+        statusField.setText("Connected");
+        spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024)) + "MB");
     }
 
 
     /** HANDLERS **/
     /** login screen **/
     public void passEnterHandler() throws IOException {
-        System.out.println(usernameField.getText());
-        System.out.println(passwordField.getText());
+        username = usernameField.getText();
+        clientManager = new ClientManager(username, userPassField.getText(), HOST, PORT);
 
-        if (passwordField.getText().equals("123")) {
-//            passwordField.getScene().getWindow().hide();
+        if (clientManager.connect(encryptionPassField.getText())) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWindow.fxml"));
 
             loader.setController(this);
@@ -48,8 +62,10 @@ public class ViewController {
             stage.show();
 
             init();
+        } else {
+            clientManager.closeConnection();
+            alertField.setText("Wrong username or user password! Please try again.");
         }
-//        clientManager = new ClientManager(usernameField.getText(), passwordField.getText(), "localhost", 5555);
     }
 
     /** main screen **/
@@ -106,5 +122,16 @@ public class ViewController {
         }
 
         return elements;
+    }
+
+    private int calculateFileSize() {
+        ArrayList files = getAllChildren(new File(username));
+        int size = 0;
+
+        for (Object f : files) {
+            size += ((File) f).length();
+        }
+
+        return size;
     }
 }

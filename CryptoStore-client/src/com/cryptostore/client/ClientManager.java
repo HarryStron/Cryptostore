@@ -57,7 +57,7 @@ public class ClientManager {
         System.out.println("Protocol: " + session.getProtocol());
     }
 
-    public void connect(String password) {
+    public boolean connect(String password) {
         System.out.println("\nConnecting with server. . .");
 
         try { //TODO add timeout if not responsive server
@@ -67,14 +67,20 @@ public class ClientManager {
             transferManager = new TransferManager(clientSocket);
 
             authenticate();
-            System.out.println("\nConnected!");
 
-            getEncryptionMapping(password);
+            if (isAUTHed) {
+                System.out.println("\nConnected!");
 
-            syncWithServer(password);
+                getEncryptionMapping(password);
 
+                syncWithServer(password);
+            } else {
+                throw new Exception(Error.CANNOT_AUTH.getDescription());
+            }
+            return true;
         } catch (Exception e) {
             handleError(Error.CANNOT_CONNECT, e);
+            return false;
         }
     }
 
