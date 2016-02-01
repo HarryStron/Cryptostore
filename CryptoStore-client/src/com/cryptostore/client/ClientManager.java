@@ -60,7 +60,7 @@ public class ClientManager {
     public void connect(String password) {
         System.out.println("\nConnecting with server. . .");
 
-        try {
+        try { //TODO add timeout if not responsive server
             clientSocket = establishConnection(host, hostPort, 5600); //TODO change the local port to whatever is going to be my in/out port
             reportStatus(clientSocket);
 

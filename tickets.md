@@ -58,7 +58,7 @@ Create a syncronization class and methods to SYNC files between client and serve
 **_v1.13.0_**
 
 **`feature-14`**:<br/>
-.<br/>
+Create a basic but working UI using JavaFX.<br/>
 **_queued_**
 
 ## BUGs
@@ -116,3 +116,8 @@ Create basic tests for SYNC, Upload, Download and Delete.<br/>
 **`other-5`**:<br/>
 Refactoring.<br/>
 **_merged_**
+
+**`other-6`**:<br/>
+Refactoring. Replace printf with <br/>
+**_merged_**
+

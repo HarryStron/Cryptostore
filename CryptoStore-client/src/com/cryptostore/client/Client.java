@@ -1,11 +1,19 @@
 package com.cryptostore.client;
 
+import javafx.application.Application;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
+import javafx.stage.Stage;
+
 import java.io.IOException;
 
-public class Client {
+public class Client extends Application {
     private static final String encryptionPassword = "password";
 
     public static void main(String args[]) throws IOException {
+        launch(args);
+
 //        ClientManager clientManager1 = new ClientManager("Admin1", "P4$$w0rd", "localhost", 5555);
 //        ClientManager clientManager2 = new ClientManager("Admin2", "P4$$w0rd", "localhost", 5555);
 //        ClientManager clientManager3 = new ClientManager("Harry", "P4$$w0rd", "localhost", 5555);
@@ -30,5 +38,17 @@ public class Client {
 //        clientManager3.download(encryptionPassword, "./Admin1/test1.txt");
 //        clientManager3.closeConnection();
 
+    }
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("login.fxml"));
+        Parent root = loader.load();
+
+        primaryStage.setTitle("CryptoStore");
+        primaryStage.setScene(new Scene(root));
+        primaryStage.show();
+
+        ViewController.stage = primaryStage;
     }
 }
