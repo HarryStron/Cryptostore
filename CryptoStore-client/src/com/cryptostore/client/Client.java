@@ -18,7 +18,7 @@ public class Client extends Application {
 //        ClientManager clientManager2 = new ClientManager("Admin2", "P4$$w0rd", "localhost", 5555);
 //        ClientManager clientManager3 = new ClientManager("Harry", "P4$$w0rd", "localhost", 5555);
 
-//        ClientManager.getAllUserFiles((new File("./Admin1/")).toPath()).forEach(System.out::println);
+//        ClientManager.getAllFilesInDir((new File("./Admin1/")).toPath()).forEach(System.out::println);
 //        clientManager1.connect(encryptionPassword);
 //        clientManager1.uploadFileAndMap(encryptionPassword, "./Admin1/test1.txt");
 //        clientManager1.uploadFileAndMap(encryptionPassword, "./Admin1/test3.txt");

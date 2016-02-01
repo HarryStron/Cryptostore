@@ -1,17 +1,24 @@
 package com.cryptostore.client;
 
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.input.DragEvent;
+import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
+import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
+import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class ViewController {
@@ -20,6 +27,7 @@ public class ViewController {
 
     private ClientManager clientManager;
     private String username;
+    private String encryptionPassword;
     public static Stage stage;
 
     public TextField usernameField;
@@ -51,6 +59,7 @@ public class ViewController {
     /** login screen **/
     public void passEnterHandler() throws IOException {
         username = usernameField.getText();
+        encryptionPassword = encryptionPassField.getText();
         clientManager = new ClientManager(username, userPassField.getText(), HOST, PORT);
 
         if (clientManager.connect(encryptionPassField.getText())) {
@@ -72,10 +81,9 @@ public class ViewController {
     public void handleBackbuttonClick() throws IOException {
         File parent = ((File) listView.getItems().get(0)).getParentFile();
 
-        if (parent==null || parent.getName().equals("demoDir")) {
-            parent = new File("demoDir");
+        if (parent==null || parent.getName().equals(username)) {
             listView.getItems().removeAll(listView.getItems());
-            listView.getItems().addAll(parent);
+            listView.getItems().addAll(getAllChildren(new File(username)));
         } else {
             File gParent = parent.getParentFile();
             listView.getItems().removeAll(listView.getItems());
@@ -94,11 +102,45 @@ public class ViewController {
         }
     }
 
+    public void onListDragOver(final DragEvent e) {
+        final Dragboard db = e.getDragboard();
+
+        if (db.hasFiles()) {
+            e.acceptTransferModes(TransferMode.COPY);
+        } else {
+            e.consume();
+        }
+    }
+
+    public void onListDragDropped(final DragEvent e) {
+        final Dragboard db = e.getDragboard();
+        boolean success = false;
+
+        if (db.hasFiles()) {
+            success = true;
+            // Only get the first file from the list
+            final File file = db.getFiles().get(0);
+            Platform.runLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        copyToUserDir(file);
+                        listView.getItems().removeAll(listView.getItems());
+                        listView.getItems().addAll(getAllChildren(new File(username)));
+                    } catch (IOException e1) {
+                        e1.printStackTrace();
+                    }
+                }
+            });
+        }
+        e.setDropCompleted(success);
+        e.consume();
+    }
 
     /** HELPER METHODS **/
 
     private void setListAndHandler() {
-        listView.getItems().addAll(new File("demoDir"));
+        listView.getItems().addAll(getAllChildren(new File(username)));
 
         listView.setOnMouseClicked(event -> {
             if(event.getButton().equals(MouseButton.PRIMARY)){
@@ -133,5 +175,35 @@ public class ViewController {
         }
 
         return size;
+    }
+
+    private void copyToUserDir(File file) throws IOException {
+        String destinationPath;
+        File parent = ((File) listView.getItems().get(0)).getParentFile();
+
+        if (parent==null) {
+            destinationPath = username + "/" + file.getName();
+        } else {
+            destinationPath = parent + "/" + file.getName();
+        }
+
+        try {
+            if (file.isDirectory()){
+                FileUtils.copyDirectory(file, new File(destinationPath));
+
+                ArrayList<Path> newFiles = new ArrayList<Path>();
+                clientManager.getAllFilesInDir(Paths.get(destinationPath), newFiles);
+
+                for (Path p : newFiles) {
+                    clientManager.uploadFileAndMap(encryptionPassword, p.toString());
+                }
+            } else {
+                FileUtils.copyFileToDirectory(file, new File(destinationPath));
+
+                clientManager.uploadFileAndMap(encryptionPassword, destinationPath + file.getName());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

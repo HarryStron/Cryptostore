@@ -34,7 +34,7 @@
         </HBox>
       </bottom>
       <center>
-        <ListView fx:id="listView" prefHeight="200.0" prefWidth="200.0" />
+        <ListView fx:id="listView" onDragDropped="#onListDragDropped" onDragOver="#onListDragOver" prefHeight="200.0" prefWidth="200.0" />
       </center>
       <top>
         <HBox padding="$x2" prefHeight="-1.0" prefWidth="600.0" spacing="10.0" BorderPane.alignment="CENTER_RIGHT">

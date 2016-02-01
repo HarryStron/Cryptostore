@@ -204,7 +204,7 @@ public class ClientManager {
             }
 
             ArrayList<Path> localFiles = new ArrayList<>();
-            getAllUserFiles((new File("./"+username+"/")).toPath(), localFiles);
+            getAllFilesInDir((new File("./"+username+"/")).toPath(), localFiles);
 
             for (Path p : localFiles) {
                 if (serverFileList.contains(p.toString())) {
@@ -218,12 +218,12 @@ public class ClientManager {
         }
     }
 
-    private ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
+    public ArrayList<Path> getAllFilesInDir(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
             if(Files.isDirectory(filePath)) {
-                getAllUserFiles(filePath, pathsInDir);
+                getAllFilesInDir(filePath, pathsInDir);
             } else {
                 pathsInDir.add(filePath);
             }
