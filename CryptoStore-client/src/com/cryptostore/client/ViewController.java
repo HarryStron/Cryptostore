@@ -30,11 +30,13 @@ public class ViewController {
     private String encryptionPassword;
     public static Stage stage;
 
+    /** login screen **/
     public TextField usernameField;
     public PasswordField userPassField;
     public PasswordField encryptionPassField;
     public TextArea alertField;
 
+    /** main screen **/
     public Button backBtn;
     public Button addBtn;
     public Button deleteBtn;
@@ -61,6 +63,11 @@ public class ViewController {
         username = usernameField.getText();
         encryptionPassword = encryptionPassField.getText();
         clientManager = new ClientManager(username, userPassField.getText(), HOST, PORT);
+        stage.setOnCloseRequest(event -> {
+            clientManager.closeConnection();
+            System.exit(0);
+        });
+
 
         if (clientManager.connect(encryptionPassField.getText())) {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWindow.fxml"));
@@ -79,7 +86,12 @@ public class ViewController {
 
     /** main screen **/
     public void handleBackbuttonClick() throws IOException {
-        File parent = ((File) listView.getItems().get(0)).getParentFile();
+        File parent;
+        if (listView.getItems().size()<=0) {
+            parent = new File(username);
+        } else {
+            parent = ((File) listView.getItems().get(0)).getParentFile();
+        }
 
         if (parent==null || parent.getName().equals(username)) {
             listView.getItems().removeAll(listView.getItems());
@@ -91,14 +103,24 @@ public class ViewController {
         }
     }
 
-    public void handleAddButtonClick() {
-        System.out.println("add");
-
+    public void handleAddButtonClick() throws IOException {
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
 
         if (selectedFile != null) {
-            listView.getItems().addAll(selectedFile);
+            copyToUserDirAndUpload(selectedFile);
+            updateList();
+        }
+    }
+
+    public void handleDeleteButtonClick() {
+        File file = ((File) listView.getSelectionModel().getSelectedItem());
+        File dir = file.getParentFile();
+
+        if (file!=null) {
+            clientManager.deleteFile(encryptionPassword, file.getPath());
+            deleteDirIfEmpty(dir);
+            updateList();
         }
     }
 
@@ -124,7 +146,7 @@ public class ViewController {
                 @Override
                 public void run() {
                     try {
-                        copyToUserDir(file);
+                        copyToUserDirAndUpload(file);
                         listView.getItems().removeAll(listView.getItems());
                         listView.getItems().addAll(getAllChildren(new File(username)));
                     } catch (IOException e1) {
@@ -138,6 +160,16 @@ public class ViewController {
     }
 
     /** HELPER METHODS **/
+
+    public void updateList() {
+        File parent = ((File) listView.getItems().get(0)).getParentFile();
+        if (parent==null) {
+            parent = new File(username);
+        }
+
+        listView.getItems().removeAll(listView.getItems());
+        listView.getItems().addAll(getAllChildren(parent));
+    }
 
     private void setListAndHandler() {
         listView.getItems().addAll(getAllChildren(new File(username)));
@@ -159,7 +191,11 @@ public class ViewController {
     private ArrayList getAllChildren(File f) {
         ArrayList elements = new ArrayList();
 
-        for (File file : f.listFiles()) {
+        if (f.listFiles()==null) {
+            f = new File(username);
+        }
+
+        for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
             elements.add(file);
         }
 
@@ -177,18 +213,20 @@ public class ViewController {
         return size;
     }
 
-    private void copyToUserDir(File file) throws IOException {
+    private void copyToUserDirAndUpload(File file) throws IOException {
         String destinationPath;
         File parent = ((File) listView.getItems().get(0)).getParentFile();
 
         if (parent==null) {
-            destinationPath = username + "/" + file.getName();
+            destinationPath = username;
         } else {
-            destinationPath = parent + "/" + file.getName();
+            destinationPath = parent.getPath();
         }
 
         try {
             if (file.isDirectory()){
+                destinationPath += "/" + file.getName();
+
                 FileUtils.copyDirectory(file, new File(destinationPath));
 
                 ArrayList<Path> newFiles = new ArrayList<Path>();
@@ -199,11 +237,21 @@ public class ViewController {
                 }
             } else {
                 FileUtils.copyFileToDirectory(file, new File(destinationPath));
+                destinationPath += "/" + file.getName();
 
-                clientManager.uploadFileAndMap(encryptionPassword, destinationPath + file.getName());
+                clientManager.uploadFileAndMap(encryptionPassword, destinationPath);
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
+
+    private void deleteDirIfEmpty(File parentDir) {
+        if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
+            File gParent = parentDir.getParentFile();
+            parentDir.delete();
+            deleteDirIfEmpty(gParent);
+        }
+    }
 }
+
