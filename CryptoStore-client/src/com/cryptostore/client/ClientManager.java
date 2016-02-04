@@ -173,45 +173,57 @@ public class ClientManager {
 
             SyncFile syncFile = syncManager.getSyncFile();
 
-            ArrayList<String> serverFileList = new ArrayList<>();
+            if (getSize()!=syncManager.getVersion()) {
+                transferManager.writeControl(Command.OK);
 
-            int numberOfFiles = getSize();
-            transferManager.writeControl(Command.OK);
+                ArrayList<String> serverFileList = new ArrayList<>();
 
-            ArrayList<String> tempList = new ArrayList<>();
-            for (int i = 0; i < numberOfFiles; i++) {
-                String filename = listenForString();
-                String originalPath = filenameManager.getOriginalPath(filename);
+                int numberOfFiles = getSize();
+                transferManager.writeControl(Command.OK);
 
-                serverFileList.add(originalPath);
+                ArrayList<String> tempList = new ArrayList<>();
+                for (int i = 0; i < numberOfFiles; i++) {
+                    String filename = listenForString();
+                    String originalPath = filenameManager.getOriginalPath(filename);
 
-                if ((new File(originalPath)).exists()) { //If the file is new there is no need to ask for the hash
-                    transferManager.writeControl(Command.OK);
+                    serverFileList.add(originalPath);
 
-                    String fileHash = listenForString();
-                    transferManager.writeControl(Command.OK);
+                    if ((new File(originalPath)).exists()) { //If the file is new there is no need to ask for the hash
+                        transferManager.writeControl(Command.OK);
 
-                    if (!fileHash.equals(syncFile.getHashOfFile(filename))) {
+                        String fileHash = listenForString();
+                        transferManager.writeControl(Command.OK);
+
+                        if (!fileHash.equals(syncFile.getHashOfFile(filename))) {
+                            tempList.add(originalPath);
+                        }
+                    } else {
+                        transferManager.writeControl(Command.SKIP);
                         tempList.add(originalPath);
                     }
-                } else {
-                    transferManager.writeControl(Command.SKIP);
-                    tempList.add(originalPath);
                 }
-            }
 
-            for (String s : tempList) {
-                download(password, s);
-            }
-
-            ArrayList<Path> localFiles = new ArrayList<>();
-            getAllFilesInDir((new File("./"+username+"/")).toPath(), localFiles);
-
-            for (Path p : localFiles) {
-                if (serverFileList.contains(p.toString())) {
-                    serverFileList.remove(p);
+                for (String s : tempList) {
+                    download(password, s);
                 }
+
+                ArrayList<Path> localFiles = new ArrayList<>();
+                getAllFilesInDir((new File("./" + username + "/")).toPath(), localFiles);
+
+                for (Path p : localFiles) {
+                    if (serverFileList.contains(p.toString())) {
+                        serverFileList.remove(p);
+                    }
+                }
+            } else {
+                transferManager.writeControl(Command.SKIP);
             }
+
+            System.out.println("Updating version. . .");
+            transferManager.writeControl(Command.VERSION);
+            syncManager.setVersion(getSize());
+            transferManager.writeControl(Command.OK);
+
             System.out.println("Synchronisation Completed!");
 
         } catch (Exception e) {
@@ -245,6 +257,7 @@ public class ClientManager {
 
                 for (Path p : newFiles) {
                     uploadFileAndMap(encryptionPassword, p.toString());
+                    syncManager.setVersion(syncManager.getVersion()+1);
                 }
             } else {
                 FileUtils.copyFileToDirectory(file, new File(destinationPath));
@@ -252,6 +265,7 @@ public class ClientManager {
 
                 uploadFileAndMap(encryptionPassword, destinationPath);
             }
+
         } catch (IOException e) {
             handleError(Error.CANNOT_COPY_FILE, e);
         }
@@ -403,7 +417,10 @@ public class ClientManager {
     public void delete(String password, String filename) {
         if (new File(filename).isDirectory()) {
             try {
-                Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> deleteFile(password, path.toString()));
+                Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> {
+                    deleteFile(password, path.toString());
+                    syncManager.setVersion(syncManager.getVersion()+1);
+                });
             } catch (IOException e) {
                 handleError(Error.DELETE_FAIL, e);
             }

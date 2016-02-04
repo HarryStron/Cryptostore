@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ClientThread extends Thread {
+    private final String HEX_MAP_PATH = "./0000000000"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private SyncManager syncManager;
@@ -98,6 +99,9 @@ public class ClientThread extends Thread {
 
                     writeToDisk(filename);
 
+                    if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                        syncManager.setVersion(syncManager.getVersion()+1);
+                    }
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
                     clientPrint("Is requesting to retrieve a file.");
                     transferManager.writeControl(Command.OK);
@@ -126,30 +130,40 @@ public class ClientThread extends Thread {
                         deleteFile(filename);
 
                         syncManager.updateEntry(filename, null, false);
+
+                        if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                            syncManager.setVersion(syncManager.getVersion()+1);
+                        }
                     } else {
                         throw new FileNotFoundException(Error.FILE_NOT_FOUND.getDescription(clientIP));
                     }
 
                 } else if (request == Command.SYNC.getCode()) {
                     clientPrint("Is requesting to SYNC his files");
-                    SyncFile syncFile = syncManager.getSyncFile();
 
-                    transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
-                    okOrException();
+                    transferManager.writeFileSize(syncManager.getVersion());
+                    if (getCommand() == Command.OK.getCode()) {
 
-                    for (String s : syncFile.getFiles()) {
-                        transferManager.writeFileSize(s.length());
+                        SyncFile syncFile = syncManager.getSyncFile();
+
+                        transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
                         okOrException();
 
-                        transferManager.writeFileName(s);
-                        if (getCommand() == Command.OK.getCode()) {
-                            transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
+                        for (String s : syncFile.getFiles()) {
+                            transferManager.writeFileSize(s.length());
                             okOrException();
 
-                            transferManager.writeFileName(syncFile.getHashOfFile(s));
-                            okOrException();
-                        } //If the response is any other i.e. SKIP the hash of that file will be ignored
-                    }
+                            transferManager.writeFileName(s);
+                            if (getCommand() == Command.OK.getCode()) {
+                                transferManager.writeFileSize(syncFile.getHashOfFile(s).length());
+                                okOrException();
+
+                                transferManager.writeFileName(syncFile.getHashOfFile(s));
+                                okOrException();
+                            } //If the response is any other i.e. SKIP the hash of that file will be ignored
+                        }
+                    } //Else response will be SKIP so do nothing
+
                     System.out.println("SYNC completed!");
                 } else if (request == Command.HEARTBEAT.getCode()) {
                     clientPrint("Sent a heartbeat message");
@@ -157,6 +171,9 @@ public class ClientThread extends Thread {
                 } else if (request == Command.CLOSE.getCode()) {
                     clientPrint("Terminates the connection!");
                     closeConnection();
+                } else if (request == Command.VERSION.getCode()) {
+                    transferManager.writeFileSize(syncManager.getSyncFile().getVersion());
+                    okOrException();
                 } else {
                     throw new IOException(Error.UNKNOWN_COMMAND.getDescription(clientIP));
                 }
