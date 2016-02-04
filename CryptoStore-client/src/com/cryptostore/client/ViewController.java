@@ -6,6 +6,8 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.Button;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
 import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
@@ -14,6 +16,7 @@ import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
+import java.awt.*;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,6 +39,7 @@ public class ViewController {
 
     /** main screen **/
     public Button backBtn;
+    public Button openBtn;
     public Button addBtn;
     public Button deleteBtn;
     public ListView listView;
@@ -58,31 +62,37 @@ public class ViewController {
     /** login screen **/
     public void passEnterHandler() throws IOException {
         username = usernameField.getText();
+        String userPass = userPassField.getText();
         encryptionPassword = encryptionPassField.getText();
-        clientManager = new ClientManager(username, userPassField.getText(), HOST, PORT);
-        stage.setOnCloseRequest(event -> {
-            clientManager.closeConnection();
-            System.exit(0);
-        });
+
+        if (!username.equals("") && !userPass.equals("") && !encryptionPassword.equals("")) {
+            clientManager = new ClientManager(username, userPass, HOST, PORT);
+            stage.setOnCloseRequest(event -> {
+                clientManager.closeConnection();
+                System.exit(0);
+            });
 
 
-        if (clientManager.connect(encryptionPassField.getText())) {
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWindow.fxml"));
+            if (clientManager.connect(encryptionPassField.getText())) {
+                FXMLLoader loader = new FXMLLoader(getClass().getResource("mainWindow.fxml"));
 
-            loader.setController(this);
-            Parent root = loader.load();
-            stage.setScene(new Scene(root));
-            stage.show();
+                loader.setController(this);
+                Parent root = loader.load();
+                stage.setScene(new Scene(root));
+                stage.show();
 
-            init();
+                init();
+            } else {
+                clientManager.closeConnection();
+                alertField.setText("Wrong username or user password! Please try again.");
+            }
         } else {
-            clientManager.closeConnection();
-            alertField.setText("Wrong username or user password! Please try again.");
+            alertField.setText("Make sure all fields are complete and try again.");
         }
     }
 
     /** main screen **/
-    public void handleBackbuttonClick() throws IOException {
+    public void handleBackButtonClick() throws IOException {
         File parent;
         if (listView.getItems().size()<=0) {
             parent = new File(username);
@@ -111,6 +121,16 @@ public class ViewController {
         updateSpaceUsed();
     }
 
+    public  void handleOpenButtonClick() {
+        File file = ((File) listView.getSelectionModel().getSelectedItem());
+        if (file!=null) {
+            try {
+                Desktop.getDesktop().open(file);
+            } catch (IOException e) {
+                //TODO notify
+            }
+        }
+    }
     public void handleDeleteButtonClick() {
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 

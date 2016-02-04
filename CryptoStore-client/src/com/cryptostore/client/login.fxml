@@ -22,14 +22,14 @@
                         <Font size="45.0"/>
                     </font>
                 </Text>
-                <TextField fx:id="usernameField" prefWidth="200.0" promptText="Username" GridPane.columnIndex="0"
+                <TextField fx:id="usernameField" onAction="#passEnterHandler" prefWidth="200.0" promptText="Username" GridPane.columnIndex="0"
                            GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS" GridPane.rowIndex="1"
                            GridPane.valignment="CENTER" GridPane.vgrow="ALWAYS">
                     <GridPane.margin>
                         <Insets left="50.0" right="50.0" fx:id="x1"/>
                     </GridPane.margin>
                 </TextField>
-                <PasswordField fx:id="userPassField" prefWidth="200.0" promptText="User Password"
+                <PasswordField fx:id="userPassField" onAction="#passEnterHandler" prefWidth="200.0" promptText="User Password"
                                GridPane.columnIndex="0" GridPane.halignment="CENTER" GridPane.hgrow="ALWAYS"
                                GridPane.margin="$x1" GridPane.rowIndex="2" GridPane.valignment="CENTER"
                                GridPane.vgrow="ALWAYS"/>
