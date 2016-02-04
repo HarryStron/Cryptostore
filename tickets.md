@@ -67,7 +67,7 @@ Allow client to upload and delete directories.<br/>
 
 **`feature-16`**:<br/>
 Implement steganographic class.<br/>
-**_v1.15.0_**
+**_doing_**
 
 ## BUGs
 
