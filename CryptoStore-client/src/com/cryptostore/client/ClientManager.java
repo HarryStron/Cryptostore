@@ -57,24 +57,30 @@ public class ClientManager {
         System.out.println("Protocol: " + session.getProtocol());
     }
 
-    public void connect(String password) {
+    public boolean connect(String password) {
         System.out.println("\nConnecting with server. . .");
 
-        try {
+        try { //TODO add timeout if not responsive server
             clientSocket = establishConnection(host, hostPort, 5600); //TODO change the local port to whatever is going to be my in/out port
             reportStatus(clientSocket);
 
             transferManager = new TransferManager(clientSocket);
 
             authenticate();
-            System.out.println("\nConnected!");
 
-            getEncryptionMapping(password);
+            if (isAUTHed) {
+                System.out.println("\nConnected!");
 
-            syncWithServer(password);
+                getEncryptionMapping(password);
 
+                syncWithServer(password);
+            } else {
+                throw new Exception(Error.CANNOT_AUTH.getDescription());
+            }
+            return true;
         } catch (Exception e) {
             handleError(Error.CANNOT_CONNECT, e);
+            return false;
         }
     }
 
@@ -198,7 +204,7 @@ public class ClientManager {
             }
 
             ArrayList<Path> localFiles = new ArrayList<>();
-            getAllUserFiles((new File("./"+username+"/")).toPath(), localFiles);
+            getAllFilesInDir((new File("./"+username+"/")).toPath(), localFiles);
 
             for (Path p : localFiles) {
                 if (serverFileList.contains(p.toString())) {
@@ -212,12 +218,12 @@ public class ClientManager {
         }
     }
 
-    private ArrayList<Path> getAllUserFiles(Path path, ArrayList<Path> pathsInDir) throws IOException {
+    public ArrayList<Path> getAllFilesInDir(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
             if(Files.isDirectory(filePath)) {
-                getAllUserFiles(filePath, pathsInDir);
+                getAllFilesInDir(filePath, pathsInDir);
             } else {
                 pathsInDir.add(filePath);
             }
