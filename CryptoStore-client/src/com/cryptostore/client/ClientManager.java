@@ -1,5 +1,6 @@
 package com.cryptostore.client;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 
 import javax.net.ssl.SSLSession;
@@ -232,6 +233,30 @@ public class ClientManager {
         return pathsInDir;
     }
 
+    public void copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
+        try {
+            if (file.isDirectory()) {
+                destinationPath += "/" + file.getName();
+
+                FileUtils.copyDirectory(file, new File(destinationPath));
+
+                ArrayList<Path> newFiles = new ArrayList<Path>();
+                getAllFilesInDir(Paths.get(destinationPath), newFiles);
+
+                for (Path p : newFiles) {
+                    uploadFileAndMap(encryptionPassword, p.toString());
+                }
+            } else {
+                FileUtils.copyFileToDirectory(file, new File(destinationPath));
+                destinationPath += "/" + file.getName();
+
+                uploadFileAndMap(encryptionPassword, destinationPath);
+            }
+        } catch (IOException e) {
+            handleError(Error.CANNOT_COPY_FILE, e);
+        }
+    }
+
     public void uploadFileAndMap(String password, String filename) {
         if (upload(password, filename)) {
             upload(password, filenameManager.MAP_PATH);
@@ -375,7 +400,19 @@ public class ClientManager {
         }
     }
 
-    public void deleteFile(String password, String filename) {
+    public void delete(String password, String filename) {
+        if (new File(filename).isDirectory()) {
+            try {
+                Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> deleteFile(password, path.toString()));
+            } catch (IOException e) {
+                handleError(Error.DELETE_FAIL, e);
+            }
+        } else {
+            deleteFile(password, filename);
+        }
+    }
+
+    private void deleteFile(String password, String filename) {
         System.out.println("\nDeleting " + filename + ". . .");
         try{
             if (!filenameManager.containsOriginal(filename)) {
@@ -397,6 +434,7 @@ public class ClientManager {
         } catch (Exception e) {
             handleError(Error.DELETE_FAIL, e);
         }
+        recursivelyDeleteDirIfEmpty(new File(filename).getParentFile());
     }
 
     private boolean deleteFromServer(String filename) throws Exception {
@@ -516,6 +554,14 @@ public class ClientManager {
 //                transferManager.writeControl(Command.ERROR);
         } catch (Exception e) {
             System.out.println(e.getMessage()+'\n');
+        }
+    }
+
+    public void recursivelyDeleteDirIfEmpty(File parentDir) {
+        if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
+            File gParent = parentDir.getParentFile();
+            parentDir.delete();
+            recursivelyDeleteDirIfEmpty(gParent);
         }
     }
 

@@ -4,7 +4,7 @@ import java.io.*;
 import java.lang.*;
 
 public class SyncManager {
-    public String SYNC_PATH;
+    public static String SYNC_PATH;
 
     public SyncManager(String username) {
         SYNC_PATH = "./"+username+"/SYNC_INFO";

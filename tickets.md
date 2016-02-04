@@ -59,7 +59,11 @@ Create a syncronization class and methods to SYNC files between client and serve
 
 **`feature-14`**:<br/>
 Create a basic but working UI using JavaFX.<br/>
-**_queued_**
+**_not-tagged(needed feature-15 merge)_**
+
+**`feature-15`**:<br/>
+Allow client to upload and delete directories.<br/>
+**_v1.14.0_**
 
 ## BUGs
 

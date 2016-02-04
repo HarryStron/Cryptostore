@@ -5,7 +5,7 @@ import java.lang.*;
 import java.util.UUID;
 
 public class FilenameManager {
-    public String MAP_PATH;
+    public static String MAP_PATH;
     private final String HEX_MAP_PATH = "./0000000000";
 
     public FilenameManager(String username) {

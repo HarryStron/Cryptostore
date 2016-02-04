@@ -43,7 +43,8 @@
                 <HBox padding="$x2" prefHeight="-1.0" prefWidth="600.0" spacing="10.0"
                       BorderPane.alignment="CENTER_RIGHT">
                     <children>
-                        <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBackbuttonClick" text="Back"/>
+                        <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBackButtonClick" text="Back"/>
+                        <Button fx:id="openBtn" mnemonicParsing="false" onAction="#handleOpenButtonClick" text="Open"/>
                         <Separator prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS"/>
                         <Button fx:id="addBtn" mnemonicParsing="false" onAction="#handleAddButtonClick"
                                 text="Add File..."/>
