@@ -13,17 +13,15 @@ import javafx.scene.input.TransferMode;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
-import org.apache.commons.io.FileUtils;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class ViewController {
     private static final String HOST = "localhost";
     private static final int PORT = 5555;
+    private static final int NUM_OF_SYSTEM_FILES = 2;
 
     private ClientManager clientManager;
     private String username;
@@ -53,9 +51,8 @@ public class ViewController {
 
         userField.setText(username);
         statusField.setText("Connected");
-        spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024)) + "MB");
+        updateSpaceUsed();
     }
-
 
     /** HANDLERS **/
     /** login screen **/
@@ -111,17 +108,17 @@ public class ViewController {
             copyToUserDirAndUpload(selectedFile);
             updateList();
         }
+        updateSpaceUsed();
     }
 
     public void handleDeleteButtonClick() {
         File file = ((File) listView.getSelectionModel().getSelectedItem());
-        File dir = file.getParentFile();
 
         if (file!=null) {
-            clientManager.deleteFile(encryptionPassword, file.getPath());
-            deleteDirIfEmpty(dir);
+            clientManager.delete(encryptionPassword, file.getPath());
             updateList();
         }
+        updateSpaceUsed();
     }
 
     public void onListDragOver(final DragEvent e) {
@@ -142,29 +139,27 @@ public class ViewController {
             success = true;
             // Only get the first file from the list
             final File file = db.getFiles().get(0);
-            Platform.runLater(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        copyToUserDirAndUpload(file);
-                        listView.getItems().removeAll(listView.getItems());
-                        listView.getItems().addAll(getAllChildren(new File(username)));
-                    } catch (IOException e1) {
-                        e1.printStackTrace();
-                    }
+            Platform.runLater(() -> {
+                try {
+                    copyToUserDirAndUpload(file);
+                    listView.getItems().removeAll(listView.getItems());
+                    listView.getItems().addAll(getAllChildren(new File(username)));
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
             });
         }
         e.setDropCompleted(success);
         e.consume();
+        updateSpaceUsed();
     }
 
     /** HELPER METHODS **/
 
     public void updateList() {
-        File parent = ((File) listView.getItems().get(0)).getParentFile();
-        if (parent==null) {
-            parent = new File(username);
+        File parent = new File(username);
+        if (parent.listFiles().length>NUM_OF_SYSTEM_FILES) {
+            parent = ((File) listView.getItems().get(0)).getParentFile();
         }
 
         listView.getItems().removeAll(listView.getItems());
@@ -196,7 +191,9 @@ public class ViewController {
         }
 
         for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
-            elements.add(file);
+            if (!file.getPath().equals(FilenameManager.MAP_PATH.substring(2)) && !file.getPath().equals(SyncManager.SYNC_PATH.substring(2))) {
+                elements.add(file);
+            }
         }
 
         return elements;
@@ -215,43 +212,19 @@ public class ViewController {
 
     private void copyToUserDirAndUpload(File file) throws IOException {
         String destinationPath;
-        File parent = ((File) listView.getItems().get(0)).getParentFile();
 
-        if (parent==null) {
+        if (listView.getItems().size()<=NUM_OF_SYSTEM_FILES) {
             destinationPath = username;
         } else {
+            File parent = ((File) listView.getItems().get(0)).getParentFile();
             destinationPath = parent.getPath();
         }
 
-        try {
-            if (file.isDirectory()){
-                destinationPath += "/" + file.getName();
-
-                FileUtils.copyDirectory(file, new File(destinationPath));
-
-                ArrayList<Path> newFiles = new ArrayList<Path>();
-                clientManager.getAllFilesInDir(Paths.get(destinationPath), newFiles);
-
-                for (Path p : newFiles) {
-                    clientManager.uploadFileAndMap(encryptionPassword, p.toString());
-                }
-            } else {
-                FileUtils.copyFileToDirectory(file, new File(destinationPath));
-                destinationPath += "/" + file.getName();
-
-                clientManager.uploadFileAndMap(encryptionPassword, destinationPath);
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath);
     }
 
-    private void deleteDirIfEmpty(File parentDir) {
-        if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
-            File gParent = parentDir.getParentFile();
-            parentDir.delete();
-            deleteDirIfEmpty(gParent);
-        }
+    private void updateSpaceUsed() {
+        spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024/1024)) + "MB");
     }
 }
 
