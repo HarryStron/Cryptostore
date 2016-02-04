@@ -27,6 +27,25 @@ public class SyncManager {
         }
     }
 
+    public int getVersion() {
+        try {
+            return getSyncFile().getVersion();
+        } catch (Exception e) {
+            return -1;
+        }
+    }
+
+    public boolean setVersion(int v) {
+        try {
+            SyncFile syncFile = getSyncFile();
+            syncFile.setVersion(v);
+
+            return store(syncFile);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public void createFileIfNotExists() throws Exception {
         File syncFile = new File(SYNC_PATH);
         if (!syncFile.exists()) {

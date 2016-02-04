@@ -67,6 +67,7 @@ Allow client to upload and delete directories.<br/>
 
 **`feature-16`**:<br/>
 Implement steganographic class.<br/>
+<<<<<<< HEAD
 **_doing_**
 
 ## BUGs
@@ -102,6 +103,10 @@ Change hashmaps to a biderectional data type. It is needed by server for deletio
 **`bug-8`**:<br/>
 On file deletion, filemap entries are deleted prior to sync-file updating causing null pointers because the filenames cannot be translated to their encrypted form. Updating of sync-file must happen before the corresponding filename entry is deleted from the file map.<br/>
 **_v1.13.1_**
+
+**`bug-9`**:<br/>
+Sync gets really slow if there are hundreds of files to be checked using hashes. Use version numbers so that the client knows when it is already in sync with the server and can skip the SYNC phase.<br/>
+**_v1.15.1_**
 
 ## Other (_not tagged_)
 
