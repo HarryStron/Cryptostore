@@ -10,7 +10,8 @@ public enum Command {
     DELETE(7, "delete file on server"),
     SYNC(8, "get SYNC version"),
     SKIP(9, "skips a step if not required"),
-    HEARTBEAT(10, "Heartbeat message");
+    HEARTBEAT(10, "Heartbeat message"),
+    VERSION(11, "Request for sync file version number");
 
     private final int code;
     private final String description;
