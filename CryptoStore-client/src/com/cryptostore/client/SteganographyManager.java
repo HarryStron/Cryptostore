@@ -18,12 +18,10 @@ public class SteganographyManager {
             int[][][] imgArray = getImageArray(bi);
             imgArray = encrypt(new File("msg.txt"), imgArray);
 //            buildImgFromArray(imgPath, imgArray);
-//
+
 //            BufferedImage mbi = ImageIO.read(new File("MODkite.jpg"));
 //            int[][][] modImageArray = getImageArray(mbi);
-//            decrypt(modImageArray);
-
-
+            decrypt(imgArray);
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -50,11 +48,8 @@ public class SteganographyManager {
         int msgIndex = 0;
 
         BitSet sizeInBits = BitSet.valueOf(new long[]{Long.valueOf(msg.length()).longValue()});
-        int sizeIndex = sizeInBits.length()-1;
+        int sizeIndex = sizeInBits.length(); //TODO is it length() or length()-1 ?
 
-System.out.println(sizeInBits.length());
-
-        startOfLoop1:
         for (int j=imageArray[0].length-1; j>=0; j--) {
             for (int k=imageArray[0][0].length-1; k>=0; k--) {
                 if (sizeIndex >= 0) {
@@ -66,28 +61,12 @@ System.out.println(sizeInBits.length());
             }
         }
 
-//BitSet sizeBits = new BitSet();
-//sizeBits.set(0, false); //positive number
-//int index = 0;
-//boolean foundFirstTrue = false;
-//
-//for (int j=0; j<imageArray[0].length; j++) {
-//    for (int k=0; k<imageArray[0][0].length; k++) {
-//        if (foundFirstTrue || getNthSignificantBit(imageArray[0][j][k], 1)) {
-//            sizeBits.set(index, getNthSignificantBit(imageArray[0][j][k], 1));
-//            index++;
-//            foundFirstTrue = true;
-//        }
-//    }
-//}
-//System.out.println(bitSetToInt(sizeBits));
-
         startOfLoop:
         for (int i=1; i<imageArray.length; i++) {
             for (int j=0; j<imageArray[0].length; j++) {
                 for (int k=0; k<imageArray[0][0].length; k++) {
                     if (msgIndex < msg.length()) {
-                        changeNthSignificantBit(imageArray[i][j][k], 1, msg.get(msgIndex));
+                        imageArray[i][j][k] = changeNthSignificantBit(imageArray[i][j][k], 1, msg.get(msgIndex));
                         msgIndex++;
                     } else {
                         break startOfLoop;
@@ -101,8 +80,8 @@ System.out.println(sizeInBits.length());
 
     private void decrypt(int[][][] imageArray) throws IOException {
         BitSet sizeBits = new BitSet();
-        sizeBits.set(0, false); //positive number
-        int index = 0;
+        sizeBits.set(0, false);
+        int index = 1;
         boolean foundFirstTrue = false;
 
         for (int j=0; j<imageArray[0].length; j++) {
@@ -115,7 +94,6 @@ System.out.println(sizeInBits.length());
             }
         }
 
-//System.out.println(bitSetToInt(sizeBits));
         int size = bitSetToInt(sizeBits);
 
         BitSet fileBits = new BitSet();
@@ -135,10 +113,6 @@ System.out.println(sizeInBits.length());
             }
         }
 
-//for (int i=0; i<fileBits.size(); i++) {
-//System.out.println(fileBits.get(i));
-//}
-
         FileOutputStream fos = new FileOutputStream("MODmsg.txt");
         fos.write(fileBits.toByteArray());
         fos.close();
@@ -146,20 +120,13 @@ System.out.println(sizeInBits.length());
 
     public static int bitSetToInt(BitSet bitSet) {
         int bitInteger = 0;
-        for(int i = 0 ; i < 32; i++)
-            if(bitSet.get(i))
-                bitInteger |= (1 << i);
-        return bitInteger;
-    }
 
-    private byte encodebool(boolean[] arr) {
-        byte val = 0;
-        for (boolean b : arr)
-        {
-            val <<= 1;
-            if (b) val |= 1;
+        for (int i = 0; i < 32; i++){
+            if (bitSet.get(i)) {
+                bitInteger |= (1 << i);
+            }
         }
-        return val;
+        return bitInteger;
     }
 
     private int changeNthSignificantBit(int x, int n, boolean newValue) { //boolean representing 1 or 0
@@ -179,11 +146,7 @@ System.out.println(sizeInBits.length());
     private boolean getNthSignificantBit(int value, int index) {
         String currentValue = Integer.toBinaryString(value);
 
-        if(Integer.parseInt(String.valueOf(currentValue.charAt(currentValue.length()-index)))==1) {
-            return true;
-        } else {
-            return false;
-        }
+        return Integer.parseInt(String.valueOf(currentValue.charAt(currentValue.length()-index))) == 1;
     }
 
     private void buildImgFromArray(String destination, int[][][] imageArray) {
