@@ -10,7 +10,8 @@ import java.io.IOException;
 
 public class Client extends Application {
     public static void main(String args[]) throws IOException {
-        launch(args);
+//        launch(args);
+        new SteganographyManager("kite.jpg");
     }
 
     @Override
