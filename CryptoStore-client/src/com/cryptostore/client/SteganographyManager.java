@@ -16,12 +16,13 @@ public class SteganographyManager {
         try {
             BufferedImage bi = ImageIO.read(new File(imgPath));
             int[][][] imgArray = getImageArray(bi);
-            imgArray = encrypt(new File("msg.txt"), imgArray);
-//            buildImgFromArray(imgPath, imgArray);
 
-//            BufferedImage mbi = ImageIO.read(new File("MODkite.jpg"));
-//            int[][][] modImageArray = getImageArray(mbi);
-            decrypt(imgArray);
+            int[][][] modifiedImgArray = encrypt(new File("msg.txt"), imgArray);
+            buildImgFromArray(imgPath, modifiedImgArray);
+
+            BufferedImage mbi = ImageIO.read(new File("MODkite.png"));
+            int[][][] retrievedModifiedImageArray = getImageArray(mbi);
+            decrypt(retrievedModifiedImageArray);
 
         } catch (IOException e) {
             System.out.println(e.getMessage());
@@ -150,17 +151,17 @@ public class SteganographyManager {
     }
 
     private void buildImgFromArray(String destination, int[][][] imageArray) {
-        BufferedImage image = new BufferedImage(imageArray.length, imageArray[0].length, BufferedImage.TYPE_INT_RGB);
-
-        for (int x=0; x<image.getWidth(); x++) {
-            for (int y = 0; y < image.getHeight(); y++) {
-               image.setRGB(x, y, new Color(imageArray[x][y][0], imageArray[x][y][1], imageArray[x][y][2]).getRGB());
-            }
-        }
-
         try {
+            BufferedImage image = new BufferedImage(imageArray.length, imageArray[0].length, BufferedImage.TYPE_3BYTE_BGR);
+
+            for (int x=0; x<image.getWidth(); x++) {
+                for (int y = 0; y < image.getHeight(); y++) {
+                   image.setRGB(x, y, new Color(imageArray[x][y][0], imageArray[x][y][1], imageArray[x][y][2]).getRGB());
+                }
+            }
+
             File f = new File("MOD"+destination);
-            ImageIO.write(image, "JPEG", f);
+            ImageIO.write(image, "png", f);
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
