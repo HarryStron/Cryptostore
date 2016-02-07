@@ -49,13 +49,15 @@ public class SteganographyManager {
         int msgIndex = 0;
 
         BitSet sizeInBits = BitSet.valueOf(new long[]{Long.valueOf(msg.length()).longValue()});
-        int sizeIndex = sizeInBits.length(); //TODO is it length() or length()-1 ?
+        int sizeIndex = 0;
+System.out.println(sizeInBits);
+System.out.println(bitSetToInt(sizeInBits));
 
         for (int j=imageArray[0].length-1; j>=0; j--) {
             for (int k=imageArray[0][0].length-1; k>=0; k--) {
-                if (sizeIndex >= 0) {
+                if (sizeIndex < sizeInBits.length()) {
                     imageArray[0][j][k] = changeNthSignificantBit(imageArray[0][j][k], 1, sizeInBits.get(sizeIndex));
-                    sizeIndex--;
+                    sizeIndex++;
                 } else {
                     imageArray[0][j][k] = changeNthSignificantBit(imageArray[0][j][k], 1, false);
                 }
@@ -81,22 +83,22 @@ public class SteganographyManager {
 
     private void decrypt(int[][][] imageArray) throws IOException {
         BitSet sizeBits = new BitSet();
-        sizeBits.set(0, false);
-        int index = 1;
         boolean foundFirstTrue = false;
 
         for (int j=0; j<imageArray[0].length; j++) {
             for (int k=0; k<imageArray[0][0].length; k++) {
                 if (foundFirstTrue || getNthSignificantBit(imageArray[0][j][k], 1)) {
-                    sizeBits.set(index, getNthSignificantBit(imageArray[0][j][k], 1));
-                    index++;
+                    int length = imageArray[0].length;
+                    int depth = imageArray[0][0].length;
+                    sizeBits.set(((length*depth - j*depth)-k-1), getNthSignificantBit(imageArray[0][j][k], 1));
                     foundFirstTrue = true;
                 }
             }
         }
+System.out.println(sizeBits);
+System.out.println(bitSetToInt(sizeBits));
 
         int size = bitSetToInt(sizeBits);
-
         BitSet fileBits = new BitSet();
         int fileIndex = 0;
 
