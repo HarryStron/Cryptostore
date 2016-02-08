@@ -12,12 +12,12 @@ import java.util.BitSet;
 
 public class SteganographyManager {
 
-    public SteganographyManager(String imgPath) {
+    public SteganographyManager(String imgPath, String filePath) {
         try {
             BufferedImage bi = ImageIO.read(new File(imgPath));
             int[][][] imgArray = getImageArray(bi);
 
-            int[][][] modifiedImgArray = encrypt(new File("msg.txt"), imgArray);
+            int[][][] modifiedImgArray = encrypt(new File(filePath), imgArray);
             buildImgFromArray(imgPath, modifiedImgArray);
 
             BufferedImage mbi = ImageIO.read(new File("MODkite.png"));
