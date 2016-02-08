@@ -50,8 +50,6 @@ public class SteganographyManager {
 
         BitSet sizeInBits = BitSet.valueOf(new long[]{Long.valueOf(msg.length()).longValue()});
         int sizeIndex = 0;
-System.out.println(sizeInBits);
-System.out.println(bitSetToInt(sizeInBits));
 
         for (int j=imageArray[0].length-1; j>=0; j--) {
             for (int k=imageArray[0][0].length-1; k>=0; k--) {
@@ -95,8 +93,6 @@ System.out.println(bitSetToInt(sizeInBits));
                 }
             }
         }
-System.out.println(sizeBits);
-System.out.println(bitSetToInt(sizeBits));
 
         int size = bitSetToInt(sizeBits);
         BitSet fileBits = new BitSet();
