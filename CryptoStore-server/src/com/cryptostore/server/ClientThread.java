@@ -10,7 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class ClientThread extends Thread {
-    private final String HEX_MAP_PATH = "./0000000000"; //Must be same as client.FilenameManager
+    private final String HEX_MAP_PATH = "./0000000000.png"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private SyncManager syncManager;

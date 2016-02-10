@@ -48,11 +48,10 @@ public class EncryptionManager {
         }
     }
 
-    public static byte[] decryptFile(char[] password, Path filePath) throws Exception {
+    public static byte[] decryptFile(char[] password, byte[] fullFile) throws Exception {
         try {
-            System.out.println("\nDecrypting file: " + FilenameUtils.getBaseName(filePath.getFileName().toString()));
+            System.out.println("\nDecrypting file. . .");
 
-            byte[] fullFile = Files.readAllBytes(filePath);
             byte[] salt = Arrays.copyOf(fullFile, SALT_LENGTH);
             byte[] iv = Arrays.copyOfRange(fullFile, SALT_LENGTH, SALT_LENGTH + IV_LENGTH);
             byte[] ciphertext = Arrays.copyOfRange(fullFile, SALT_LENGTH + IV_LENGTH, fullFile.length);

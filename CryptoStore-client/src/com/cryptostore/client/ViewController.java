@@ -40,6 +40,7 @@ public class ViewController {
     /** main screen **/
     public Button backBtn;
     public Button openBtn;
+    public ToggleButton stegoBtn;
     public Button addBtn;
     public Button deleteBtn;
     public ListView listView;
@@ -111,6 +112,8 @@ public class ViewController {
     }
 
     public void handleAddButtonClick() throws IOException {
+//        clientManager.setStegoEnabled(stegoBtn.isSelected());
+
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
 
@@ -178,7 +181,7 @@ public class ViewController {
 
     public void updateList() {
         File parent = new File(username);
-        if (parent.listFiles().length>NUM_OF_SYSTEM_FILES) {
+        if (listView.getItems().size()>NUM_OF_SYSTEM_FILES) {
             parent = ((File) listView.getItems().get(0)).getParentFile();
         }
 

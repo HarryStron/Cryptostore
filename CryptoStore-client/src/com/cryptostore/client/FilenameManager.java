@@ -6,7 +6,7 @@ import java.util.UUID;
 
 public class FilenameManager {
     public static String MAP_PATH;
-    private final String HEX_MAP_PATH = "./0000000000";
+    public final String HEX_MAP_PATH = "./0000000000.png";
 
     public FilenameManager(String username) {
         MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
