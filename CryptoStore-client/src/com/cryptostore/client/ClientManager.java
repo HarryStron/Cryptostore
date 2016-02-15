@@ -303,7 +303,7 @@ public class ClientManager {
                 //UPDATE MAP
                 // if mapping already exists don't create another entry
                 if (filenameManager.getOriginalPath(encryptedFilename) == null) {
-                    if (!filenameManager.addToMap(filename, encryptedFilename)) {
+                    if (!filenameManager.addToMap(filename, encryptedFilename, stegoEnabled)) {
                         System.out.println("Storing the mapping of the file failed!");
                         throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : MAP FILE");
                     }
@@ -374,7 +374,7 @@ public class ClientManager {
 
                 //decrypt after update SYNC file. File needs to be same as in server in order to produce same hash
                 byte[] decryptedFile;
-                if (stegoEnabled) {
+                if (!filename.equals(FilenameManager.MAP_PATH) && filenameManager.isStegOn(filename)) {
                     decryptedFile = SteganographyManager.retrieve(filename);
                     decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), decryptedFile); //TODO create method. It is used more than once!
                 } else {

@@ -94,6 +94,7 @@ public class ViewController {
 
     /** main screen **/
     public void handleBackButtonClick() throws IOException {
+        blockActions();
         File parent;
         if (listView.getItems().size()<=0) {
             parent = new File(username);
@@ -109,10 +110,12 @@ public class ViewController {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(gParent));
         }
+        unblockActions();
     }
 
     public void handleAddButtonClick() throws IOException {
-//        clientManager.setStegoEnabled(stegoBtn.isSelected());
+        blockActions();
+        clientManager.setStegoEnabled(stegoBtn.isSelected());
 
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
@@ -122,6 +125,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
+        unblockActions();
     }
 
     public  void handleOpenButtonClick() {
@@ -135,6 +139,7 @@ public class ViewController {
         }
     }
     public void handleDeleteButtonClick() {
+        blockActions();
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
         if (file!=null) {
@@ -142,6 +147,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
+        unblockActions();
     }
 
     public void onListDragOver(final DragEvent e) {
@@ -155,6 +161,8 @@ public class ViewController {
     }
 
     public void onListDragDropped(final DragEvent e) {
+        blockActions();
+        clientManager.setStegoEnabled(stegoBtn.isSelected());
         final Dragboard db = e.getDragboard();
         boolean success = false;
 
@@ -175,6 +183,7 @@ public class ViewController {
         e.setDropCompleted(success);
         e.consume();
         updateSpaceUsed();
+        unblockActions();
     }
 
     /** HELPER METHODS **/
@@ -248,6 +257,24 @@ public class ViewController {
 
     private void updateSpaceUsed() {
         spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024/1024)) + "MB");
+    }
+
+    private void blockActions() {
+        stegoBtn.setDisable(true);
+        backBtn.setDisable(true);
+        openBtn.setDisable(true);
+        addBtn.setDisable(true);
+        deleteBtn.setDisable(true);
+        listView.setDisable(true);
+    }
+
+    private void unblockActions() {
+        stegoBtn.setDisable(false);
+        backBtn.setDisable(false);
+        openBtn.setDisable(false);
+        addBtn.setDisable(false);
+        deleteBtn.setDisable(false);
+        listView.setDisable(false);
     }
 }
 

@@ -2,24 +2,30 @@ package com.cryptostore.client;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class FileMap implements Serializable {
     private ArrayList<String> original;
     private ArrayList<String> encrypted;
+    private Map<String, Boolean> stegan;
 
     public FileMap () {
         original = new ArrayList<>();
         encrypted = new ArrayList<>();
+        stegan = new HashMap<>();
     }
 
-    public void addMapping (String originalPath, String encryptedPath) {
+    public void addMapping (String originalPath, String encryptedPath, boolean steg) {
         original.add(originalPath);
         encrypted.add(encryptedPath);
+        stegan.put(originalPath, steg);
     }
 
     public void removeMapping (String originalPath, String encryptedPath) {
         original.remove(originalPath);
         encrypted.remove(encryptedPath);
+        stegan.remove(originalPath);
     }
 
     public boolean containsOriginal (String path) {
@@ -44,6 +50,10 @@ public class FileMap implements Serializable {
         } else {
             return encrypted.get(original.indexOf(path));
         }
+    }
+
+    public boolean isStegOn(String path) {
+        return stegan.get(path);
     }
 
     public int numberOfElements() {
