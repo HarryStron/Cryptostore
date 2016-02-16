@@ -94,7 +94,7 @@ public class ViewController {
 
     /** main screen **/
     public void handleBackButtonClick() throws IOException {
-        blockActions();
+        blockActions(true);
         File parent;
         if (listView.getItems().size()<=0) {
             parent = new File(username);
@@ -110,11 +110,11 @@ public class ViewController {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(gParent));
         }
-        unblockActions();
+        blockActions(false);
     }
 
     public void handleAddButtonClick() throws IOException {
-        blockActions();
+        blockActions(true);
         clientManager.setStegoEnabled(stegoBtn.isSelected());
 
         FileChooser fileChooser = new FileChooser();
@@ -125,7 +125,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
-        unblockActions();
+        blockActions(false);
     }
 
     public  void handleOpenButtonClick() {
@@ -139,7 +139,7 @@ public class ViewController {
         }
     }
     public void handleDeleteButtonClick() {
-        blockActions();
+        blockActions(true);
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
         if (file!=null) {
@@ -147,7 +147,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
-        unblockActions();
+        blockActions(false);
     }
 
     public void onListDragOver(final DragEvent e) {
@@ -161,7 +161,7 @@ public class ViewController {
     }
 
     public void onListDragDropped(final DragEvent e) {
-        blockActions();
+        blockActions(true);
         clientManager.setStegoEnabled(stegoBtn.isSelected());
         final Dragboard db = e.getDragboard();
         boolean success = false;
@@ -183,7 +183,7 @@ public class ViewController {
         e.setDropCompleted(success);
         e.consume();
         updateSpaceUsed();
-        unblockActions();
+        blockActions(false);
     }
 
     /** HELPER METHODS **/
@@ -259,22 +259,13 @@ public class ViewController {
         spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024/1024)) + "MB");
     }
 
-    private void blockActions() {
-        stegoBtn.setDisable(true);
-        backBtn.setDisable(true);
-        openBtn.setDisable(true);
-        addBtn.setDisable(true);
-        deleteBtn.setDisable(true);
-        listView.setDisable(true);
-    }
-
-    private void unblockActions() {
-        stegoBtn.setDisable(false);
-        backBtn.setDisable(false);
-        openBtn.setDisable(false);
-        addBtn.setDisable(false);
-        deleteBtn.setDisable(false);
-        listView.setDisable(false);
+    private void blockActions(boolean val) {
+        stegoBtn.setDisable(val);
+        backBtn.setDisable(val);
+        openBtn.setDisable(val);
+        addBtn.setDisable(val);
+        deleteBtn.setDisable(val);
+        listView.setDisable(val);
     }
 }
 
