@@ -18,6 +18,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class ClientManager {
+    private static final String IMAGE_PATH = "kite.png";
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -27,6 +28,7 @@ public class ClientManager {
     private String username;
     private String userPassword;
     private boolean isAUTHed;
+    private boolean stegoEnabled = true;
 
     public ClientManager(String username, String password, String host, int hostPort) {
         setCertificates();
@@ -245,6 +247,10 @@ public class ClientManager {
         return pathsInDir;
     }
 
+    public void setStegoEnabled(boolean stegoEnabled) {
+        this.stegoEnabled = stegoEnabled;
+    }
+
     public void copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
         try {
             if (file.isDirectory()) {
@@ -283,15 +289,19 @@ public class ClientManager {
             Path path = Paths.get(filename);
             if (path.toFile().exists()) {
                 //SEND FILE
-                byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
-
                 String encryptedFilename = filenameManager.randomisePath(filename);
+
+                byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
+                if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
+                    encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
+                    encryptedFilename += ".png";
+                }
                 sendFile(encryptedFilename, encryptedFileBytes);
 
                 //UPDATE MAP
                 // if mapping already exists don't create another entry
                 if (filenameManager.getOriginalPath(encryptedFilename) == null) {
-                    if (!filenameManager.addToMap(filename, encryptedFilename)) {
+                    if (!filenameManager.addToMap(filename, encryptedFilename, stegoEnabled)) {
                         System.out.println("Storing the mapping of the file failed!");
                         throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : MAP FILE");
                     }
@@ -361,7 +371,13 @@ public class ClientManager {
                 }
 
                 //decrypt after update SYNC file. File needs to be same as in server in order to produce same hash
-                byte[] decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Paths.get(filename)); //TODO create method. It is used more than once!
+                byte[] decryptedFile;
+                if (!filename.equals(filenameManager.MAP_PATH) && filenameManager.isStegOn(filename)) {
+                    decryptedFile = SteganographyManager.retrieve(filename);
+                    decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), decryptedFile); //TODO create method. It is used more than once!
+                } else {
+                    decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Files.readAllBytes(Paths.get(filename)));
+                }
                 FileOutputStream fos = new FileOutputStream(filename);
                 fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
                 fos.close();
@@ -580,6 +596,14 @@ public class ClientManager {
             parentDir.delete();
             recursivelyDeleteDirIfEmpty(gParent);
         }
+    }
+
+    public String getMAP_PATH() {
+        return filenameManager.MAP_PATH;
+    }
+
+    public String getSYNC_PATH() {
+        return syncManager.SYNC_PATH;
     }
 
     private void greaterThanZero(int num) throws Exception {

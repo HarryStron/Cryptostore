@@ -69,6 +69,10 @@ Allow client to upload and delete directories.<br/>
 Implement steganography class.<br/>
 **_v1.16.0_**
 
+**`feature-17`**:<br/>
+Hide files in images before sending and retrieve them on download when steganography is enabled. Never hide the MAP and the SYNC file within images.<br/>
+**_v1.17.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>

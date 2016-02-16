@@ -40,6 +40,7 @@ public class ViewController {
     /** main screen **/
     public Button backBtn;
     public Button openBtn;
+    public ToggleButton stegoBtn;
     public Button addBtn;
     public Button deleteBtn;
     public ListView listView;
@@ -93,6 +94,7 @@ public class ViewController {
 
     /** main screen **/
     public void handleBackButtonClick() throws IOException {
+        blockActions(true);
         File parent;
         if (listView.getItems().size()<=0) {
             parent = new File(username);
@@ -108,9 +110,13 @@ public class ViewController {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(gParent));
         }
+        blockActions(false);
     }
 
     public void handleAddButtonClick() throws IOException {
+        blockActions(true);
+        clientManager.setStegoEnabled(stegoBtn.isSelected());
+
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(stage);
 
@@ -119,6 +125,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
+        blockActions(false);
     }
 
     public  void handleOpenButtonClick() {
@@ -132,6 +139,7 @@ public class ViewController {
         }
     }
     public void handleDeleteButtonClick() {
+        blockActions(true);
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
         if (file!=null) {
@@ -139,6 +147,7 @@ public class ViewController {
             updateList();
         }
         updateSpaceUsed();
+        blockActions(false);
     }
 
     public void onListDragOver(final DragEvent e) {
@@ -152,6 +161,8 @@ public class ViewController {
     }
 
     public void onListDragDropped(final DragEvent e) {
+        blockActions(true);
+        clientManager.setStegoEnabled(stegoBtn.isSelected());
         final Dragboard db = e.getDragboard();
         boolean success = false;
 
@@ -172,13 +183,14 @@ public class ViewController {
         e.setDropCompleted(success);
         e.consume();
         updateSpaceUsed();
+        blockActions(false);
     }
 
     /** HELPER METHODS **/
 
     public void updateList() {
         File parent = new File(username);
-        if (parent.listFiles().length>NUM_OF_SYSTEM_FILES) {
+        if (listView.getItems().size()>NUM_OF_SYSTEM_FILES) {
             parent = ((File) listView.getItems().get(0)).getParentFile();
         }
 
@@ -211,7 +223,7 @@ public class ViewController {
         }
 
         for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
-            if (!file.getPath().equals(FilenameManager.MAP_PATH.substring(2)) && !file.getPath().equals(SyncManager.SYNC_PATH.substring(2))) {
+            if (!file.getPath().equals(clientManager.getMAP_PATH().substring(2)) && !file.getPath().equals(clientManager.getSYNC_PATH().substring(2))) {
                 elements.add(file);
             }
         }
@@ -245,6 +257,15 @@ public class ViewController {
 
     private void updateSpaceUsed() {
         spaceUsedField.setText(String.format("%.2f", ((float) calculateFileSize()/1024/1024)) + "MB");
+    }
+
+    private void blockActions(boolean val) {
+        stegoBtn.setDisable(val);
+        backBtn.setDisable(val);
+        openBtn.setDisable(val);
+        addBtn.setDisable(val);
+        deleteBtn.setDisable(val);
+        listView.setDisable(val);
     }
 }
 

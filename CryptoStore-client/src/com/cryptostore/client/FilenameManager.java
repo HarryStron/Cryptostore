@@ -5,8 +5,8 @@ import java.lang.*;
 import java.util.UUID;
 
 public class FilenameManager {
-    public static String MAP_PATH;
-    private final String HEX_MAP_PATH = "./0000000000";
+    public String MAP_PATH;
+    public final String HEX_MAP_PATH = "./0000000000";
 
     public FilenameManager(String username) {
         MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
@@ -40,6 +40,10 @@ public class FilenameManager {
         return getMap().getOriginalFromEncrypted(path);
     }
 
+    public boolean isStegOn(String path) {
+        return getMap().isStegOn(path);
+    }
+
     private FileMap getMap() {
         try {
             File file = new File(MAP_PATH);
@@ -62,9 +66,9 @@ public class FilenameManager {
         return map.containsOriginal(filename);
     }
 
-    public boolean addToMap(String filename, String encryptedFilename) {
+    public boolean addToMap(String filename, String encryptedFilename, boolean steg) {
         FileMap map = getMap();
-        map.addMapping(filename, encryptedFilename);
+        map.addMapping(filename, encryptedFilename, steg);
 
         return store(map);
     }
@@ -86,7 +90,7 @@ public class FilenameManager {
                 FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
                 ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
                 FileMap fileMap = new FileMap();
-                fileMap.addMapping(MAP_PATH, HEX_MAP_PATH);
+                fileMap.addMapping(MAP_PATH, HEX_MAP_PATH, false);
                 objectOutputStream.writeObject(fileMap);
                 objectOutputStream.close();
 
