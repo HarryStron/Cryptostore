@@ -223,7 +223,7 @@ public class ViewController {
         }
 
         for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
-            if (!file.getPath().equals(FilenameManager.MAP_PATH.substring(2)) && !file.getPath().equals(SyncManager.SYNC_PATH.substring(2))) {
+            if (!file.getPath().equals(clientManager.getMAP_PATH().substring(2)) && !file.getPath().equals(clientManager.getSYNC_PATH().substring(2))) {
                 elements.add(file);
             }
         }

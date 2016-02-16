@@ -292,11 +292,9 @@ public class ClientManager {
                 String encryptedFilename = filenameManager.randomisePath(filename);
 
                 byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
-                if (stegoEnabled) {
+                if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
                     encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
-                    if (!encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
-                        encryptedFilename += ".png";
-                    }
+                    encryptedFilename += ".png";
                 }
                 sendFile(encryptedFilename, encryptedFileBytes);
 
@@ -374,7 +372,7 @@ public class ClientManager {
 
                 //decrypt after update SYNC file. File needs to be same as in server in order to produce same hash
                 byte[] decryptedFile;
-                if (!filename.equals(FilenameManager.MAP_PATH) && filenameManager.isStegOn(filename)) {
+                if (!filename.equals(filenameManager.MAP_PATH) && filenameManager.isStegOn(filename)) {
                     decryptedFile = SteganographyManager.retrieve(filename);
                     decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), decryptedFile); //TODO create method. It is used more than once!
                 } else {
@@ -598,6 +596,14 @@ public class ClientManager {
             parentDir.delete();
             recursivelyDeleteDirIfEmpty(gParent);
         }
+    }
+
+    public String getMAP_PATH() {
+        return filenameManager.MAP_PATH;
+    }
+
+    public String getSYNC_PATH() {
+        return syncManager.SYNC_PATH;
     }
 
     private void greaterThanZero(int num) throws Exception {
