@@ -12,8 +12,10 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.awt.*;
@@ -29,7 +31,7 @@ public class ViewController {
     private ClientManager clientManager;
     private String username;
     private String encryptionPassword;
-    public static Stage stage;
+    public static Stage primaryStage;
 
     /** login screen **/
     public TextField usernameField;
@@ -48,6 +50,9 @@ public class ViewController {
     public Text statusField;
     public Text spaceUsedField;
 
+    /** popup screen **/
+    public TextArea popupText;
+    public Button popupOK;
 
     /** SETUP **/
 
@@ -68,7 +73,7 @@ public class ViewController {
 
         if (!username.equals("") && !userPass.equals("") && !encryptionPassword.equals("")) {
             clientManager = new ClientManager(username, userPass, HOST, PORT);
-            stage.setOnCloseRequest(event -> {
+            primaryStage.setOnCloseRequest(event -> {
                 clientManager.closeConnection();
                 System.exit(0);
             });
@@ -79,8 +84,8 @@ public class ViewController {
 
                 loader.setController(this);
                 Parent root = loader.load();
-                stage.setScene(new Scene(root));
-                stage.show();
+                primaryStage.setScene(new Scene(root));
+                primaryStage.show();
 
                 init();
             } else {
@@ -118,7 +123,7 @@ public class ViewController {
         clientManager.setStegoEnabled(stegoBtn.isSelected());
 
         FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(stage);
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
         if (selectedFile != null) {
             copyToUserDirAndUpload(selectedFile);
@@ -134,7 +139,7 @@ public class ViewController {
             try {
                 Desktop.getDesktop().open(file);
             } catch (IOException e) {
-                //TODO notify
+                notify("Uploading the file failed!");
             }
         }
     }
@@ -146,7 +151,7 @@ public class ViewController {
             updateList();
             updateSpaceUsed();
         } else {
-            //TODO notify user that it failed
+            notify("Deleting the file failed!");
         }
         blockActions(false);
     }
@@ -254,7 +259,7 @@ public class ViewController {
         }
 
         if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
-            //TODO notify user that it failed
+            notify("Uploading the file failed!");
         }
     }
 
@@ -269,6 +274,27 @@ public class ViewController {
         addBtn.setDisable(val);
         deleteBtn.setDisable(val);
         listView.setDisable(val);
+    }
+
+    private void notify(String txt) {
+        try {
+            Stage stage = new Stage();
+            AnchorPane page = FXMLLoader.load(getClass().getResource("popup.fxml"));
+            Scene scene = new Scene(page);
+            stage.setScene(scene);
+            stage.setTitle("Error");
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
+            popupText.setText(txt);
+            stage.show();
+
+            popupOK.setOnMouseClicked(event -> {
+                stage.hide();
+            });
+
+        } catch (IOException e) {
+            System.out.println(txt);
+        }
     }
 }
 
