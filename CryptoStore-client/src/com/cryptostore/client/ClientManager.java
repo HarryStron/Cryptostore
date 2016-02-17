@@ -87,7 +87,7 @@ public class ClientManager {
         }
     }
 
-    public boolean sendHeartBeat() {
+    public boolean sendHeartBeat() { //public so it can be used by test suite
         try {
             transferManager.writeControl(Command.HEARTBEAT);
 
@@ -251,33 +251,39 @@ public class ClientManager {
         this.stegoEnabled = stegoEnabled;
     }
 
-    public void copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
-        try {
-            if (file.isDirectory()) {
-                destinationPath += "/" + file.getName();
+    public boolean copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
+        if (isAUTHed && sendHeartBeat()) {
+            try {
+                if (file.isDirectory()) {
+                    destinationPath += "/" + file.getName();
 
-                FileUtils.copyDirectory(file, new File(destinationPath));
+                    FileUtils.copyDirectory(file, new File(destinationPath));
 
-                ArrayList<Path> newFiles = new ArrayList<Path>();
-                getAllFilesInDir(Paths.get(destinationPath), newFiles);
+                    ArrayList<Path> newFiles = new ArrayList<Path>();
+                    getAllFilesInDir(Paths.get(destinationPath), newFiles);
 
-                for (Path p : newFiles) {
-                    uploadFileAndMap(encryptionPassword, p.toString());
-                    syncManager.setVersion(syncManager.getVersion()+1);
+                    for (Path p : newFiles) {
+                        uploadFileAndMap(encryptionPassword, p.toString());
+                        syncManager.setVersion(syncManager.getVersion() + 1);
+                    }
+                } else {
+                    FileUtils.copyFileToDirectory(file, new File(destinationPath));
+                    destinationPath += "/" + file.getName();
+
+                    uploadFileAndMap(encryptionPassword, destinationPath);
                 }
-            } else {
-                FileUtils.copyFileToDirectory(file, new File(destinationPath));
-                destinationPath += "/" + file.getName();
 
-                uploadFileAndMap(encryptionPassword, destinationPath);
+            } catch (IOException e) {
+                handleError(Error.CANNOT_COPY_FILE, e);
             }
-
-        } catch (IOException e) {
-            handleError(Error.CANNOT_COPY_FILE, e);
+            return true;
+        } else {
+            handleError(Error.CANNOT_CONNECT, null);
+            return false;
         }
     }
 
-    public void uploadFileAndMap(String password, String filename) {
+    public void uploadFileAndMap(String password, String filename) { //public so it's usable by test suite
         if (upload(password, filename)) {
             upload(password, filenameManager.MAP_PATH);
         }
@@ -324,38 +330,34 @@ public class ClientManager {
     }
 
     private void sendFile(String filename, byte[] buffer) throws Exception {
-        if (isAUTHed) {
-            try {
-                transferManager.writeControl(Command.FILE_FROM_CLIENT);
+        try {
+            transferManager.writeControl(Command.FILE_FROM_CLIENT);
+
+            okOrException();
+            transferManager.writeFileSize(filename.length());
+
+            okOrException();
+            transferManager.writeFileName(filename);
+
+            okOrException();
+            transferManager.writeFileSize(buffer.length);
+
+            okOrException();
+            if (buffer.length != 0) {
+                transferManager.writeFile(new FileData(buffer));
 
                 okOrException();
-                transferManager.writeFileSize(filename.length());
+                System.out.println("\nFile \'" + filename + "\' sent successfully!");
 
-                okOrException();
-                transferManager.writeFileName(filename);
-
-                okOrException();
-                transferManager.writeFileSize(buffer.length);
-
-                okOrException();
-                if (buffer.length != 0) {
-                    transferManager.writeFile(new FileData(buffer));
-
-                    okOrException();
-                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
-
-                } else {
-                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
-                }
-            } catch (Exception e) {
-                throw new Exception(e.getMessage());
+            } else {
+                System.out.println("\nFile \'" + filename + "\' sent successfully!");
             }
-        } else {
-            throw new Exception(Error.CANNOT_AUTH.getDescription());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
-    public void download(String password, String filename) {
+    public void download(String password, String filename) { //public so it can be used by the test suite
         try {
             System.out.println("\nDownloading " + filename + " from server. . .");
 
@@ -430,18 +432,24 @@ public class ClientManager {
         }
     }
 
-    public void delete(String password, String filename) {
-        if (new File(filename).isDirectory()) {
-            try {
-                Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> {
-                    deleteFile(password, path.toString());
-                    syncManager.setVersion(syncManager.getVersion()+1);
-                });
-            } catch (IOException e) {
-                handleError(Error.DELETE_FAIL, e);
+    public boolean delete(String password, String filename) {
+        if (isAUTHed && sendHeartBeat()) {
+            if (new File(filename).isDirectory()) {
+                try {
+                    Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> {
+                        deleteFile(password, path.toString());
+                        syncManager.setVersion(syncManager.getVersion() + 1);
+                    });
+                } catch (IOException e) {
+                    handleError(Error.DELETE_FAIL, e);
+                }
+            } else {
+                deleteFile(password, filename);
             }
+            return true;
         } else {
-            deleteFile(password, filename);
+            handleError(Error.CANNOT_CONNECT, null);
+            return false;
         }
     }
 
@@ -590,7 +598,7 @@ public class ClientManager {
         }
     }
 
-    public void recursivelyDeleteDirIfEmpty(File parentDir) {
+    private void recursivelyDeleteDirIfEmpty(File parentDir) {
         if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
             File gParent = parentDir.getParentFile();
             parentDir.delete();
@@ -614,4 +622,3 @@ public class ClientManager {
         }
     }
 }
-

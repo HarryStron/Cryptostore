@@ -85,7 +85,7 @@ public class ViewController {
                 init();
             } else {
                 clientManager.closeConnection();
-                alertField.setText("Wrong username or user password! Please try again.");
+                alertField.setText("Wrong credentials or server is unresponsive! Please try again.");
             }
         } else {
             alertField.setText("Make sure all fields are complete and try again.");
@@ -142,11 +142,12 @@ public class ViewController {
         blockActions(true);
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
-        if (file!=null) {
-            clientManager.delete(encryptionPassword, file.getPath());
+        if (file!=null && clientManager.delete(encryptionPassword, file.getPath())) {
             updateList();
+            updateSpaceUsed();
+        } else {
+            //TODO notify user that it failed
         }
-        updateSpaceUsed();
         blockActions(false);
     }
 
@@ -252,7 +253,9 @@ public class ViewController {
             destinationPath = parent.getPath();
         }
 
-        clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath);
+        if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
+            //TODO notify user that it failed
+        }
     }
 
     private void updateSpaceUsed() {
