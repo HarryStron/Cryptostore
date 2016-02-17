@@ -73,6 +73,10 @@ Implement steganography class.<br/>
 Hide files in images before sending and retrieve them on download when steganography is enabled. Never hide the MAP and the SYNC file within images.<br/>
 **_v1.17.0_**
 
+**`feature-18`**:<br/>
+Do not allow a user to log in multiple times at the same time.<br/>
+**_v1.18.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>

@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 public class ClientThread extends Thread {
     private final String HEX_MAP_PATH = "./0000000000.png"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
+    private String username;
     private TransferManager transferManager;
     private SyncManager syncManager;
     private String clientIP;
@@ -41,14 +42,19 @@ public class ClientThread extends Thread {
             greaterThanZero(usernameSize);
             transferManager.writeControl(Command.OK);
 
-            String username = listenForString(usernameSize);
+            username = listenForString(usernameSize);
             greaterThanZero(username.length());
 
-            if (!Validator.validateUsername(username))
+            if (!Validator.validateUsername(username)) {
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
-            if (!JDBCControl.usernameExists(username))
+            }
+            if (!JDBCControl.usernameExists(username)) {
                 throw new Exception(Error.NO_USER.getDescription(clientIP));
-
+            }
+if (ServerManager.onlineUsers.contains(username)) {
+    throw new Exception(Error.USER_LOGGED.getDescription(clientIP));
+}
+ServerManager.onlineUsers.add(username);
             transferManager.writeControl(Command.OK);
 
             int passwordSize = getSize();
@@ -186,6 +192,7 @@ public class ClientThread extends Thread {
     private void closeConnection() {
         clientIsConnected = false;
         clientIsAuthed = false;
+ServerManager.onlineUsers.remove(username);
 
         try {
             transferManager.closeStreams();
