@@ -73,6 +73,10 @@ Implement steganography class.<br/>
 Hide files in images before sending and retrieve them on download when steganography is enabled. Never hide the MAP and the SYNC file within images.<br/>
 **_v1.17.0_**
 
+**`feature-18`**:<br/>
+Do not allow a user to log in multiple times at the same time.<br/>
+**_v1.18.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>
@@ -110,6 +114,10 @@ On file deletion, filemap entries are deleted prior to sync-file updating causin
 **`bug-9`**:<br/>
 Sync gets really slow if there are hundreds of files to be checked using hashes. Use version numbers so that the client knows when it is already in sync with the server and can skip the SYNC phase.<br/>
 **_v1.15.1_**
+
+**`bug-10`**:<br/>
+Client needs to verify that the user is AUTHED before any action. It is also practical to check that the connection channel with the server is still available (use a heartbeat).<br/>
+**_v1.17.1_**
 
 ## Other (_not tagged_)
 
