@@ -117,7 +117,7 @@ Sync gets really slow if there are hundreds of files to be checked using hashes.
 
 **`bug-10`**:<br/>
 Client needs to verify that the user is AUTHED before any action. It is also practical to check that the connection channel with the server is still available (use a heartbeat).<br/>
-**_v1.15.1_**
+**_v1.17.1_**
 
 ## Other (_not tagged_)
 
