@@ -1,6 +1,7 @@
 package com.cryptostore.client;
 
 import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -12,8 +13,10 @@ import javafx.scene.input.DragEvent;
 import javafx.scene.input.Dragboard;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.TransferMode;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.awt.*;
@@ -29,25 +32,41 @@ public class ViewController {
     private ClientManager clientManager;
     private String username;
     private String encryptionPassword;
-    public static Stage stage;
+    public static Stage primaryStage;
 
     /** login screen **/
-    public TextField usernameField;
-    public PasswordField userPassField;
-    public PasswordField encryptionPassField;
-    public TextArea alertField;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private PasswordField userPassField;
+    @FXML
+    private PasswordField encryptionPassField;
 
     /** main screen **/
-    public Button backBtn;
-    public Button openBtn;
-    public ToggleButton stegoBtn;
-    public Button addBtn;
-    public Button deleteBtn;
-    public ListView listView;
-    public Text userField;
-    public Text statusField;
-    public Text spaceUsedField;
+    @FXML
+    private Button backBtn;
+    @FXML
+    private Button openBtn;
+    @FXML
+    private ToggleButton stegoBtn;
+    @FXML
+    private Button addBtn;
+    @FXML
+    private Button deleteBtn;
+    @FXML
+    private ListView listView;
+    @FXML
+    private Text userField;
+    @FXML
+    private Text statusField;
+    @FXML
+    private Text spaceUsedField;
 
+    /** popup screen **/
+    @FXML
+    private TextArea popupText;
+    @FXML
+    private Button popupOK;
 
     /** SETUP **/
 
@@ -68,7 +87,7 @@ public class ViewController {
 
         if (!username.equals("") && !userPass.equals("") && !encryptionPassword.equals("")) {
             clientManager = new ClientManager(username, userPass, HOST, PORT);
-            stage.setOnCloseRequest(event -> {
+            primaryStage.setOnCloseRequest(event -> {
                 clientManager.closeConnection();
                 System.exit(0);
             });
@@ -79,16 +98,16 @@ public class ViewController {
 
                 loader.setController(this);
                 Parent root = loader.load();
-                stage.setScene(new Scene(root));
-                stage.show();
+                primaryStage.setScene(new Scene(root));
+                primaryStage.show();
 
                 init();
             } else {
                 clientManager.closeConnection();
-                alertField.setText("Wrong username or user password! Please try again.");
+                notify("Wrong credentials or server is unresponsive! Please try again.");
             }
         } else {
-            alertField.setText("Make sure all fields are complete and try again.");
+            notify("Make sure all fields are complete and try again.");
         }
     }
 
@@ -105,6 +124,7 @@ public class ViewController {
         if (parent==null || parent.getName().equals(username)) {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(new File(username)));
+            notify("You are currently in the root \"/yourUsername\" directory");
         } else {
             File gParent = parent.getParentFile();
             listView.getItems().removeAll(listView.getItems());
@@ -118,7 +138,7 @@ public class ViewController {
         clientManager.setStegoEnabled(stegoBtn.isSelected());
 
         FileChooser fileChooser = new FileChooser();
-        File selectedFile = fileChooser.showOpenDialog(stage);
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
 
         if (selectedFile != null) {
             copyToUserDirAndUpload(selectedFile);
@@ -134,8 +154,10 @@ public class ViewController {
             try {
                 Desktop.getDesktop().open(file);
             } catch (IOException e) {
-                //TODO notify
+                notify("Cannot open file!");
             }
+        } else {
+            notify("No file selected!");
         }
     }
     public void handleDeleteButtonClick() {
@@ -143,10 +165,15 @@ public class ViewController {
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
         if (file!=null) {
-            clientManager.delete(encryptionPassword, file.getPath());
-            updateList();
+            if (clientManager.delete(encryptionPassword, file.getPath())) {
+                updateList();
+                updateSpaceUsed();
+            } else {
+                notify("Deleting the file failed!");
+            }
+        } else {
+            notify("No file selected!");
         }
-        updateSpaceUsed();
         blockActions(false);
     }
 
@@ -176,7 +203,7 @@ public class ViewController {
                     listView.getItems().removeAll(listView.getItems());
                     listView.getItems().addAll(getAllChildren(new File(username)));
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    notify("Uploading has failed!");
                 }
             });
         }
@@ -252,7 +279,9 @@ public class ViewController {
             destinationPath = parent.getPath();
         }
 
-        clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath);
+        if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
+            notify("Uploading has failed!");
+        }
     }
 
     private void updateSpaceUsed() {
@@ -266,6 +295,29 @@ public class ViewController {
         addBtn.setDisable(val);
         deleteBtn.setDisable(val);
         listView.setDisable(val);
+    }
+
+    private void notify(String txt) {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("popup.fxml"));
+            loader.setController(this);
+            AnchorPane page = loader.load();
+            Scene scene = new Scene(page);
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.setTitle("Error");
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.show();
+
+            popupText.setText(txt);
+            popupOK.setOnMouseClicked(event -> {
+                stage.hide();
+            });
+
+        } catch (IOException e) {
+            System.out.println(txt);
+        }
     }
 }
 

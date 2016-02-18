@@ -118,7 +118,6 @@ public class TransferManager {
                         byte[] buff = new byte[BLOCK_SIZE];
 
                         if (sizeOfFile>BLOCK_SIZE) {
-                            System.out.println((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE));
                             for (int i = 0; i < ((int) Math.ceil((double) sizeOfFile / (double) BLOCK_SIZE))-1; i++) {
                                 bytesRead = dis.read(buff);
                                 System.arraycopy(buff, 0, load, pos, bytesRead);

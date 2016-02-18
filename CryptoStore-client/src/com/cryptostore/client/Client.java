@@ -22,6 +22,6 @@ public class Client extends Application {
         primaryStage.setScene(new Scene(root));
         primaryStage.show();
 
-        ViewController.stage = primaryStage;
+        ViewController.primaryStage = primaryStage;
     }
 }

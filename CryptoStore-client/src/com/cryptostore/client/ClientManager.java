@@ -82,12 +82,11 @@ public class ClientManager {
             }
             return true;
         } catch (Exception e) {
-            handleError(Error.CANNOT_CONNECT, e);
             return false;
         }
     }
 
-    public boolean sendHeartBeat() {
+    public boolean sendHeartBeat() { //public so it can be used by test suite
         try {
             transferManager.writeControl(Command.HEARTBEAT);
 
@@ -109,7 +108,7 @@ public class ClientManager {
         return socket;
     }
 
-    private void authenticate() {
+    private void authenticate() throws Exception {
         System.out.println("\nAuthenticating. . .");
         try {
             if (getCommand() == Command.AUTH.getCode()) {
@@ -130,7 +129,7 @@ public class ClientManager {
                 throw new IOException(Error.UNKNOWN_COMMAND.getDescription());
             }
         } catch (Exception e) {
-            handleError(Error.CANNOT_AUTH, e);
+            throw new Exception(Error.CANNOT_AUTH.getDescription());
         }
     }
 
@@ -138,7 +137,7 @@ public class ClientManager {
         return "127.0.0.1"; //TODO change that with a method that returns the NAT IP address
     }
 
-    public void closeConnection() {
+    public boolean closeConnection() {
         try {
             isAUTHed = false;
             transferManager.writeControl(Command.CLOSE);
@@ -146,29 +145,23 @@ public class ClientManager {
             clientSocket.close();
 
             System.out.println("\nThe connection was shut down!");
+
+            return true;
         } catch (Exception e) {
-            handleError(Error.SERER_DISCONNECTED, e);
+            return false;
         }
     }
 
-    private void getEncryptionMapping(String password) {
+    private void getEncryptionMapping(String password) throws Exception {
         System.out.println("\nUpdating filename encryption-mapping. . .");
+        filenameManager.createMapIfNotExists();
 
-        try {
-            filenameManager.createMapIfNotExists();
-        } catch (Exception e) {
-            Error.CANNOT_SAVE_FILE.print();
-        }
-
-        try {
-            download(password, filenameManager.MAP_PATH);
-        } catch (Exception e) {
+        if(!download(password, filenameManager.MAP_PATH)) {
             upload(password, filenameManager.MAP_PATH); //TODO if downloading fails not because the file does not exist this will delete all the existing mappings
-            handleError(Error.CANNOT_RECEIVE_FILE, e);
         }
     }
 
-    private void syncWithServer(String password) {
+    private void syncWithServer(String password) throws Exception {
         System.out.println("\nSynchronising with server. . .");
         try {
             transferManager.writeControl(Command.SYNC);
@@ -229,7 +222,7 @@ public class ClientManager {
             System.out.println("Synchronisation Completed!");
 
         } catch (Exception e) {
-            handleError(Error.CANNOT_SYNC, e);
+            throw new Exception(Error.CANNOT_SYNC.getDescription());
         }
     }
 
@@ -251,114 +244,108 @@ public class ClientManager {
         this.stegoEnabled = stegoEnabled;
     }
 
-    public void copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
-        try {
-            if (file.isDirectory()) {
-                destinationPath += "/" + file.getName();
+    public boolean copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
+        if (isAUTHed && sendHeartBeat()) {
+            try {
+                if (file.isDirectory()) {
+                    destinationPath += "/" + file.getName();
 
-                FileUtils.copyDirectory(file, new File(destinationPath));
+                    FileUtils.copyDirectory(file, new File(destinationPath));
 
-                ArrayList<Path> newFiles = new ArrayList<Path>();
-                getAllFilesInDir(Paths.get(destinationPath), newFiles);
+                    ArrayList<Path> newFiles = new ArrayList<Path>();
+                    getAllFilesInDir(Paths.get(destinationPath), newFiles);
 
-                for (Path p : newFiles) {
-                    uploadFileAndMap(encryptionPassword, p.toString());
-                    syncManager.setVersion(syncManager.getVersion()+1);
-                }
-            } else {
-                FileUtils.copyFileToDirectory(file, new File(destinationPath));
-                destinationPath += "/" + file.getName();
-
-                uploadFileAndMap(encryptionPassword, destinationPath);
-            }
-
-        } catch (IOException e) {
-            handleError(Error.CANNOT_COPY_FILE, e);
-        }
-    }
-
-    public void uploadFileAndMap(String password, String filename) {
-        if (upload(password, filename)) {
-            upload(password, filenameManager.MAP_PATH);
-        }
-    }
-
-    private boolean upload(String password, String filename) {
-        System.out.println("\nSending \'" + filename + "\' to server . . .");
-        try {
-            Path path = Paths.get(filename);
-            if (path.toFile().exists()) {
-                //SEND FILE
-                String encryptedFilename = filenameManager.randomisePath(filename);
-
-                byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
-                if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
-                    encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
-                    encryptedFilename += ".png";
-                }
-                sendFile(encryptedFilename, encryptedFileBytes);
-
-                //UPDATE MAP
-                // if mapping already exists don't create another entry
-                if (filenameManager.getOriginalPath(encryptedFilename) == null) {
-                    if (!filenameManager.addToMap(filename, encryptedFilename, stegoEnabled)) {
-                        System.out.println("Storing the mapping of the file failed!");
-                        throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : MAP FILE");
+                    for (Path p : newFiles) {
+                        uploadFileAndMap(encryptionPassword, p.toString());
+                        syncManager.setVersion(syncManager.getVersion() + 1);
                     }
+                } else {
+                    FileUtils.copyFileToDirectory(file, new File(destinationPath));
+                    destinationPath += "/" + file.getName();
+
+                    uploadFileAndMap(encryptionPassword, destinationPath);
                 }
 
-                //UPDATE SYNC FILE
-                if(!syncManager.updateEntry(encryptedFilename, encryptedFileBytes, true)) {
-                    System.out.println("Updating the sync file failed!");
-                    throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : SYNC FILE");
-                }
-
-            } else {
-                throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+            } catch (Exception e) {
+                return false;
             }
-        } catch (Exception e) {
-            handleError(Error.FILE_NOT_SENT, e);
+            return true;
+        } else {
             return false;
         }
-        return true;
+    }
+
+    public void uploadFileAndMap(String password, String filename) throws Exception { //public so it's usable by test suite
+        upload(password, filename);
+        upload(password, filenameManager.MAP_PATH);
+    }
+
+    private void upload(String password, String filename) throws Exception {
+        System.out.println("\nSending \'" + filename + "\' to server . . .");
+        Path path = Paths.get(filename);
+        if (path.toFile().exists()) {
+            //SEND FILE
+            String encryptedFilename = filenameManager.randomisePath(filename);
+
+            byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
+            if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
+                encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
+                encryptedFilename += ".png";
+            }
+            sendFile(encryptedFilename, encryptedFileBytes);
+
+            //UPDATE MAP
+            // if mapping already exists don't create another entry
+            if (filenameManager.getOriginalPath(encryptedFilename) == null) {
+                if (!filenameManager.addToMap(filename, encryptedFilename, stegoEnabled)) {
+                    System.out.println("Storing the mapping of the file failed!");
+                    throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : MAP FILE");
+                }
+            }
+
+            //UPDATE SYNC FILE
+            if(!syncManager.updateEntry(encryptedFilename, encryptedFileBytes, true)) {
+                System.out.println("Updating the sync file failed!");
+                throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : SYNC FILE");
+            }
+
+        } else {
+            throw new Exception(Error.FILE_NOT_FOUND.getDescription());
+        }
     }
 
     private void sendFile(String filename, byte[] buffer) throws Exception {
-        if (isAUTHed) {
-            try {
-                transferManager.writeControl(Command.FILE_FROM_CLIENT);
+        try {
+            transferManager.writeControl(Command.FILE_FROM_CLIENT);
+
+            okOrException();
+            transferManager.writeFileSize(filename.length());
+
+            okOrException();
+            transferManager.writeFileName(filename);
+
+            okOrException();
+            transferManager.writeFileSize(buffer.length);
+
+            okOrException();
+            if (buffer.length != 0) {
+                transferManager.writeFile(new FileData(buffer));
 
                 okOrException();
-                transferManager.writeFileSize(filename.length());
+                System.out.println("\nFile \'" + filename + "\' sent successfully!");
 
-                okOrException();
-                transferManager.writeFileName(filename);
-
-                okOrException();
-                transferManager.writeFileSize(buffer.length);
-
-                okOrException();
-                if (buffer.length != 0) {
-                    transferManager.writeFile(new FileData(buffer));
-
-                    okOrException();
-                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
-
-                } else {
-                    System.out.println("\nFile \'" + filename + "\' sent successfully!");
-                }
-            } catch (Exception e) {
-                throw new Exception(e.getMessage());
+            } else {
+                System.out.println("\nFile \'" + filename + "\' sent successfully!");
             }
-        } else {
-            throw new Exception(Error.CANNOT_AUTH.getDescription());
+        } catch (Exception e) {
+            throw new Exception(e.getMessage());
         }
     }
 
-    public void download(String password, String filename) {
-        try {
-            System.out.println("\nDownloading " + filename + " from server. . .");
+    public boolean download(String password, String filename) { //public so it can be used by the test suite
+        System.out.println("\nDownloading " + filename + " from server. . .");
 
+        try {
             String encryptedFilename = filenameManager.getEncryptedPath(filename);
             if (encryptedFilename == null) {
                 throw new Exception(Error.FILE_NOT_FOUND.getDescription());
@@ -366,7 +353,7 @@ public class ClientManager {
                 getFile(filename, encryptedFilename);
 
                 //UPDATE SYNC FILE
-                if(!syncManager.updateEntry(encryptedFilename, Files.readAllBytes(Paths.get(filename)), true)) {
+                if (!syncManager.updateEntry(encryptedFilename, Files.readAllBytes(Paths.get(filename)), true)) {
                     System.out.println("Updating the sync file failed!");
                 }
 
@@ -382,66 +369,67 @@ public class ClientManager {
                 fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
                 fos.close();
             }
+            return true;
         } catch (Exception e) {
-            handleError(Error.CANNOT_RECEIVE_FILE, e);
+            return false;
         }
     }
 
     private void getFile(String filename, String encryptedFilename) throws Exception {
         if (isAUTHed) {
-            try {
-                transferManager.writeControl(Command.FILE_FROM_SERVER);
+            transferManager.writeControl(Command.FILE_FROM_SERVER);
 
-                okOrException();
-                transferManager.writeFileSize(encryptedFilename.length());
+            okOrException();
+            transferManager.writeFileSize(encryptedFilename.length());
 
-                okOrException();
-                transferManager.writeFileName(encryptedFilename);
+            okOrException();
+            transferManager.writeFileName(encryptedFilename);
 
-                okOrException();
-                transferManager.writeControl(Command.OK);
+            okOrException();
+            transferManager.writeControl(Command.OK);
 
-                File file = new File(filename);
-                file.getParentFile().mkdirs();
-                FileOutputStream fos = new FileOutputStream(new File(filename));
-                int sizeOfFile = getSize();
+            File file = new File(filename);
+            file.getParentFile().mkdirs();
+            FileOutputStream fos = new FileOutputStream(new File(filename));
+            int sizeOfFile = getSize();
 
-                if (sizeOfFile < 0) {
-                    throw new IOException(Error.NEGATIVE_SIZE.getDescription());
-                }
-
-                transferManager.writeControl(Command.OK);
-
-                if (sizeOfFile > 0) {
-                    byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                    fos.write(buffer, 0, buffer.length);
-
-                    transferManager.writeControl(Command.OK);
-                }
-                fos.close();
-
-                System.out.println(filename + " received!");
-
-            } catch (IOException e) {
-                throw new Exception(e.getMessage());
+            if (sizeOfFile < 0) {
+                throw new IOException(Error.NEGATIVE_SIZE.getDescription());
             }
+
+            transferManager.writeControl(Command.OK);
+
+            if (sizeOfFile > 0) {
+                byte[] buffer = transferManager.read(sizeOfFile).getData(1);
+                fos.write(buffer, 0, buffer.length);
+
+                transferManager.writeControl(Command.OK);
+            }
+            fos.close();
+
+            System.out.println(filename + " received!");
         } else {
             throw new Exception(Error.CANNOT_AUTH.getDescription());
         }
     }
 
-    public void delete(String password, String filename) {
-        if (new File(filename).isDirectory()) {
-            try {
-                Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> {
-                    deleteFile(password, path.toString());
-                    syncManager.setVersion(syncManager.getVersion()+1);
-                });
-            } catch (IOException e) {
-                handleError(Error.DELETE_FAIL, e);
+    public boolean delete(String password, String filename) {
+        if (isAUTHed && sendHeartBeat()) {
+            if (new File(filename).isDirectory()) {
+                try {
+                    Files.walk(Paths.get(filename)).filter(Files::isRegularFile).forEach((path) -> {
+                        deleteFile(password, path.toString());
+                        syncManager.setVersion(syncManager.getVersion() + 1);
+                    });
+                } catch (IOException e) {
+                    return false;
+                }
+            } else {
+                deleteFile(password, filename);
             }
+            return true;
         } else {
-            deleteFile(password, filename);
+            return false;
         }
     }
 
@@ -465,7 +453,7 @@ public class ClientManager {
                 throw new Exception(Error.SERVER_DELETE_FAIL.getDescription());
             }
         } catch (Exception e) {
-            handleError(Error.DELETE_FAIL, e);
+            Error.DELETE_FAIL.print();
         }
         recursivelyDeleteDirIfEmpty(new File(filename).getParentFile());
     }
@@ -559,38 +547,19 @@ public class ClientManager {
         return filename;
     }
 
-    private String listenForString(int size) {
+    private String listenForString(int size) throws Exception {
         String filename = null;
 
         try {
             filename = IOUtils.toString(transferManager.read(size).getData(1), "UTF-8");
         } catch (Exception e) {
-            handleError(Error.COMMUNICATION_FAILED, e);
+            throw new Exception(Error.COMMUNICATION_FAILED.getDescription());
         }
 
         return filename;
     }
 
-    private void handleError(Error err1, Exception err2) {
-        try {
-            err1.print();
-
-            if (err2.getMessage() != null)
-                System.out.println(err2.getMessage()+'\n');
-
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-        }
-        try {
-            if (transferManager != null)
-                transferManager.flush();
-//                transferManager.writeControl(Command.ERROR);
-        } catch (Exception e) {
-            System.out.println(e.getMessage()+'\n');
-        }
-    }
-
-    public void recursivelyDeleteDirIfEmpty(File parentDir) {
+    private void recursivelyDeleteDirIfEmpty(File parentDir) {
         if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
             File gParent = parentDir.getParentFile();
             parentDir.delete();
@@ -614,4 +583,3 @@ public class ClientManager {
         }
     }
 }
-
