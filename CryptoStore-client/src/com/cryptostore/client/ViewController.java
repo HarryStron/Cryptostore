@@ -41,8 +41,6 @@ public class ViewController {
     private PasswordField userPassField;
     @FXML
     private PasswordField encryptionPassField;
-    @FXML
-    private TextArea alertField;
 
     /** main screen **/
     @FXML
@@ -106,10 +104,10 @@ public class ViewController {
                 init();
             } else {
                 clientManager.closeConnection();
-                alertField.setText("Wrong credentials or server is unresponsive! Please try again.");
+                notify("Wrong credentials or server is unresponsive! Please try again.");
             }
         } else {
-            alertField.setText("Make sure all fields are complete and try again.");
+            notify("Make sure all fields are complete and try again.");
         }
     }
 
@@ -126,6 +124,7 @@ public class ViewController {
         if (parent==null || parent.getName().equals(username)) {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(new File(username)));
+            notify("You are currently in the root \"/yourUsername\" directory");
         } else {
             File gParent = parent.getParentFile();
             listView.getItems().removeAll(listView.getItems());
@@ -155,19 +154,25 @@ public class ViewController {
             try {
                 Desktop.getDesktop().open(file);
             } catch (IOException e) {
-                notify("Uploading the file failed!");
+                notify("Cannot open file!");
             }
+        } else {
+            notify("No file selected!");
         }
     }
     public void handleDeleteButtonClick() {
         blockActions(true);
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
-        if (file!=null && clientManager.delete(encryptionPassword, file.getPath())) {
-            updateList();
-            updateSpaceUsed();
+        if (file!=null) {
+            if (clientManager.delete(encryptionPassword, file.getPath())) {
+                updateList();
+                updateSpaceUsed();
+            } else {
+                notify("Deleting the file failed!");
+            }
         } else {
-            notify("Deleting the file failed!");
+            notify("No file selected!");
         }
         blockActions(false);
     }
@@ -198,7 +203,7 @@ public class ViewController {
                     listView.getItems().removeAll(listView.getItems());
                     listView.getItems().addAll(getAllChildren(new File(username)));
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    notify("Uploading has failed!");
                 }
             });
         }
@@ -275,7 +280,7 @@ public class ViewController {
         }
 
         if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
-            notify("Uploading the file failed!");
+            notify("Uploading has failed!");
         }
     }
 

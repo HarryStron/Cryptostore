@@ -79,7 +79,7 @@ Do not allow a user to log in multiple times at the same time.<br/>
 
 **`feature-19`**:<br/>
 Add a popup window to provide feedback to the user when an action fails.<br/>
-**_queued_**
+**_v1.18.0_**
 
 ## BUGs
 
