@@ -49,9 +49,10 @@ public class SteganographyManager {
         BitSet msg = BitSet.valueOf(bytesIn);
         int msgIndex = 0;
 
-        BitSet sizeInBits = BitSet.valueOf(new long[]{Long.valueOf(msg.length()).longValue()});
+        BitSet sizeInBits = BitSet.valueOf(new long[]{Long.valueOf(msg.length())});
         int sizeIndex = 0;
 
+        //encode size of file
         for (int j=imageArray[0].length-1; j>=0; j--) {
             for (int k=imageArray[0][0].length-1; k>=0; k--) {
                 if (sizeIndex < sizeInBits.length()) {
@@ -63,6 +64,7 @@ public class SteganographyManager {
             }
         }
 
+        //encode file
         startOfLoop:
         for (int i=1; i<imageArray.length; i++) {
             for (int j=0; j<imageArray[0].length; j++) {

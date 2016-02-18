@@ -1,6 +1,7 @@
 package com.cryptostore.client;
 
 import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -34,25 +35,38 @@ public class ViewController {
     public static Stage primaryStage;
 
     /** login screen **/
-    public TextField usernameField;
-    public PasswordField userPassField;
-    public PasswordField encryptionPassField;
-    public TextArea alertField;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private PasswordField userPassField;
+    @FXML
+    private PasswordField encryptionPassField;
 
     /** main screen **/
-    public Button backBtn;
-    public Button openBtn;
-    public ToggleButton stegoBtn;
-    public Button addBtn;
-    public Button deleteBtn;
-    public ListView listView;
-    public Text userField;
-    public Text statusField;
-    public Text spaceUsedField;
+    @FXML
+    private Button backBtn;
+    @FXML
+    private Button openBtn;
+    @FXML
+    private ToggleButton stegoBtn;
+    @FXML
+    private Button addBtn;
+    @FXML
+    private Button deleteBtn;
+    @FXML
+    private ListView listView;
+    @FXML
+    private Text userField;
+    @FXML
+    private Text statusField;
+    @FXML
+    private Text spaceUsedField;
 
     /** popup screen **/
-    public TextArea popupText;
-    public Button popupOK;
+    @FXML
+    private TextArea popupText;
+    @FXML
+    private Button popupOK;
 
     /** SETUP **/
 
@@ -90,10 +104,10 @@ public class ViewController {
                 init();
             } else {
                 clientManager.closeConnection();
-                alertField.setText("Wrong credentials or server is unresponsive! Please try again.");
+                notify("Wrong credentials or server is unresponsive! Please try again.");
             }
         } else {
-            alertField.setText("Make sure all fields are complete and try again.");
+            notify("Make sure all fields are complete and try again.");
         }
     }
 
@@ -110,6 +124,7 @@ public class ViewController {
         if (parent==null || parent.getName().equals(username)) {
             listView.getItems().removeAll(listView.getItems());
             listView.getItems().addAll(getAllChildren(new File(username)));
+            notify("You are currently in the root \"/yourUsername\" directory");
         } else {
             File gParent = parent.getParentFile();
             listView.getItems().removeAll(listView.getItems());
@@ -139,19 +154,25 @@ public class ViewController {
             try {
                 Desktop.getDesktop().open(file);
             } catch (IOException e) {
-                notify("Uploading the file failed!");
+                notify("Cannot open file!");
             }
+        } else {
+            notify("No file selected!");
         }
     }
     public void handleDeleteButtonClick() {
         blockActions(true);
         File file = ((File) listView.getSelectionModel().getSelectedItem());
 
-        if (file!=null && clientManager.delete(encryptionPassword, file.getPath())) {
-            updateList();
-            updateSpaceUsed();
+        if (file!=null) {
+            if (clientManager.delete(encryptionPassword, file.getPath())) {
+                updateList();
+                updateSpaceUsed();
+            } else {
+                notify("Deleting the file failed!");
+            }
         } else {
-            notify("Deleting the file failed!");
+            notify("No file selected!");
         }
         blockActions(false);
     }
@@ -182,7 +203,7 @@ public class ViewController {
                     listView.getItems().removeAll(listView.getItems());
                     listView.getItems().addAll(getAllChildren(new File(username)));
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    notify("Uploading has failed!");
                 }
             });
         }
@@ -259,7 +280,7 @@ public class ViewController {
         }
 
         if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
-            notify("Uploading the file failed!");
+            notify("Uploading has failed!");
         }
     }
 
@@ -278,16 +299,18 @@ public class ViewController {
 
     private void notify(String txt) {
         try {
-            Stage stage = new Stage();
-            AnchorPane page = FXMLLoader.load(getClass().getResource("popup.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("popup.fxml"));
+            loader.setController(this);
+            AnchorPane page = loader.load();
             Scene scene = new Scene(page);
+            Stage stage = new Stage();
             stage.setScene(scene);
             stage.setTitle("Error");
             stage.initOwner(primaryStage);
             stage.initModality(Modality.WINDOW_MODAL);
-            popupText.setText(txt);
             stage.show();
 
+            popupText.setText(txt);
             popupOK.setOnMouseClicked(event -> {
                 stage.hide();
             });

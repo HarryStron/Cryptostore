@@ -75,6 +75,10 @@ Hide files in images before sending and retrieve them on download when steganogr
 
 **`feature-18`**:<br/>
 Do not allow a user to log in multiple times at the same time.<br/>
+**_queued_**
+
+**`feature-19`**:<br/>
+Add a popup window to provide feedback to the user when an action fails.<br/>
 **_v1.18.0_**
 
 ## BUGs
@@ -118,6 +122,7 @@ Sync gets really slow if there are hundreds of files to be checked using hashes.
 **`bug-10`**:<br/>
 Client needs to verify that the user is AUTHED before any action. It is also practical to check that the connection channel with the server is still available (use a heartbeat).<br/>
 **_v1.17.1_**
+
 
 ## Other (_not tagged_)
 
