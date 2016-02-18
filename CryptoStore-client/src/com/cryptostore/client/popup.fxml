@@ -4,11 +4,13 @@
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="353.0" xmlns="http://javafx.com/javafx/2.2">
+<AnchorPane xmlns:fx="http://javafx.com/fxml/1" id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="-Infinity" minWidth="-Infinity" prefHeight="160.0" prefWidth="353.0"
+            xmlns="http://javafx.com/javafx/2.2">
 <children>
     <BorderPane prefHeight="-1.0" prefWidth="-1.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
         <bottom>
-            <Button fx:id="popupOK" mnemonicParsing="false" prefHeight="36.999900000002526" prefWidth="104.0" text="OK" BorderPane.alignment="CENTER_RIGHT">
+            <Button fx:id="popupOK" mnemonicParsing="false" prefHeight="40" prefWidth="104.0" text="OK" BorderPane.alignment="CENTER_RIGHT">
                 <BorderPane.margin>
                     <Insets bottom="10.0" right="10.0" />
                 </BorderPane.margin>

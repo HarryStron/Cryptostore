@@ -1,6 +1,7 @@
 package com.cryptostore.client;
 
 import javafx.application.Platform;
+import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -34,25 +35,40 @@ public class ViewController {
     public static Stage primaryStage;
 
     /** login screen **/
-    public TextField usernameField;
-    public PasswordField userPassField;
-    public PasswordField encryptionPassField;
-    public TextArea alertField;
+    @FXML
+    private TextField usernameField;
+    @FXML
+    private PasswordField userPassField;
+    @FXML
+    private PasswordField encryptionPassField;
+    @FXML
+    private TextArea alertField;
 
     /** main screen **/
-    public Button backBtn;
-    public Button openBtn;
-    public ToggleButton stegoBtn;
-    public Button addBtn;
-    public Button deleteBtn;
-    public ListView listView;
-    public Text userField;
-    public Text statusField;
-    public Text spaceUsedField;
+    @FXML
+    private Button backBtn;
+    @FXML
+    private Button openBtn;
+    @FXML
+    private ToggleButton stegoBtn;
+    @FXML
+    private Button addBtn;
+    @FXML
+    private Button deleteBtn;
+    @FXML
+    private ListView listView;
+    @FXML
+    private Text userField;
+    @FXML
+    private Text statusField;
+    @FXML
+    private Text spaceUsedField;
 
     /** popup screen **/
-    public TextArea popupText;
-    public Button popupOK;
+    @FXML
+    private TextArea popupText;
+    @FXML
+    private Button popupOK;
 
     /** SETUP **/
 
@@ -278,16 +294,18 @@ public class ViewController {
 
     private void notify(String txt) {
         try {
-            Stage stage = new Stage();
-            AnchorPane page = FXMLLoader.load(getClass().getResource("popup.fxml"));
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("popup.fxml"));
+            loader.setController(this);
+            AnchorPane page = loader.load();
             Scene scene = new Scene(page);
+            Stage stage = new Stage();
             stage.setScene(scene);
             stage.setTitle("Error");
             stage.initOwner(primaryStage);
             stage.initModality(Modality.WINDOW_MODAL);
-            popupText.setText(txt);
             stage.show();
 
+            popupText.setText(txt);
             popupOK.setOnMouseClicked(event -> {
                 stage.hide();
             });

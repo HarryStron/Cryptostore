@@ -23,7 +23,7 @@ public enum Error {
     // CONNECTION / COMMUNICATION
     CANNOT_CONNECT(17, "Connection between client and server could not be established"),
     CLIENT_DISCONNECTED(18, "The client disconnected"),
-    SERER_DISCONNECTED(19, "The server disconnected"),
+    SERVER_DISCONNECTED(19, "The server disconnected"),
     SOCKET_CLOSED(20, "The socket is closed"),
     FAILED_TO_WRITE(21, "The packets could not be sent"),
     FAILED_TO_READ(22, "The packets could not be read"),
