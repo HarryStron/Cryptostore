@@ -51,10 +51,11 @@ public class ClientThread extends Thread {
             if (!JDBCControl.usernameExists(username)) {
                 throw new Exception(Error.NO_USER.getDescription(clientIP));
             }
-if (ServerManager.onlineUsers.contains(username)) {
-    throw new Exception(Error.USER_LOGGED.getDescription(clientIP));
-}
-ServerManager.onlineUsers.add(username);
+            if (ServerManager.onlineUsers.contains(username)) {
+                throw new Exception(Error.USER_LOGGED.getDescription(clientIP));
+            } else {
+                ServerManager.onlineUsers.add(username);
+            }
             transferManager.writeControl(Command.OK);
 
             int passwordSize = getSize();
@@ -192,7 +193,7 @@ ServerManager.onlineUsers.add(username);
     private void closeConnection() {
         clientIsConnected = false;
         clientIsAuthed = false;
-ServerManager.onlineUsers.remove(username);
+        ServerManager.onlineUsers.remove(username);
 
         try {
             transferManager.closeStreams();
