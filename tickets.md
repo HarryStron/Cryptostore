@@ -74,8 +74,8 @@ Hide files in images before sending and retrieve them on download when steganogr
 **_v1.17.0_**
 
 **`feature-18`**:<br/>
-Do not allow a user to log in multiple times at the same time.<br/>
-**_queued_**
+Do not allow the same user to log in multiple times at the same time.<br/>
+**_v1.19.0_**
 
 **`feature-19`**:<br/>
 Add a popup window to provide feedback to the user when an action fails.<br/>

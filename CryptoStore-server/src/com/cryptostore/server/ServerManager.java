@@ -8,11 +8,14 @@ import java.io.IOException;
 import java.lang.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 
 public class ServerManager {
+    public static ArrayList<String> onlineUsers;
     private boolean serverIsOn = true;
 
     public ServerManager(int listeningPort) {
+        onlineUsers = new ArrayList<>();
         setCertificates();
         connect(listeningPort);
     }
