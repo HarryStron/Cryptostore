@@ -53,9 +53,8 @@ public class ClientThread extends Thread {
             }
             if (ServerManager.onlineUsers.contains(username)) {
                 throw new Exception(Error.USER_LOGGED.getDescription(clientIP));
-            } else {
-                ServerManager.onlineUsers.add(username);
             }
+
             transferManager.writeControl(Command.OK);
 
             int passwordSize = getSize();
@@ -72,6 +71,7 @@ public class ClientThread extends Thread {
             if (clientIsAuthed) {
                 transferManager.writeControl(Command.OK);
                 connectedUser = username;
+                ServerManager.onlineUsers.add(username);
             } else {
                 throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
             }
