@@ -63,7 +63,7 @@ public class ClientManager {
         System.out.println("\nConnecting with server. . .");
 
         try { //TODO add timeout if not responsive server
-            clientSocket = establishConnection(host, hostPort); //TODO change the local port to whatever is going to be my in/out port
+            clientSocket = establishConnection(host, hostPort);
             reportStatus(clientSocket);
 
             transferManager = new TransferManager(clientSocket);
