@@ -23,8 +23,8 @@ public class ServerManager {
     private void setCertificates() {
         System.out.println("Setting up certificates.\n");
 
-//        File file = new File("mySrvKeystore");
-        File file = new File("/Volumes/SECUREV/Projects/cryptostore/CryptoStore-server/mySrvKeystore");//TODO change to relative
+        File file = new File("mySrvKeystore");
+//        File file = new File("/Volumes/SECUREV/Projects/cryptostore/CryptoStore-server/mySrvKeystore");//TODO change to relative
         Path path = Paths.get(file.toURI());
         System.setProperty("javax.net.ssl.keyStore", path.toString());
         System.setProperty("javax.net.ssl.keyStorePassword", "123456");

@@ -19,20 +19,19 @@ public class JDBCControl {
         boolean exists = false;
 
         try {
+            Class.forName("com.mysql.jdbc.Driver");
             Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
-
             String query =  "SELECT username " +
                             "FROM user_credentials " +
                             "WHERE username = ?";
-
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
-
             ResultSet queryResult = statement.executeQuery();
 
             exists = queryResult.next();
-        } catch (SQLException ex) {
-            com.cryptostore.server.Error.NO_USER.print();
+        } catch (SQLException | ClassNotFoundException ex) {
+            ex.printStackTrace();
+            com.cryptostore.server.Error.NO_USER.print(); //TODO why did you use full path?
         }
 
         return exists;

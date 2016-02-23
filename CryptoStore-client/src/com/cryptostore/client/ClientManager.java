@@ -9,7 +9,6 @@ import javax.net.ssl.SSLSocketFactory;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
 import java.nio.ByteBuffer;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -45,8 +44,8 @@ public class ClientManager {
     private void setCertificates() {
         System.out.println("\nSetting up certificates. . .");
 
-//        File file = new File("mySrvKeystore");
-        File file = new File("/Volumes/SECUREV/Projects/cryptostore/CryptoStore-client/mySrvKeystore");//TODO revert to relative path
+        File file = new File("mySrvKeystore");
+//        File file = new File("/Volumes/SECUREV/Projects/cryptostore/CryptoStore-client/mySrvKeystore");//TODO revert to relative path
         Path path = Paths.get(file.toURI());
         System.setProperty("javax.net.ssl.trustStore", path.toString());
     }
@@ -64,7 +63,7 @@ public class ClientManager {
         System.out.println("\nConnecting with server. . .");
 
         try { //TODO add timeout if not responsive server
-            clientSocket = establishConnection(host, hostPort, 5600); //TODO change the local port to whatever is going to be my in/out port
+            clientSocket = establishConnection(host, hostPort); //TODO change the local port to whatever is going to be my in/out port
             reportStatus(clientSocket);
 
             transferManager = new TransferManager(clientSocket);
@@ -96,11 +95,10 @@ public class ClientManager {
         }
     }
 
-    private SSLSocket establishConnection(String host, int hostPort, int localPort) throws IOException {
+    private SSLSocket establishConnection(String host, int hostPort) throws IOException {
         SSLSocketFactory sslsocketfactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
 
-        String localAddress = getLocalIP(); //TODO this should be the NATs to access the client remotely. Not the lan IP
-        SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(host, hostPort, InetAddress.getByName(localAddress), localPort);
+        SSLSocket socket = (SSLSocket) sslsocketfactory.createSocket(host, hostPort);
         socket.setSoLinger(true, 0);
 
         socket.startHandshake();
@@ -131,10 +129,6 @@ public class ClientManager {
         } catch (Exception e) {
             throw new Exception(Error.CANNOT_AUTH.getDescription());
         }
-    }
-
-    private String getLocalIP() {
-        return "127.0.0.1"; //TODO change that with a method that returns the NAT IP address
     }
 
     public boolean closeConnection() {
