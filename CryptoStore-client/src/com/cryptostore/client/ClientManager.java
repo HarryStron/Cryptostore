@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Base64;
 
 public class ClientManager {
+    public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
     private static final String IMAGE_PATH = "res/kite.png";
     private SSLSocket clientSocket;
     private TransferManager transferManager;
@@ -44,7 +45,8 @@ public class ClientManager {
 
     private void setCertificates() {
         System.out.println("\nSetting up certificates. . .");
-        File file = new File("mySrvKeystore");
+
+        File file = new File(KEYSTORE_PATH);
         Path path = Paths.get(file.toURI());
         System.setProperty("javax.net.ssl.trustStore", path.toString());
     }
