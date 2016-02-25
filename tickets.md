@@ -81,6 +81,10 @@ Do not allow the same user to log in multiple times at the same time.<br/>
 Add a popup window to provide feedback to the user when an action fails.<br/>
 **_v1.18.0_**
 
+**`feature-20`**:<br/>
+Keep a hash of the decryption pass in the DB to verify it on login.<br/>
+**_queued_**
+
 ## BUGs
 
 **`bug-1`**:<br/>

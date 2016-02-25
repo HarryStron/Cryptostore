@@ -20,6 +20,7 @@ public class HashGenerator {
         return DatatypeConverter.printHexBinary(hashBytes);
     }
 
+    /** Used for hashing files to check them against the other side of the app for bandwidth efficiency **/
     public static String getSHA256(byte[] file) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
