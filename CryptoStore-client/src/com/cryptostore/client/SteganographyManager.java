@@ -158,7 +158,7 @@ public class SteganographyManager {
             }
         }
 
-        File f = new File("MOD"+destination);
+        File f = new File(destination.substring(0, destination.length()-4)+"TMP"+destination.substring(destination.length()-4));
         ImageIO.write(image, "png", f);
 
         return f;

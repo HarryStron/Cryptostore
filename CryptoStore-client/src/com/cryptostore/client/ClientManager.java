@@ -6,9 +6,7 @@ import org.apache.commons.io.IOUtils;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.nio.ByteBuffer;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
@@ -17,7 +15,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class ClientManager {
-    private static final String IMAGE_PATH = "kite.png";
+    private static final String IMAGE_PATH = "res/kite.png";
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -43,9 +41,7 @@ public class ClientManager {
 
     private void setCertificates() {
         System.out.println("\nSetting up certificates. . .");
-
         File file = new File("mySrvKeystore");
-//        File file = new File("/Volumes/SECUREV/Projects/cryptostore/CryptoStore-client/mySrvKeystore");//TODO revert to relative path
         Path path = Paths.get(file.toURI());
         System.setProperty("javax.net.ssl.trustStore", path.toString());
     }
