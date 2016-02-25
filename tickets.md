@@ -154,5 +154,5 @@ Make all changes needed for the client-server to run on AWS. That includes:
 - make sure libraries and all dependencies are properly extracted with the jar files
 - make sure self-signed keys are on the same path with the jars
 
-**_merged_**
+**_v1.19.0.1_**
 
