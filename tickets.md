@@ -147,6 +147,12 @@ Refactoring.<br/>
 **_merged_**
 
 **`other-6`**:<br/>
-Refactoring. Replace printf with <br/>
-**_merged_**
+Make all changes needed for the client-server to run on AWS. That includes: 
+
+- set up linux server on amazon
+- change IPs to match server
+- make sure libraries and all dependencies are properly extracted with the jar files
+- make sure self-signed keys are on the same path with the jars
+
+**_v1.19.0.1_**
 

@@ -12,6 +12,7 @@ import java.util.BitSet;
 public class SteganographyManager {
 
     public static byte[] hide(String imgPath, byte[] fileBytes) throws IOException {
+        System.out.println("\nSteganography proceeding. . .");
         BufferedImage bi = ImageIO.read(new File(imgPath));
         int[][][] imgArray = getImageArray(bi);
         int[][][] modifiedImgArray = encrypt(fileBytes, imgArray);
@@ -31,6 +32,7 @@ public class SteganographyManager {
     }
 
     private static int[][][] getImageArray(BufferedImage bi) {
+        System.out.println("\nDecomposing image. . .");
         int[][][] imageArray = new int[bi.getWidth()][bi.getHeight()][3];
 
         for (int x=0; x<bi.getWidth(); x++) {
@@ -46,6 +48,7 @@ public class SteganographyManager {
     }
 
     private static int[][][] encrypt(byte[] bytesIn, int[][][] imageArray) throws IOException {
+        System.out.println("\nHiding file in image. . .");
         BitSet msg = BitSet.valueOf(bytesIn);
         int msgIndex = 0;
 
@@ -83,6 +86,7 @@ public class SteganographyManager {
     }
 
     private static byte[] decrypt(int[][][] imageArray) throws IOException {
+        System.out.println("\nRecovering file from image. . .");
         BitSet sizeBits = new BitSet();
         boolean foundFirstTrue = false;
 
@@ -158,7 +162,7 @@ public class SteganographyManager {
             }
         }
 
-        File f = new File("MOD"+destination);
+        File f = new File(destination.substring(0, destination.length()-4)+"TMP"+destination.substring(destination.length()-4));
         ImageIO.write(image, "png", f);
 
         return f;
