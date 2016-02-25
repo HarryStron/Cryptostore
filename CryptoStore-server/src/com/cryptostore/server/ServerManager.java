@@ -46,7 +46,7 @@ public class ServerManager {
         while (serverIsOn) {
             try {
                 SSLSocket clientSocket = (SSLSocket) sslserversocket.accept();
-                clientSocket.setSoLinger(true, 0); //TODO investigate on that
+                clientSocket.setSoLinger(true, 0);
 
                 ClientThread clientThread = new ClientThread(clientSocket);
                 clientThread.run();

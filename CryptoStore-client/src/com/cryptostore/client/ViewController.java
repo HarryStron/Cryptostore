@@ -25,8 +25,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 public class ViewController {
-    private static final String HOST = "localhost";
-//    private static final String HOST = "52.32.158.110";
+//    private static final String HOST = "localhost";
+    private static final String HOST = "52.32.158.110";
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
@@ -105,7 +105,7 @@ public class ViewController {
                 init();
             } else {
                 clientManager.closeConnection();
-                notify("Wrong credentials or server is unresponsive! Please try again.");
+                notify("Wrong credentials! Please try again.");
             }
         } else {
             notify("Make sure all fields are complete and try again.");
