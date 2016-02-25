@@ -11,6 +11,8 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 
 public class ServerManager {
+    public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
+    private String KEYSTORE_PASS = "123456";
     public static ArrayList<String> onlineUsers;
     private boolean serverIsOn = true;
 
@@ -23,10 +25,10 @@ public class ServerManager {
     private void setCertificates() {
         System.out.println("Setting up certificates.\n");
 
-        File file = new File("mySrvKeystore");
+        File file = new File(KEYSTORE_PATH);
         Path path = Paths.get(file.toURI());
         System.setProperty("javax.net.ssl.keyStore", path.toString());
-        System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+        System.setProperty("javax.net.ssl.keyStorePassword", KEYSTORE_PASS);
     }
 
     private void connect(int listeningPort) {

@@ -5,6 +5,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
@@ -20,6 +21,7 @@ public class HashGenerator {
         return DatatypeConverter.printHexBinary(hashBytes);
     }
 
+    /** Used for hashing files to check them against the other side of the app for bandwidth efficiency **/
     public static String getSHA256(byte[] file) throws NoSuchAlgorithmException {
         MessageDigest md = MessageDigest.getInstance("SHA-256");
 
@@ -31,5 +33,11 @@ public class HashGenerator {
         }
 
         return hexString.toString();
+    }
+
+    public static byte[] getSalt() throws NoSuchAlgorithmException {
+        byte[] salt = new byte[16];
+        (new SecureRandom()).nextBytes(salt);
+        return salt;
     }
 }

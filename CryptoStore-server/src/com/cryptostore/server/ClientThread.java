@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Base64;
 
 public class ClientThread extends Thread {
     private final String HEX_MAP_PATH = "./0000000000.png"; //Must be same as client.FilenameManager
@@ -63,8 +64,28 @@ public class ClientThread extends Thread {
 
             String password = listenForString(passwordSize);
             greaterThanZero(password.length());
-            if (!Validator.validatePassword(password))
+            if (!Validator.validatePassword(password)) {
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            }
+            transferManager.writeControl(Command.OK);
+
+            String encSalt = JDBCControl.getEncPassSalt(username);
+            transferManager.writeFileSize(encSalt.length());
+            okOrException();
+
+            transferManager.writeFileName(encSalt);
+            okOrException();
+
+            int encPassSize = getSize();
+            transferManager.writeControl(Command.OK);
+
+            String encPassword = listenForString(encPassSize);
+            if (!Validator.validateEncPassword(encPassword)) {
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            }
+            if (!JDBCControl.checkEncPass(username, encPassword)) {
+                throw new Exception(Error.INCORRECT_PASSWORD.getDescription(clientIP));
+            }
 
             clientIsAuthed = JDBCControl.checkUserPassword(username, HashGenerator.getPBKDF2(password, JDBCControl.getSalt(username)));
 
