@@ -13,6 +13,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Base64;
 
 public class ClientManager {
     private static final String IMAGE_PATH = "res/kite.png";
@@ -24,15 +25,17 @@ public class ClientManager {
     private int hostPort;
     private String username;
     private String userPassword;
+    private String encPassword;
     private boolean isAUTHed;
     private boolean stegoEnabled = true;
 
-    public ClientManager(String username, String password, String host, int hostPort) {
+    public ClientManager(String username, String password, String host, int hostPort, String encPassword) {
         setCertificates();
         this.username = username;
         this.userPassword = password;
         this.host = host;
         this.hostPort = hostPort;
+        this.encPassword = encPassword;
         isAUTHed = false;
 
         filenameManager = new FilenameManager(username);
@@ -116,6 +119,16 @@ public class ClientManager {
 
                 okOrException();
                 transferManager.writeFileName(userPassword);
+
+                okOrException();
+                String salt = listenForString();
+                transferManager.writeControl(Command.OK);
+
+                String hashedEncPass = HashGenerator.getPBKDF2(encPassword, Base64.getDecoder().decode(salt));
+                transferManager.writeFileSize(hashedEncPass.length());
+
+                okOrException();
+                transferManager.writeFileName(hashedEncPass);
 
                 okOrException();
                 isAUTHed = true;

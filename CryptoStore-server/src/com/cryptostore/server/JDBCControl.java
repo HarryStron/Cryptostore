@@ -31,7 +31,7 @@ public class JDBCControl {
             exists = queryResult.next();
         } catch (SQLException | ClassNotFoundException ex) {
             ex.printStackTrace();
-            com.cryptostore.server.Error.NO_USER.print(); //TODO why did you use full path?
+            com.cryptostore.server.Error.DB_ERROR.print(); //TODO why did you use full path?
         }
 
         return exists;
@@ -43,41 +43,98 @@ public class JDBCControl {
         try {
             Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
 
-            String query =  "SELECT username, hash " +
-                            "FROM user_credentials";
+            String query =  "SELECT hash " +
+                            "FROM user_credentials " +
+                            "WHERE username = ?";
 
-            Statement statement = connection.prepareStatement(query);
-            ResultSet queryResult = statement.executeQuery(query);
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, user);
+
+            ResultSet queryResult = statement.executeQuery();
 
             while (queryResult.next()) {
-                if (queryResult.getString("username").equals(user)) {
-                    verify = password.equals(queryResult.getString("hash"));
+                if (password.equals(queryResult.getString("hash"))) {
+                    verify = true;
                 }
             }
 
         } catch (SQLException ex) {
-            com.cryptostore.server.Error.NO_USER.print();
+            com.cryptostore.server.Error.DB_ERROR.print();
         }
 
         return verify;
     }
 
-    public static boolean createNewUser(String username, String passwdHash, byte[] salt) {
+    public static boolean checkEncPass(String user, String encPass) {
+        boolean out = false;
         try {
             Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
 
-            String query =  "INSERT INTO user_credentials (username, hash, salt) " +
-                            "VALUES (?, ?, ?)";
+            String query =  "SELECT encPass " +
+                            "FROM user_credentials " +
+                            "WHERE username = ?";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, user);
+
+            ResultSet queryResult = statement.executeQuery();
+
+            while (queryResult.next()) {
+                if (queryResult.getString("encPass").equals(encPass)) {
+                    out = true;
+                }
+            }
+
+        } catch (SQLException ex) {
+            com.cryptostore.server.Error.DB_ERROR.print();
+        }
+
+        return out;
+    }
+
+    public static String getEncPassSalt(String username) {
+        String encSalt = null;
+        try {
+            Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
+
+            String query =  "SELECT encSalt " +
+                            "FROM user_credentials " +
+                            "WHERE username = ?";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, username);
+
+            ResultSet queryResult = statement.executeQuery();
+
+            while (queryResult.next()) {
+                encSalt = queryResult.getString("encSalt");
+            }
+
+        } catch (SQLException ex) {
+            com.cryptostore.server.Error.DB_ERROR.print();
+        }
+
+        return encSalt;
+    }
+
+    public static boolean createNewUser(String username, String passwdHash, byte[] salt, String encPass, String encSalt) {
+        try {
+            Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
+
+            String query =  "INSERT INTO user_credentials (username, hash, salt, encPass, encSalt) " +
+                            "VALUES (?, ?, ?, ?, ?)";
 
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
             statement.setString(2, passwdHash);
             statement.setString(3, Base64.getEncoder().encodeToString(salt));
+            statement.setString(4, encPass);
+            statement.setString(5, encSalt);
 
             statement.execute();
 
         } catch (SQLException ex) {
-            com.cryptostore.server.Error.NO_USER.print();
+            com.cryptostore.server.Error.DB_ERROR.print();
         }
 
         return checkUserPassword(username, passwdHash);
@@ -91,7 +148,7 @@ public class JDBCControl {
 
             String query =  "SELECT salt " +
                             "FROM user_credentials " +
-                            "WHERE username = ? ";
+                            "WHERE username = ?";
 
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
@@ -103,7 +160,7 @@ public class JDBCControl {
             }
 
         } catch (SQLException ex) {
-            com.cryptostore.server.Error.NO_USER.print();
+            com.cryptostore.server.Error.DB_ERROR.print();
         }
 
         if (salt.length() > 0) {

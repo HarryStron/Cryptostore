@@ -83,7 +83,7 @@ Add a popup window to provide feedback to the user when an action fails.<br/>
 
 **`feature-20`**:<br/>
 Keep a hash of the decryption pass in the DB to verify it on login.<br/>
-**_queued_**
+**_v1.20.0_**
 
 ## BUGs
 

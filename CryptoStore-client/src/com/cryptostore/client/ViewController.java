@@ -87,7 +87,7 @@ public class ViewController {
         encryptionPassword = encryptionPassField.getText();
 
         if (!username.equals("") && !userPass.equals("") && !encryptionPassword.equals("")) {
-            clientManager = new ClientManager(username, userPass, HOST, PORT);
+            clientManager = new ClientManager(username, userPass, HOST, PORT, encryptionPassword);
             primaryStage.setOnCloseRequest(event -> {
                 clientManager.closeConnection();
                 System.exit(0);

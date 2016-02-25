@@ -36,7 +36,9 @@ public enum Error {
     CANNOT_DECRYPT(27, "The file could not be decrypted"),
     CANNOT_ENCRYPT(28, "The file could not be encrypted"),
     //SYNC
-    CANNOT_SYNC(29, "The synchronisation failed");
+    CANNOT_SYNC(29, "The synchronisation failed"),
+    //DB
+    DB_ERROR(30, "Error while executing queries");
 
     private final int code;
     private final String description;

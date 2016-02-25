@@ -5,6 +5,7 @@ import javax.crypto.spec.PBEKeySpec;
 import javax.xml.bind.DatatypeConverter;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
@@ -32,5 +33,11 @@ public class HashGenerator {
         }
 
         return hexString.toString();
+    }
+
+    public static byte[] getSalt() throws NoSuchAlgorithmException {
+        byte[] salt = new byte[16];
+        (new SecureRandom()).nextBytes(salt);
+        return salt;
     }
 }
