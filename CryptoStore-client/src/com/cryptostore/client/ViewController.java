@@ -228,7 +228,6 @@ public class ViewController {
         blockActions(false);
     }
 
-    /** register screen **/
     public void createUser() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("registerUser.fxml"));
@@ -237,7 +236,6 @@ public class ViewController {
             Scene scene = new Scene(page);
             Stage stage = new Stage();
             stage.setScene(scene);
-            stage.setTitle("Register New User");
             stage.initOwner(primaryStage);
             stage.initModality(Modality.WINDOW_MODAL);
             stage.show();
@@ -247,7 +245,22 @@ public class ViewController {
         }
     }
 
+    /** register screen **/
     public void registerUser() {
+        try {
+            boolean isAdmin = regIsAdminBtn.isSelected();
+            clientManager.registerNewUser(regUsernameField.getText(), regUserPassField.getText(), regEncryptionPassField.getText(), isAdmin);
+
+            notify("User '" + regUsernameField.getText() + "' has been registered!");
+        } catch (Exception e) {
+            if (e.getMessage()!=null && e.getMessage().equals(Error.USER_EXISTS.getDescription())) {
+                notify("Username already exists. Try something else!");
+            } else if (e.getMessage()!=null && e.getMessage().equals(Error.CANNOT_AUTH.getDescription())) {
+                notify("Server unresponsive!");
+            } else {
+                notify("Something went wrong!");
+            }
+        }
     }
 
     /** HELPER METHODS **/
