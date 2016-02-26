@@ -43,6 +43,18 @@ public class ViewController {
     @FXML
     private PasswordField encryptionPassField;
 
+    /** register screen **/
+    @FXML
+    private TextField regUsernameField;
+    @FXML
+    private PasswordField regUserPassField;
+    @FXML
+    private PasswordField regEncryptionPassField;
+    @FXML
+    private ToggleButton regIsAdminBtn;
+    @FXML
+    private Button regGoBtn;
+
     /** main screen **/
     @FXML
     private Button backBtn;
@@ -56,6 +68,8 @@ public class ViewController {
     private Button deleteBtn;
     @FXML
     private ListView listView;
+    @FXML
+    private Button createUserBtn;
     @FXML
     private Text userField;
     @FXML
@@ -212,6 +226,41 @@ public class ViewController {
         e.consume();
         updateSpaceUsed();
         blockActions(false);
+    }
+
+    public void createUser() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("registerUser.fxml"));
+            loader.setController(this);
+            AnchorPane page = loader.load();
+            Scene scene = new Scene(page);
+            Stage stage = new Stage();
+            stage.setScene(scene);
+            stage.initOwner(primaryStage);
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.show();
+
+        } catch (IOException e) {
+            notify("Cannot to create user!");
+        }
+    }
+
+    /** register screen **/
+    public void registerUser() {
+        try {
+            boolean isAdmin = regIsAdminBtn.isSelected();
+            clientManager.registerNewUser(regUsernameField.getText(), regUserPassField.getText(), regEncryptionPassField.getText(), isAdmin);
+
+            notify("User '" + regUsernameField.getText() + "' has been registered!");
+        } catch (Exception e) {
+            if (e.getMessage()!=null && e.getMessage().equals(Error.USER_EXISTS.getDescription())) {
+                notify("Username already exists. Try something else!");
+            } else if (e.getMessage()!=null && e.getMessage().equals(Error.CANNOT_AUTH.getDescription())) {
+                notify("Server unresponsive!");
+            } else {
+                notify("Something went wrong!");
+            }
+        }
     }
 
     /** HELPER METHODS **/

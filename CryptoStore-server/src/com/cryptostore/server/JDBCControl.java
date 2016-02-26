@@ -44,8 +44,8 @@ public class JDBCControl {
             Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
 
             String query =  "SELECT hash " +
-                            "FROM user_credentials " +
-                            "WHERE username = ?";
+                    "FROM user_credentials " +
+                    "WHERE username = ?";
 
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, user);
@@ -63,6 +63,34 @@ public class JDBCControl {
         }
 
         return verify;
+    }
+
+    public static boolean isAdmin(String user) {
+        boolean isAdmin = false;
+
+        try {
+            Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
+
+            String query =  "SELECT isAdmin " +
+                            "FROM user_credentials " +
+                            "WHERE username = ?";
+
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, user);
+
+            ResultSet queryResult = statement.executeQuery();
+
+            while (queryResult.next()) {
+                if (queryResult.getString("isAdmin").equals("1")) {
+                    isAdmin = true;
+                }
+            }
+
+        } catch (SQLException ex) {
+            com.cryptostore.server.Error.DB_ERROR.print();
+        }
+
+        return isAdmin;
     }
 
     public static boolean checkEncPass(String user, String encPass) {
@@ -117,12 +145,12 @@ public class JDBCControl {
         return encSalt;
     }
 
-    public static boolean createNewUser(String username, String passwdHash, byte[] salt, String encPass, String encSalt) {
+    public static boolean createNewUser(String username, String passwdHash, byte[] salt, String encPass, String encSalt, String isAdmin) {
         try {
             Connection connection = DriverManager.getConnection(DBHost, serverUsername, serverPassword);
 
-            String query =  "INSERT INTO user_credentials (username, hash, salt, encPass, encSalt) " +
-                            "VALUES (?, ?, ?, ?, ?)";
+            String query =  "INSERT INTO user_credentials (username, hash, salt, encPass, encSalt, isAdmin) " +
+                            "VALUES (?, ?, ?, ?, ?, ?)";
 
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, username);
@@ -130,6 +158,7 @@ public class JDBCControl {
             statement.setString(3, Base64.getEncoder().encodeToString(salt));
             statement.setString(4, encPass);
             statement.setString(5, encSalt);
+            statement.setString(6, isAdmin);
 
             statement.execute();
 

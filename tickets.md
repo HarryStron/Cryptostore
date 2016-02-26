@@ -85,6 +85,10 @@ Add a popup window to provide feedback to the user when an action fails.<br/>
 Keep a hash of the decryption pass in the DB to verify it on login.<br/>
 **_v1.20.0_**
 
+**`feature-21`**:<br/>
+Create an additional option in the main view, where Admin users will be able to register new users to the database (via server).<br/>
+**_v1.21.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>

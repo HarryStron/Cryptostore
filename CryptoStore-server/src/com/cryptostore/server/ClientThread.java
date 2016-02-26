@@ -193,6 +193,20 @@ public class ClientThread extends Thread {
                     } //Else response will be SKIP so do nothing
 
                     System.out.println("SYNC completed!");
+                } else if (request == Command.NEW_USER.getCode()) {
+                    clientPrint("Is requesting to create a new user");
+                    if (JDBCControl.isAdmin(username)) {
+                        String salt = Base64.getEncoder().encodeToString(HashGenerator.getSalt());
+                        transferManager.writeFileSize(salt.length());
+                        okOrException();
+
+                        transferManager.writeFileName(salt);
+                        okOrException();
+
+                        registerNewUser(salt);
+                    } else {
+                        throw new Exception(Error.CANNOT_AUTH.getDescription(clientIP));
+                    }
                 } else if (request == Command.HEARTBEAT.getCode()) {
                     clientPrint("Sent a heartbeat message");
                     transferManager.writeControl(Command.HEARTBEAT);
@@ -322,6 +336,66 @@ public class ClientThread extends Thread {
             clientPrint("File \'" + filename + "\' deleted successfully!");
         } else {
             Error.DELETE_FAIL.print(clientIP);
+        }
+    }
+
+    private void registerNewUser(String encSalt) {
+        clientPrint("Is registering a user. . .");
+        try {
+            int usernameSize = getSize();
+            greaterThanZero(usernameSize);
+            transferManager.writeControl(Command.OK);
+
+            String username = listenForString(usernameSize);
+            greaterThanZero(username.length());
+            if (!Validator.validateUsername(username)) {
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            }
+            if (JDBCControl.usernameExists(username)) {
+                transferManager.writeControl(Command.ERROR);
+                throw new Exception(Error.USER_EXISTS.getDescription(clientIP));
+            }
+            transferManager.writeControl(Command.OK);
+
+            int passSize = getSize();
+            greaterThanZero(passSize);
+            transferManager.writeControl(Command.OK);
+
+            String pass = listenForString(passSize);
+            greaterThanZero(pass.length());
+            if (!Validator.validatePassword(pass)) {
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            }
+            transferManager.writeControl(Command.OK);
+
+            int encPassSize = getSize();
+            greaterThanZero(encPassSize);
+            transferManager.writeControl(Command.OK);
+
+            String encPass = listenForString(encPassSize);
+            greaterThanZero(encPass.length());
+            if (!Validator.validateEncPassword(encPass)) {
+                throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
+            }
+            transferManager.writeControl(Command.OK);
+
+            String isAdmin = "0";
+            if (getSize()==1) {
+                isAdmin = "1";
+            }
+
+            byte[] salt = HashGenerator.getSalt();
+            pass = HashGenerator.getPBKDF2(pass, salt);
+            if (JDBCControl.createNewUser(username, pass, salt, encPass, encSalt, isAdmin)) {
+                transferManager.writeControl(Command.OK);
+                clientPrint("User successfully registered!");
+            } else {
+                transferManager.writeControl(Command.ERROR);
+                throw new Exception(Error.DB_ERROR.getDescription());
+            }
+
+        } catch (Exception e) {
+            Error.COMMUNICATION_FAILED.print(clientIP);
         }
     }
 

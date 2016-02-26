@@ -11,7 +11,8 @@ public enum Command {
     SYNC(8, "get SYNC version"),
     SKIP(9, "skips a step if not required"),
     HEARTBEAT(10, "Heartbeat message"),
-    VERSION(11, "Request for sync file version number");
+    VERSION(11, "Request for sync file version number"),
+    NEW_USER(12, "Create a new user");
 
     private final int code;
     private final String description;
