@@ -86,6 +86,59 @@ public class ClientManager {
         }
     }
 
+    public boolean registerNewUser(String username, String pass, String encPass, boolean isAdmin) {
+        System.out.println("\nRegistering a new user. . .");
+        if (isAUTHed && sendHeartBeat()) {
+            try {
+                transferManager.writeControl(Command.NEW_USER);
+                int encSaltSize = getSize();
+                transferManager.writeControl(Command.OK);
+
+                String encSalt = listenForString(encSaltSize);
+                transferManager.writeControl(Command.OK);
+
+                transferManager.writeFileSize(username.length());
+                okOrException();
+
+                transferManager.writeFileName(username);
+                int response = getCommand();
+                if (response == Command.ERROR.getCode()) {
+                    Error.USER_EXISTS.print();
+                    throw new Exception(Error.USER_EXISTS.getDescription());
+                } else if (response != Command.OK.getCode()) {
+                    throw new Exception(Error.UNKNOWN_COMMAND.getDescription());
+                }
+
+                transferManager.writeFileSize(pass.length());
+                okOrException();
+
+                transferManager.writeFileName(pass);
+                okOrException();
+
+                encPass = HashGenerator.getPBKDF2(encPass, Base64.getDecoder().decode(encSalt));
+                transferManager.writeFileSize(encPass.length());
+                okOrException();
+
+                transferManager.writeFileName(encPass);
+                okOrException();
+
+                if (isAdmin) {
+                    transferManager.writeFileSize(1);
+                } else {
+                    transferManager.writeFileSize(0);
+                }
+                okOrException();
+
+                System.out.println("User '" + username + "' has been registered!");
+                return true;
+            } catch (Exception e) {
+                return false;
+            }
+        } else {
+            return false;
+        }
+    }
+
     public boolean sendHeartBeat() { //public so it can be used by test suite
         try {
             transferManager.writeControl(Command.HEARTBEAT);

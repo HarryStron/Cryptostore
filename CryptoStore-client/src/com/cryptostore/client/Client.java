@@ -10,7 +10,11 @@ import java.io.IOException;
 
 public class Client extends Application {
     public static void main(String args[]) throws IOException {
-        launch(args);
+        ClientManager clientManager = new ClientManager("TestiBesti","P4$$w0rd","localhost",5550,"password");
+        clientManager.connect("P4$$w0rd");
+//        clientManager.registerNewUser("TestiBesti","P4$$w0rd","password",true);
+        clientManager.closeConnection();
+//        launch(args);
     }
 
     @Override
