@@ -31,6 +31,16 @@ public class SteganographyManager {
             return decrypt(retrievedModifiedImageArray);
     }
 
+    public static boolean fitsInImage(byte[] bytes, String imgPath) throws IOException {
+        BufferedImage bimg = ImageIO.read(new File(imgPath));
+        int width = bimg.getWidth();
+        int height = bimg.getHeight();
+        int bitsAvailable = (width-1)*height*3;
+        int bitsNeeded = bytes.length*8;
+
+        return (bitsAvailable >= bitsNeeded) && ((height*3) >= 32); //java int is always 32bits
+    }
+
     private static int[][][] getImageArray(BufferedImage bi) {
         System.out.println("\nDecomposing image. . .");
         int[][][] imageArray = new int[bi.getWidth()][bi.getHeight()][3];

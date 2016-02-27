@@ -328,17 +328,21 @@ public class ViewController {
     }
 
     private void copyToUserDirAndUpload(File file) throws IOException {
-        String destinationPath;
-
-        if (listView.getItems().size()<=NUM_OF_SYSTEM_FILES) {
-            destinationPath = username;
+        if ((file.length()/1024)>3.8 && stegoBtn.isSelected()) { //TODO when choosing of PNG is implemented get size programmatically
+            notify("The file is too large to be hidden inside the image!");
         } else {
-            File parent = ((File) listView.getItems().get(0)).getParentFile();
-            destinationPath = parent.getPath();
-        }
+            String destinationPath;
 
-        if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
-            notify("Uploading has failed!");
+            if (listView.getItems().size() <= NUM_OF_SYSTEM_FILES) {
+                destinationPath = username;
+            } else {
+                File parent = ((File) listView.getItems().get(0)).getParentFile();
+                destinationPath = parent.getPath();
+            }
+
+            if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
+                notify("Uploading has failed!");
+            }
         }
     }
 
