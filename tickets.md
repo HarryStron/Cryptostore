@@ -148,8 +148,8 @@ If file exists on server do not allow to re-upload.<br/>
 **_v1.21.4_**
 
 **`bug-15`**:<br/>
-Space count in client seems to be reporting wrong numbers.<br/>
-**_queued_**
+Refactoring.<br/>
+**_v1.21.5_**
 
 ## Other (_not tagged_)
 
