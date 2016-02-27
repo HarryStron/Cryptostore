@@ -141,7 +141,7 @@ Inform user about password/username requirements when trying to register a new u
 
 **`bug-13`**:<br/>
 If file uploaded on stego mode is not going to fit the png then abort action and notify. Also think about the file size in bits fitting the first row of the png pixels.<br/>
-**_queued_**
+**_v1.21.3_**
 
 **`bug-14`**:<br/>
 If file uploaded on stego mode is not going to fit the png then abort action and notify.<br/>
