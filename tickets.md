@@ -144,15 +144,11 @@ If file uploaded on stego mode is not going to fit the png then abort action and
 **_v1.21.3_**
 
 **`bug-14`**:<br/>
-If file uploaded on stego mode is not going to fit the png then abort action and notify.<br/>
-**_queued_**
+If file exists on server do not allow to re-upload.<br/>
+**_v1.21.4_**
 
 **`bug-15`**:<br/>
 Space count in client seems to be reporting wrong numbers.<br/>
-**_queued_**
-
-**`bug-16`**:<br/>
-If file exists on server do not allow to re-upload.<br/>
 **_queued_**
 
 ## Other (_not tagged_)
