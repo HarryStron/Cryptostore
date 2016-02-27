@@ -133,11 +133,11 @@ Client needs to verify that the user is AUTHED before any action. It is also pra
 
 **`bug-11`**:<br/>
 When registering a user check all fields are complete.<br/>
-**_queued_**
+**_v1.21.1_**
 
 **`bug-12`**:<br/>
-If file exists on server do not allow to re-upload.<br/>
-**_queued_**
+Inform user about password/username requirements when trying to register a new user.<br/>
+**_v1.21.2_**
 
 **`bug-13`**:<br/>
 If file uploaded on stego mode is not going to fit the png then abort action and notify. Also think about the file size in bits fitting the first row of the png pixels.<br/>
@@ -152,7 +152,7 @@ Space count in client seems to be reporting wrong numbers.<br/>
 **_queued_**
 
 **`bug-16`**:<br/>
-Inform user about password/username requirements when trying to register a new user.<br/>
+If file exists on server do not allow to re-upload.<br/>
 **_queued_**
 
 ## Other (_not tagged_)
