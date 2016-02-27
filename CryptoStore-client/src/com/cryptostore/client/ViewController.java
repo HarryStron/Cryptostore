@@ -300,7 +300,7 @@ public class ViewController {
         });
     }
 
-    private ArrayList getAllChildren(File f) {
+    private ArrayList<File> getAllChildren(File f) {
         ArrayList elements = new ArrayList();
 
         if (f.listFiles()==null) {
@@ -328,22 +328,45 @@ public class ViewController {
     }
 
     private void copyToUserDirAndUpload(File file) throws IOException {
-        if ((file.length()/1024)>3.8 && stegoBtn.isSelected()) { //TODO when choosing of PNG is implemented get size programmatically
-            notify("The file is too large to be hidden inside the image!");
+        if (fileAlreadyExistsInDir(file)) {
+            notify("The file is already in the user directory");
         } else {
-            String destinationPath;
-
-            if (listView.getItems().size() <= NUM_OF_SYSTEM_FILES) {
-                destinationPath = username;
+            if ((file.length() / 1024) > 3.8 && stegoBtn.isSelected()) { //TODO when choosing of PNG is implemented get size programmatically
+                notify("The file is too large to be hidden inside the image!");
             } else {
-                File parent = ((File) listView.getItems().get(0)).getParentFile();
-                destinationPath = parent.getPath();
-            }
+                String destinationPath;
 
-            if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
-                notify("Uploading has failed!");
+                if (listView.getItems().size() <= NUM_OF_SYSTEM_FILES) {
+                    destinationPath = username;
+                } else {
+                    File parent = ((File) listView.getItems().get(0)).getParentFile();
+                    destinationPath = parent.getPath();
+                }
+
+                if (!clientManager.copyLocallyAndUpload(encryptionPassword, file, destinationPath)) {
+                    notify("Uploading has failed!");
+                }
             }
         }
+    }
+
+    private boolean fileAlreadyExistsInDir(File file) {
+        File parent;
+        if (listView.getItems().size()<=0) {
+            parent = new File(username);
+        } else {
+            parent = ((File) listView.getItems().get(0)).getParentFile();
+        }
+        ArrayList<File> files = getAllChildren(parent);
+
+        boolean out = false;
+        for (File f : files) {
+            if (f.getName().equals(file.getName())) {
+System.out.println(f.getName()+"     "+file.getName());
+                out = true;
+            }
+        }
+        return out;
     }
 
     private void updateSpaceUsed() {
