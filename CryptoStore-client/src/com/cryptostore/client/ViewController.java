@@ -362,7 +362,6 @@ public class ViewController {
         boolean out = false;
         for (File f : files) {
             if (f.getName().equals(file.getName())) {
-System.out.println(f.getName()+"     "+file.getName());
                 out = true;
             }
         }
