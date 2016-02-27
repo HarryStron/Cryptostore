@@ -248,10 +248,18 @@ public class ViewController {
     /** register screen **/
     public void registerUser() {
         try {
+            String user = regUsernameField.getText();
+            String pass = regUserPassField.getText();
+            String encPass = regEncryptionPassField.getText();
             boolean isAdmin = regIsAdminBtn.isSelected();
-            clientManager.registerNewUser(regUsernameField.getText(), regUserPassField.getText(), regEncryptionPassField.getText(), isAdmin);
 
-            notify("User '" + regUsernameField.getText() + "' has been registered!");
+            if (!username.equals("") && !pass.equals("") && !encPass.equals("")) {
+                clientManager.registerNewUser(user, pass, encPass, isAdmin);
+
+                notify("User '" + regUsernameField.getText() + "' has been registered!");
+            } else {
+                notify("Make sure all fields are complete!");
+            }
         } catch (Exception e) {
             if (e.getMessage()!=null && e.getMessage().equals(Error.USER_EXISTS.getDescription())) {
                 notify("Username already exists. Try something else!");

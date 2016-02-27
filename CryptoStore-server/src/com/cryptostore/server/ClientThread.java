@@ -349,6 +349,7 @@ public class ClientThread extends Thread {
             String username = listenForString(usernameSize);
             greaterThanZero(username.length());
             if (!Validator.validateUsername(username)) {
+                transferManager.writeControl(Command.ERROR);
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
             }
             if (JDBCControl.usernameExists(username)) {
@@ -364,6 +365,7 @@ public class ClientThread extends Thread {
             String pass = listenForString(passSize);
             greaterThanZero(pass.length());
             if (!Validator.validatePassword(pass)) {
+                transferManager.writeControl(Command.ERROR);
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
             }
             transferManager.writeControl(Command.OK);
@@ -375,6 +377,7 @@ public class ClientThread extends Thread {
             String encPass = listenForString(encPassSize);
             greaterThanZero(encPass.length());
             if (!Validator.validateEncPassword(encPass)) {
+                transferManager.writeControl(Command.ERROR);
                 throw new Exception(Error.INCORRECT_FORM.getDescription(clientIP));
             }
             transferManager.writeControl(Command.OK);
