@@ -131,6 +131,29 @@ Sync gets really slow if there are hundreds of files to be checked using hashes.
 Client needs to verify that the user is AUTHED before any action. It is also practical to check that the connection channel with the server is still available (use a heartbeat).<br/>
 **_v1.17.1_**
 
+**`bug-11`**:<br/>
+When registering a user check all fields are complete.<br/>
+**_queued_**
+
+**`bug-12`**:<br/>
+If file exists on server do not allow to re-upload.<br/>
+**_queued_**
+
+**`bug-13`**:<br/>
+If file uploaded on stego mode is not going to fit the png then abort action and notify. Also think about the file size in bits fitting the first row of the png pixels.<br/>
+**_queued_**
+
+**`bug-14`**:<br/>
+If file uploaded on stego mode is not going to fit the png then abort action and notify.<br/>
+**_queued_**
+
+**`bug-15`**:<br/>
+Space count in client seems to be reporting wrong numbers.<br/>
+**_queued_**
+
+**`bug-16`**:<br/>
+Inform user about password/username requirements when trying to register a new user.<br/>
+**_queued_**
 
 ## Other (_not tagged_)
 
