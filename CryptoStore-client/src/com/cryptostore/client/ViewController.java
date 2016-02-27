@@ -22,17 +22,19 @@ import javafx.stage.Stage;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-//    public static final String HOST = "52.32.158.110"; //public for testing suite
+//    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
+    public static final String HOST = "52.32.158.110"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
     private ClientManager clientManager;
     private String username;
     private String encryptionPassword;
+    private boolean firstTimeStegoClicked;
     public static Stage primaryStage;
 
     /** login screen **/
@@ -60,6 +62,8 @@ public class ViewController {
     private Button backBtn;
     @FXML
     private Button openBtn;
+    @FXML
+    private Button selectPngBtn;
     @FXML
     private ToggleButton stegoBtn;
     @FXML
@@ -90,6 +94,8 @@ public class ViewController {
 
         userField.setText(username);
         statusField.setText("Connected");
+        selectPngBtn.setDisable(true);
+        firstTimeStegoClicked = true;
         updateSpaceUsed();
     }
 
@@ -119,7 +125,7 @@ public class ViewController {
                 init();
             } else {
                 clientManager.closeConnection();
-                notify("Wrong credentials! Please try again.");
+                notify("Cannot connect! Please try again.");
             }
         } else {
             notify("Make sure all fields are complete and try again.");
@@ -148,9 +154,36 @@ public class ViewController {
         blockActions(false);
     }
 
+    public void stegoClicked() {
+        if (stegoBtn.isSelected()) {
+            selectPngBtn.setDisable(false);
+            clientManager.setStegoEnabled(true);
+            if (firstTimeStegoClicked) {
+                notify("Select a PNG to hide the file in. If not a default image is going to be used (9.7MB)!");
+                firstTimeStegoClicked = false;
+            }
+        } else {
+            selectPngBtn.setDisable(true);
+            clientManager.setStegoEnabled(false);
+        }
+    }
+
+    public void selectStegoImg() {
+        blockActions(true);
+        FileChooser fileChooser = new FileChooser();
+        FileChooser.ExtensionFilter extFilter = new FileChooser.ExtensionFilter("PNG", "*.png");
+        fileChooser.getExtensionFilters().add(extFilter);
+        File selectedFile = fileChooser.showOpenDialog(primaryStage);
+
+        if (selectedFile != null) {
+            ClientManager.IMAGE_PATH = selectedFile.getAbsolutePath();
+            selectPngBtn.setText(selectedFile.getName());
+        }
+        blockActions(false);
+    }
+
     public void handleAddButtonClick() throws IOException {
         blockActions(true);
-        clientManager.setStegoEnabled(stegoBtn.isSelected());
 
         FileChooser fileChooser = new FileChooser();
         File selectedFile = fileChooser.showOpenDialog(primaryStage);
@@ -204,7 +237,6 @@ public class ViewController {
 
     public void onListDragDropped(final DragEvent e) {
         blockActions(true);
-        clientManager.setStegoEnabled(stegoBtn.isSelected());
         final Dragboard db = e.getDragboard();
         boolean success = false;
 
@@ -331,7 +363,7 @@ public class ViewController {
         if (fileAlreadyExistsInDir(file)) {
             notify("The file is already in the user directory");
         } else {
-            if ((file.length() / 1024) > 3.8 && stegoBtn.isSelected()) { //TODO when choosing of PNG is implemented get size programmatically
+            if (!SteganographyManager.fitsInImage(Files.readAllBytes(file.toPath()), ClientManager.IMAGE_PATH) && stegoBtn.isSelected()) {
                 notify("The file is too large to be hidden inside the image!");
             } else {
                 String destinationPath;

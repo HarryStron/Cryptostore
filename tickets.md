@@ -89,6 +89,10 @@ Keep a hash of the decryption pass in the DB to verify it on login.<br/>
 Create an additional option in the main view, where Admin users will be able to register new users to the database (via server).<br/>
 **_v1.21.0_**
 
+**`feature-22`**:<br/>
+Allow user to choose the PNG he wishes for the stego mode. Also provide a default for ease.<br/>
+**_v1.22.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>
