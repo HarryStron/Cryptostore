@@ -342,8 +342,12 @@ public class ClientManager {
 
             byte[] encryptedFileBytes = EncryptionManager.encryptFile(password.toCharArray(), path);
             if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
-                encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
-                encryptedFilename += ".png";
+                if (SteganographyManager.fitsInImage(encryptedFileBytes, IMAGE_PATH)) {
+                    encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
+                    encryptedFilename += ".png";
+                } else {
+                    throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : PNG FILE");
+                }
             }
             sendFile(encryptedFilename, encryptedFileBytes);
 
