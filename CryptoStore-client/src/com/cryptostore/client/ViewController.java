@@ -159,7 +159,7 @@ public class ViewController {
             selectPngBtn.setDisable(false);
             clientManager.setStegoEnabled(true);
             if (firstTimeStegoClicked) {
-                notify("Select a PNG to hide the file in. If not a default image is going to be used (9.7MB)!");
+                notify("Select a PNG to hide the file in. If not a default image is going to be used!");
                 firstTimeStegoClicked = false;
             }
         } else {
@@ -341,7 +341,9 @@ public class ViewController {
 
         for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
             if (!file.getPath().equals(clientManager.getMAP_PATH().substring(2)) && !file.getPath().equals(clientManager.getSYNC_PATH().substring(2))) {
-                elements.add(file);
+                if (!file.getName().startsWith(".")) {
+                    elements.add(file);
+                }
             }
         }
 
@@ -363,7 +365,7 @@ public class ViewController {
         if (fileAlreadyExistsInDir(file)) {
             notify("The file is already in the user directory");
         } else {
-            if (!SteganographyManager.fitsInImage(Files.readAllBytes(file.toPath()), ClientManager.IMAGE_PATH) && stegoBtn.isSelected()) {
+            if (stegoBtn.isSelected() && !fileFitsInImg(file)) {
                 notify("The file is too large to be hidden inside the image!");
             } else {
                 String destinationPath;
@@ -380,6 +382,22 @@ public class ViewController {
                 }
             }
         }
+    }
+
+    private boolean fileFitsInImg(File file) throws IOException {
+        boolean fits = true;
+
+        if (file.isDirectory()) {
+            for (File f : getAllChildren(file)) {
+                if (!SteganographyManager.fitsInImage(Files.readAllBytes(f.toPath()), ClientManager.IMAGE_PATH)) {
+                    fits = false;
+                }
+            }
+        } else if (!SteganographyManager.fitsInImage(Files.readAllBytes(file.toPath()), ClientManager.IMAGE_PATH)) {
+            fits = false;
+        }
+
+        return fits;
     }
 
     private boolean fileAlreadyExistsInDir(File file) {
