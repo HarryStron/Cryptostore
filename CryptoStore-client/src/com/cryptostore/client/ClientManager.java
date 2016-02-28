@@ -17,7 +17,7 @@ import java.util.Base64;
 
 public class ClientManager {
     public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
-    private static final String IMAGE_PATH = "res/kite.png";
+    public static String IMAGE_PATH = "res/kite.png"; //use a default
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -28,7 +28,7 @@ public class ClientManager {
     private String userPassword;
     private String encPassword;
     private boolean isAUTHed;
-    private boolean stegoEnabled = true;
+    private boolean stegoEnabled = false;
 
     public ClientManager(String username, String password, String host, int hostPort, String encPassword) {
         setCertificates();
