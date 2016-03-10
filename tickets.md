@@ -155,6 +155,10 @@ If file exists on server do not allow to re-upload.<br/>
 Refactoring.<br/>
 **_v1.21.5_**
 
+**`bug-16`**:<br/>
+SteganographyManager is not verifying that file to be concealed fits the image. Also needless loops are done for hiding and retrieving file.<br/>
+**_v2.0.1_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
