@@ -58,6 +58,12 @@ public class SteganographyManager {
     }
 
     private static int[][][] encrypt(byte[] bytesIn, int[][][] imageArray) throws IOException {
+        int bitsNeeded = bytesIn.length*8;
+        int bitsAvailable = imageArray.length*imageArray[0].length*imageArray[0][0].length;
+        if (bitsAvailable < bitsNeeded) {
+            throw new IOException(Error.FAILED_TO_WRITE.getDescription());
+        }
+
         System.out.println("\nHiding file in image. . .");
         BitSet msg = BitSet.valueOf(bytesIn);
         int msgIndex = 0;
@@ -77,19 +83,26 @@ public class SteganographyManager {
             }
         }
 
-        //encode file
-        startOfLoop:
-        for (int i=1; i<imageArray.length; i++) {
-            for (int j=0; j<imageArray[0].length; j++) {
-                for (int k=0; k<imageArray[0][0].length; k++) {
+        int i = 1;
+        int j = 0;
+        int k = 0;
+        boolean finished = false;
+        while(!finished && i<imageArray.length) {
+            while(!finished && j<imageArray[0].length) {
+                while(!finished && k<imageArray[0][0].length) {
                     if (msgIndex < msg.length()) {
                         imageArray[i][j][k] = changeNthSignificantBit(imageArray[i][j][k], 1, msg.get(msgIndex));
                         msgIndex++;
                     } else {
-                        break startOfLoop;
+                        finished = true;
                     }
+                    k++;
                 }
+                k = 0;
+                j++;
             }
+            j = 0;
+            i++;
         }
 
         return imageArray;
@@ -115,18 +128,26 @@ public class SteganographyManager {
         BitSet fileBits = new BitSet();
         int fileIndex = 0;
 
-        startOfLoop:
-        for (int i=1; i<imageArray.length; i++) {
-            for (int j=0; j<imageArray[0].length; j++) {
-                for (int k=0; k<imageArray[0][0].length; k++) {
+        int i = 1;
+        int j = 0;
+        int k = 0;
+        boolean finished = false;
+        while(!finished && i<imageArray.length) {
+            while(!finished && j<imageArray[0].length) {
+                while(!finished && k<imageArray[0][0].length) {
                     if (fileIndex < size) {
                         fileBits.set(fileIndex, getNthSignificantBit(imageArray[i][j][k], 1));
                         fileIndex++;
                     } else {
-                        break startOfLoop;
+                        finished = true;
                     }
+                    k++;
                 }
+                k = 0;
+                j++;
             }
+            j = 0;
+            i++;
         }
 
         return fileBits.toByteArray();
