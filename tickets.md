@@ -159,6 +159,10 @@ Refactoring.<br/>
 SteganographyManager is not verifying that file to be concealed fits the image. Also needless loops are done for hiding and retrieving file.<br/>
 **_v2.0.1_**
 
+**`bug-17`**:<br/>
+Inform user that needs to be admin when he tries to register a new user.<br/>
+**_v2.0.2_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
@@ -190,4 +194,3 @@ Make all changes needed for the client-server to run on AWS. That includes:
 - make sure self-signed keys are on the same path with the jars
 
 **_v1.19.0.1_**
-
