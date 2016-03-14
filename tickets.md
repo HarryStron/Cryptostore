@@ -93,6 +93,10 @@ Create an additional option in the main view, where Admin users will be able to 
 Allow user to choose the PNG he wishes for the stego mode. Also provide a default for ease.<br/>
 **_v1.22.0_**
 
+**`feature-23`**:<br/>
+Create a button in the UI to individually push editing made to the selected file to the server (under the same name and dir).<br/>
+**_v2.1.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>

@@ -26,8 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-//    public static final String HOST = "52.32.158.110"; //public for testing suite
+//    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
+    public static final String HOST = "52.32.158.110"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
@@ -66,6 +66,8 @@ public class ViewController {
     private Button selectPngBtn;
     @FXML
     private ToggleButton stegoBtn;
+    @FXML
+    private Button pushBtn;
     @FXML
     private Button addBtn;
     @FXML
@@ -179,6 +181,32 @@ public class ViewController {
             ClientManager.IMAGE_PATH = selectedFile.getAbsolutePath();
             selectPngBtn.setText(selectedFile.getName());
         }
+        blockActions(false);
+    }
+
+    public void handlePushButtonClick() {
+        blockActions(true);
+
+        File file = ((File) listView.getSelectionModel().getSelectedItem());
+
+        if (file!=null) {
+            try {
+                boolean stegoEnabledForFile = clientManager.isStegoEnabled(file.getPath());
+                stegoBtn.setSelected(stegoEnabledForFile);
+                selectPngBtn.setDisable(!stegoEnabledForFile);
+                clientManager.setStegoEnabled(stegoEnabledForFile);
+
+                clientManager.uploadFileAndMap(encryptionPassword, file.getPath());
+                updateList();
+                updateSpaceUsed();
+            } catch (Exception e) {
+                notify("Failed to push changes to server!\n" +
+                        "Warning: Push changes will only work for individual files but not directories.");
+            }
+        } else {
+            notify("No file selected!");
+        }
+
         blockActions(false);
     }
 
