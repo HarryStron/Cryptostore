@@ -297,6 +297,10 @@ public class ClientManager {
         this.stegoEnabled = stegoEnabled;
     }
 
+    public boolean isStegoEnabled(String filename) {
+        return filenameManager.isStegOn(filename);
+    }
+
     public boolean copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
         if (isAUTHed && sendHeartBeat()) {
             try {
@@ -344,7 +348,9 @@ public class ClientManager {
             if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
                 if (SteganographyManager.fitsInImage(encryptedFileBytes, IMAGE_PATH)) {
                     encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
-                    encryptedFilename += ".png";
+                    if (!encryptedFilename.endsWith(".png")) { //if filename does not already have the right format
+                        encryptedFilename += ".png";
+                    }
                 } else {
                     throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : PNG FILE");
                 }
