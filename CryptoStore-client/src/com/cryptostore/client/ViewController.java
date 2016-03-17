@@ -26,8 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-//    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-    public static final String HOST = "52.32.158.110"; //public for testing suite
+    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
+//    public static final String HOST = "52.32.158.110"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
@@ -158,6 +158,7 @@ public class ViewController {
 
     public void stegoClicked() {
         if (stegoBtn.isSelected()) {
+            stegoBtn.setText("Stego On");
             selectPngBtn.setDisable(false);
             clientManager.setStegoEnabled(true);
             if (firstTimeStegoClicked) {
@@ -165,6 +166,7 @@ public class ViewController {
                 firstTimeStegoClicked = false;
             }
         } else {
+            stegoBtn.setText("Stego Off");
             selectPngBtn.setDisable(true);
             clientManager.setStegoEnabled(false);
         }
@@ -192,9 +194,17 @@ public class ViewController {
         if (file!=null) {
             try {
                 boolean stegoEnabledForFile = clientManager.isStegoEnabled(file.getPath());
-                stegoBtn.setSelected(stegoEnabledForFile);
-                selectPngBtn.setDisable(!stegoEnabledForFile);
-                clientManager.setStegoEnabled(stegoEnabledForFile);
+                if (stegoEnabledForFile) {
+                    stegoBtn.setText("Stego On");
+                    stegoBtn.setSelected(true);
+                    selectPngBtn.setDisable(false);
+                    clientManager.setStegoEnabled(true);
+                } else {
+                    stegoBtn.setText("Stego Off");
+                    stegoBtn.setSelected(false);
+                    selectPngBtn.setDisable(true);
+                    clientManager.setStegoEnabled(false);
+                }
 
                 clientManager.uploadFileAndMap(encryptionPassword, file.getPath());
                 updateList();

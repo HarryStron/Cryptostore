@@ -167,6 +167,10 @@ SteganographyManager is not verifying that file to be concealed fits the image. 
 Inform user that needs to be admin when he tries to register a new user.<br/>
 **_v2.0.2_**
 
+**`bug-18`**:<br/>
+Change beaviour of the stego button. Make "on" and "off" change respectivelly to active/inactive.<br/>
+**_v2.0.3_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
