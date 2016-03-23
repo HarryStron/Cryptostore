@@ -46,12 +46,13 @@ public class ServerManager {
     private void waitForConnection(SSLServerSocket sslserversocket) {
         System.out.println("Server is running...");
         while (serverIsOn) {
+            System.out.println("\nAwaiting connection...");
             try {
                 SSLSocket clientSocket = (SSLSocket) sslserversocket.accept();
                 clientSocket.setSoLinger(true, 0);
 
                 ClientThread clientThread = new ClientThread(clientSocket);
-                clientThread.run();
+                clientThread.start();
 
             } catch (IOException e) {
                 Error.SOCKET_CLOSED.print();

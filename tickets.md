@@ -171,6 +171,10 @@ Inform user that needs to be admin when he tries to register a new user.<br/>
 Change beaviour of the stego button. Make "on" and "off" change respectivelly to active/inactive.<br/>
 **_v2.0.3_**
 
+**`bug-19`**:<br/>
+Thread to handle multiple users blocks, resulting multiple users to be impossible to connect in parallel.<br/>
+**_v2.0.4_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
