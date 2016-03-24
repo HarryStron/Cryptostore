@@ -179,6 +179,14 @@ Thread to handle multiple users blocks, resulting multiple users to be impossibl
 App does not work from windows machines. Need to make paths platform independent.<br/>
 **_v2.1.3_**
 
+**`bug-21`**:<br/>
+When a file gets deleted from one machine it does not do so when synchronising from another.<br/>
+**_v2.1.4_**
+
+**`bug-22`**:<br/>
+SYNC file on server is defined under the wrong path.<br/>
+**_v2.1.5_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
