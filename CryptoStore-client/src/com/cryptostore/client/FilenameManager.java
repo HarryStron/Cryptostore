@@ -9,7 +9,7 @@ public class FilenameManager {
     public final String HEX_MAP_PATH = "0000000000";
 
     public FilenameManager(String username) {
-        MAP_PATH = username+"/ENCRYPTION_MAPPING";
+        MAP_PATH = username+File.separator+"ENCRYPTION_MAPPING";
     }
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption

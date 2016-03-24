@@ -17,7 +17,7 @@ import java.util.Base64;
 
 public class ClientManager {
     public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
-    public static String IMAGE_PATH = "res/kite.png"; //use a default
+    public static String IMAGE_PATH = "res"+File.separator+"kite.png"; //use a default
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -256,7 +256,7 @@ public class ClientManager {
                 }
 
                 ArrayList<Path> localFiles = new ArrayList<>();
-                getAllFilesInDir((new File("./" + username + "/")).toPath(), localFiles);
+                getAllFilesInDir((new File(username + File.separator)).toPath(), localFiles);
 
                 for (Path p : localFiles) {
                     if (serverFileList.contains(p.toString())) {
@@ -305,7 +305,7 @@ public class ClientManager {
         if (isAUTHed && sendHeartBeat()) {
             try {
                 if (file.isDirectory()) {
-                    destinationPath += "/" + file.getName();
+                    destinationPath += File.separator + file.getName();
 
                     FileUtils.copyDirectory(file, new File(destinationPath));
 
@@ -318,7 +318,7 @@ public class ClientManager {
                     }
                 } else {
                     FileUtils.copyFileToDirectory(file, new File(destinationPath));
-                    destinationPath += "/" + file.getName();
+                    destinationPath += File.separator + file.getName();
 
                     uploadFileAndMap(encryptionPassword, destinationPath);
                 }
