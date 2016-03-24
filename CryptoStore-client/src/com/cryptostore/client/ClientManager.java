@@ -256,7 +256,7 @@ public class ClientManager {
                 }
 
                 ArrayList<Path> localFiles = new ArrayList<>();
-                getAllFilesInDir((new File(username + File.separator)).toPath(), localFiles);
+                getAllFilesInDir((new File(username)).toPath(), localFiles);
 
                 for (Path p : localFiles) {
                     if (serverFileList.contains(p.toString())) {
