@@ -259,8 +259,8 @@ public class ClientManager {
                 getAllFilesInDir((new File(username)).toPath(), localFiles);
 
                 for (Path p : localFiles) {
-                    if (serverFileList.contains(p.toString())) {
-                        serverFileList.remove(p);
+                    if (!serverFileList.contains(p.toString())) {
+                        deleteLocalFile(p.toString());
                     }
                 }
             } else {
