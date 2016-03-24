@@ -7,7 +7,7 @@ public class Validator {
     private static final String USERNAME_PATTERN = "^[a-zA-Z0-9_-]{3,12}$";
     private static final String PASSWORD_PATTERN = "^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[@#$%^&+=])(?=\\S+$).{8,16}$";
     private static final String ENC_PASSWORD_PATTERN = "^[0-9A-F]{64}$";
-    private static final String FILENAME_PATTERN = "^\\.\\/[\\w\\d\\s]{10}(\\.png)?$";
+    private static final String FILENAME_PATTERN = "^[\\w\\d\\s]{10}(\\.png)?$";
 
     public static boolean validateUsername(final String username) {
         Pattern pattern = Pattern.compile(USERNAME_PATTERN);

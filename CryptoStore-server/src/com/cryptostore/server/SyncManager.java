@@ -7,7 +7,7 @@ public class SyncManager {
     public String SYNC_PATH;
 
     public SyncManager(String username) {
-        SYNC_PATH = "./UserFiles/"+username+"/SYNC_INFO";
+        SYNC_PATH = "UserFiles/"+username+"/SYNC_INFO";
     }
 
     //boolean set to true when adding a new fle or editing and to false when deleting
