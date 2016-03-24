@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 
 public class ClientThread extends Thread {
-    private final String HEX_MAP_PATH = "0000000000.png"; //Must be same as client.FilenameManager
+    private final String HEX_MAP_PATH = "0000000000"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
     private String username;
     private TransferManager transferManager;
