@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.Base64;
 
 public class ClientThread extends Thread {
-    private final String HEX_MAP_PATH = "./0000000000.png"; //Must be same as client.FilenameManager
+    private final String HEX_MAP_PATH = "0000000000.png"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
     private String username;
     private TransferManager transferManager;
@@ -127,7 +127,7 @@ public class ClientThread extends Thread {
 
                     writeToDisk(filename);
 
-                    if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                    if (!filename.equals(HEX_MAP_PATH) && !filename.equals(syncManager.SYNC_PATH)) {
                         syncManager.setVersion(syncManager.getVersion()+1);
                     }
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
@@ -159,7 +159,7 @@ public class ClientThread extends Thread {
 
                         syncManager.updateEntry(filename, null, false);
 
-                        if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                        if (!filename.equals(HEX_MAP_PATH) && !filename.equals(syncManager.SYNC_PATH)) {
                             syncManager.setVersion(syncManager.getVersion()+1);
                         }
                     } else {
@@ -271,7 +271,7 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File newFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1)); //removes leading '.' of the curr dir
+                File newFile = new File("UserFiles/"+connectedUser+'/'+filename);
                 newFile.getParentFile().mkdirs();
                 FileOutputStream fileOutputStream = new FileOutputStream(newFile);
 

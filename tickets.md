@@ -175,6 +175,10 @@ Change beaviour of the stego button. Make "on" and "off" change respectivelly to
 Thread to handle multiple users blocks, resulting multiple users to be impossible to connect in parallel.<br/>
 **_v2.1.2_**
 
+**`bug-20`**:<br/>
+App does not work from windows machines. Need to make paths platform independent.<br/>
+**_v2.1.3_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>

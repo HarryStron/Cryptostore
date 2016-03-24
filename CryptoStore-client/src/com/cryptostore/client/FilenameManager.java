@@ -6,16 +6,16 @@ import java.util.UUID;
 
 public class FilenameManager {
     public String MAP_PATH;
-    public final String HEX_MAP_PATH = "./0000000000";
+    public final String HEX_MAP_PATH = "0000000000";
 
     public FilenameManager(String username) {
-        MAP_PATH = "./"+username+"/ENCRYPTION_MAPPING";
+        MAP_PATH = username+"/ENCRYPTION_MAPPING";
     }
 
     /** Returns the newly generated encryption for the path given or the previously generated encryption
      * if path already exists **/
     public String randomisePath(String path) throws IOException, ClassNotFoundException {
-        String encryptedPath = "./"+generateRandomName();
+        String encryptedPath = generateRandomName();
 
         FileMap map = getMap();
         if (map.containsEncrypted(encryptedPath)) {
