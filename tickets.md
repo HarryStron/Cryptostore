@@ -187,6 +187,10 @@ When a file gets deleted from one machine it does not do so when synchronising f
 SYNC file on server is defined under the wrong path.<br/>
 **_v2.1.5_**
 
+**`bug-23`**:<br/>
+Synchronisation bug might cause deletion of files after downloading due to path vs string mismatch.<br/>
+**_v2.1.6_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>

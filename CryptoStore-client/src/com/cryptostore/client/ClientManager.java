@@ -259,7 +259,7 @@ public class ClientManager {
                 getAllFilesInDir((new File(username)).toPath(), localFiles);
 
                 for (Path p : localFiles) {
-                    if (!serverFileList.contains(p.toString())) {
+                    if (!arrayContains(p.toString(), serverFileList)) {
                         deleteLocalFile(p.toString());
                     }
                 }
@@ -279,13 +279,22 @@ public class ClientManager {
         }
     }
 
+    private boolean arrayContains (String element, ArrayList<String> list) {
+        for (String s : list) {
+            if (Paths.get(s).getFileName().equals(Paths.get(element).getFileName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ArrayList<Path> getAllFilesInDir(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
             if(Files.isDirectory(filePath)) {
                 getAllFilesInDir(filePath, pathsInDir);
-            } else {
+            } else if (!filePath.toString().equals(filenameManager.MAP_PATH) && !filePath.toString().equals(syncManager.SYNC_PATH)){
                 pathsInDir.add(filePath);
             }
         }
