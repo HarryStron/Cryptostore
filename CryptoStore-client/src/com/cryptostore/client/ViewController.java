@@ -26,8 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-//    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-    public static final String HOST = "52.32.158.110"; //public for testing suite
+    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
+//    public static final String HOST = "52.32.158.110"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 

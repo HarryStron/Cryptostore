@@ -8,6 +8,7 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
 
 public class ClientThread extends Thread {
@@ -174,7 +175,9 @@ public class ClientThread extends Thread {
 
                         SyncFile syncFile = syncManager.getSyncFile();
 
-                        transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                        ArrayList<String> localFiles = syncFile.getFiles();
+                        localFiles.remove(HEX_MAP_PATH.toString());
+                        transferManager.writeFileSize(localFiles.size()); //send the number of files on the server (without map)
                         okOrException();
 
                         for (String s : syncFile.getFiles()) {
