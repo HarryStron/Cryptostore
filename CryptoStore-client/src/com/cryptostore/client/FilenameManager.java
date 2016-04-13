@@ -76,14 +76,14 @@ public class FilenameManager {
         FileMap map = getMap();
         map.addMapping(filename.replace('\\', '/'), encryptedFilename, steg);
 
-        return store(map);
+        return StorageManager.store(MAP_PATH, map);
     }
 
     public boolean removeFromMap(String filename) {
         FileMap map = getMap();
         map.removeMapping(filename.replace('\\', '/'), map.getEncryptedFromOriginal(filename.replace('\\', '/')));
 
-        return store(map);
+        return StorageManager.store(MAP_PATH, map);
     }
 
     /** returns true if it exists false otherwise **/
@@ -107,21 +107,6 @@ public class FilenameManager {
             }
         }
         return true;
-    }
-
-    private boolean store(FileMap map) {
-        try {
-            File file = new File(MAP_PATH);
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(map);
-            objectOutputStream.close();
-
-            return true;
-
-        } catch (Exception e) {
-            return false;
-        }
     }
 
     /** Max value is 10 and Min value is 3 ELSE defaults to 5 **/
