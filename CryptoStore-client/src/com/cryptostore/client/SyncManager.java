@@ -50,12 +50,7 @@ public class SyncManager {
         File syncFile = new File(SYNC_PATH);
         if (!syncFile.exists()) {
             try {
-                syncFile.getParentFile().mkdirs();
-                syncFile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(syncFile);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                objectOutputStream.writeObject(new SyncFile());
-                objectOutputStream.close();
+                StorageManager.createDirAndStore(SYNC_PATH, new SyncFile());
 
                 System.out.println("New synchronisation file created!");
             } catch (Exception e) {
@@ -66,13 +61,7 @@ public class SyncManager {
 
     public SyncFile getSyncFile() throws Exception {
         try {
-            File file = new File(SYNC_PATH);
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            SyncFile syncFile = (SyncFile) ois.readObject();
-            ois.close();
-
-            return syncFile;
+            return (SyncFile) StorageManager.getFile(SYNC_PATH);
         } catch (Exception e) {
             createFileIfNotExists();
             return new SyncFile();

@@ -274,10 +274,7 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File newFile = new File("UserFiles/"+connectedUser+'/'+filename);
-                newFile.getParentFile().mkdirs();
-                FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-
+                String newPath = "UserFiles/"+connectedUser+'/'+filename;
                 try {
                     int sizeOfFile = getSize();
 
@@ -289,18 +286,17 @@ public class ClientThread extends Thread {
 
                     if (sizeOfFile > 0) { //if size is > 0 copy the file to server
                         byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                        fileOutputStream.write(buffer, 0, buffer.length);
-                        fileOutputStream.close();
+                        StorageManager.createDirAndStore(newPath, buffer);
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
 
-                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(newFile.toURI())), true);
+                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(new File(newPath).toURI())), true);
 
                     clientPrint(filename + " received!");
 
                 } catch (IOException e) {
-                    newFile.delete();
+                    StorageManager.delete(newPath);
                     throw new Exception(Error.CANNOT_SAVE_FILE.getDescription(clientIP));
                 }
             } catch (FileNotFoundException e) {
@@ -334,8 +330,8 @@ public class ClientThread extends Thread {
 
     private void deleteFile (String filename) {
         clientPrint("Is deleting file: " + filename);
-
-        if (new File("UserFiles/"+connectedUser+'/'+filename).delete()) {
+        String path = "UserFiles/"+connectedUser+'/'+filename;
+        if (StorageManager.delete(path)) {
             clientPrint("File \'" + filename + "\' deleted successfully!");
         } else {
             Error.DELETE_FAIL.print(clientIP);

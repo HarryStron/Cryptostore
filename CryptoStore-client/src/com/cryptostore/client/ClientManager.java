@@ -437,9 +437,7 @@ public class ClientManager {
                 } else {
                     decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Files.readAllBytes(Paths.get(filename)));
                 }
-                FileOutputStream fos = new FileOutputStream(filename);
-                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-                fos.close();
+                StorageManager.store(filename, decryptedFile);
             }
             return true;
         } catch (Exception e) {
@@ -460,9 +458,6 @@ public class ClientManager {
             okOrException();
             transferManager.writeControl(Command.OK);
 
-            File file = new File(filename);
-            file.getParentFile().mkdirs();
-            FileOutputStream fos = new FileOutputStream(new File(filename));
             int sizeOfFile = getSize();
 
             if (sizeOfFile < 0) {
@@ -473,11 +468,10 @@ public class ClientManager {
 
             if (sizeOfFile > 0) {
                 byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                fos.write(buffer, 0, buffer.length);
+                StorageManager.createDirAndStore(filename, buffer);
 
                 transferManager.writeControl(Command.OK);
             }
-            fos.close();
 
             System.out.println(filename + " received!");
         } else {
@@ -562,7 +556,7 @@ public class ClientManager {
     private boolean deleteLocalFile (String filename) {
         System.out.println("\nDeleting " + filename + " from local machine. . .");
 
-        if (new File(filename).delete()) {
+        if (StorageManager.delete(filename)) {
             System.out.println("\nRemoving file from filename encryption map. . .");
 
             if (syncManager.updateEntry(filenameManager.getEncryptedPath(filename), null, false)) {
@@ -634,7 +628,7 @@ public class ClientManager {
     private void recursivelyDeleteDirIfEmpty(File parentDir) {
         if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
             File gParent = parentDir.getParentFile();
-            parentDir.delete();
+            StorageManager.delete(parentDir.getPath());
             recursivelyDeleteDirIfEmpty(gParent);
         }
     }

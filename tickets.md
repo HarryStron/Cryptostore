@@ -226,3 +226,7 @@ Make all changes needed for the client-server to run on AWS. That includes:
 **`other-7`**:<br/>
 Refactoring.<br/>
 **_merged_**
+
+**`other-8`**:<br/>
+Refactoring.<br/>
+**_merged_**
