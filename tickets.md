@@ -225,4 +225,4 @@ Make all changes needed for the client-server to run on AWS. That includes:
 
 **`other-7`**:<br/>
 Refactoring.<br/>
-**_ongoing_**
+**_merged_**
