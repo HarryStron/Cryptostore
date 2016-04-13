@@ -52,13 +52,7 @@ public class FilenameManager {
 
     private FileMap getMap() {
         try {
-            File file = new File(MAP_PATH);
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            FileMap map = (FileMap) ois.readObject();
-            ois.close();
-
-            return map;
+            return (FileMap) StorageManager.getFile(MAP_PATH);
         } catch (IOException e) {
             return new FileMap();
         } catch (ClassNotFoundException e) {
@@ -91,14 +85,9 @@ public class FilenameManager {
         File mapFile = new File(MAP_PATH);
         if (!mapFile.exists()) {
             try {
-                mapFile.getParentFile().mkdirs();
-                mapFile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(mapFile);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
                 FileMap fileMap = new FileMap();
                 fileMap.addMapping(MAP_PATH.replace('\\', '/'), HEX_MAP_PATH, false);
-                objectOutputStream.writeObject(fileMap);
-                objectOutputStream.close();
+                StorageManager.createDirAndStore(MAP_PATH, fileMap);
 
                 System.out.println("New encryption-mapping created!");
                 return false;
@@ -117,7 +106,7 @@ public class FilenameManager {
         return randName;
     }
 
-    public int numberOfFiles() {
+    public int numberOfFiles() { //for testing
         return getMap().numberOfElements();
     }
 }

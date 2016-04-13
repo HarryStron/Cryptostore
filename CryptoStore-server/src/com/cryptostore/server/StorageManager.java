@@ -1,4 +1,4 @@
-package com.cryptostore.client;
+package com.cryptostore.server;
 
 import java.io.*;
 
