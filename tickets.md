@@ -222,3 +222,7 @@ Make all changes needed for the client-server to run on AWS. That includes:
 - make sure self-signed keys are on the same path with the jars
 
 **_v1.19.0.1_**
+
+**`other-7`**:<br/>
+Refactoring.<br/>
+**_merged_**

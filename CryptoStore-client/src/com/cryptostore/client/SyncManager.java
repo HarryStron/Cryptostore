@@ -21,7 +21,7 @@ public class SyncManager {
                 syncFile.removepair(encFilename);
             }
 
-            return store(syncFile);
+            return StorageManager.store(SYNC_PATH, syncFile);
         } catch (Exception e) {
             return false;
         }
@@ -40,7 +40,7 @@ public class SyncManager {
             SyncFile syncFile = getSyncFile();
             syncFile.setVersion(v);
 
-            return store(syncFile);
+            return StorageManager.store(SYNC_PATH, syncFile);
         } catch (Exception e) {
             return false;
         }
@@ -76,21 +76,6 @@ public class SyncManager {
         } catch (Exception e) {
             createFileIfNotExists();
             return new SyncFile();
-        }
-    }
-
-    private boolean store(SyncFile syncFile) {
-        try {
-            File file = new File(SYNC_PATH);
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(syncFile);
-            objectOutputStream.close();
-
-            return true;
-
-        } catch (Exception e) {
-            return false;
         }
     }
 }
