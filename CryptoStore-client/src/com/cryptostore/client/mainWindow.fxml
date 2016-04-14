@@ -8,7 +8,7 @@
 <?import javafx.scene.layout.*?>
 <?import javafx.scene.text.*?>
 
-<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="600.0" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
+<AnchorPane id="AnchorPane" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="400.0" minWidth="700.0" prefHeight="400.0" prefWidth="600.0" xmlns:fx="http://javafx.com/fxml/1" xmlns="http://javafx.com/javafx/2.2">
   <children>
     <BorderPane prefHeight="400.0" prefWidth="600.0" visible="true" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
       <bottom>
@@ -43,10 +43,11 @@
             <Button fx:id="backBtn" mnemonicParsing="false" onAction="#handleBackButtonClick" text="Back" />
             <Button fx:id="openBtn" mnemonicParsing="false" onAction="#handleOpenButtonClick" text="Open" />
             <Separator prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS" />
-            <ToggleButton fx:id="stegoBtn" mnemonicParsing="false" onAction="#stegoClicked" text="Stego On" textOverrun="ELLIPSIS" />
+            <ToggleButton fx:id="stegoBtn" mnemonicParsing="false" onAction="#stegoClicked" text="Stego Off" textOverrun="ELLIPSIS" />
             <Button id="selectPNG" fx:id="selectPngBtn" mnemonicParsing="false" onAction="#selectStegoImg" text="Select PNG" />
             <Separator prefWidth="-1.0" visible="false" HBox.hgrow="ALWAYS" />
             <Button fx:id="addBtn" mnemonicParsing="false" onAction="#handleAddButtonClick" text="Add File..." />
+            <Button fx:id="pushBtn" mnemonicParsing="false" onAction="#handlePushButtonClick" text="Push changes" />
             <Button fx:id="deleteBtn" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleDeleteButtonClick" text="Delete" HBox.hgrow="NEVER" HBox.margin="$x1" />
           </children>
         </HBox>

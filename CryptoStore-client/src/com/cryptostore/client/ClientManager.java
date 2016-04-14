@@ -17,7 +17,7 @@ import java.util.Base64;
 
 public class ClientManager {
     public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
-    public static String IMAGE_PATH = "res/kite.png"; //use a default
+    public static String IMAGE_PATH = "res"+File.separator+"kite.png"; //use a default
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
@@ -256,11 +256,11 @@ public class ClientManager {
                 }
 
                 ArrayList<Path> localFiles = new ArrayList<>();
-                getAllFilesInDir((new File("./" + username + "/")).toPath(), localFiles);
+                getAllFilesInDir((new File(username)).toPath(), localFiles);
 
                 for (Path p : localFiles) {
-                    if (serverFileList.contains(p.toString())) {
-                        serverFileList.remove(p);
+                    if (!arrayContains(p.toString(), serverFileList)) {
+                        deleteLocalFile(p.toString());
                     }
                 }
             } else {
@@ -279,13 +279,22 @@ public class ClientManager {
         }
     }
 
+    private boolean arrayContains (String element, ArrayList<String> list) {
+        for (String s : list) {
+            if (Paths.get(s).getFileName().equals(Paths.get(element).getFileName())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public ArrayList<Path> getAllFilesInDir(Path path, ArrayList<Path> pathsInDir) throws IOException {
         DirectoryStream<Path> newDirectoryStream = Files.newDirectoryStream(path);
 
         for(Path filePath : newDirectoryStream) {
             if(Files.isDirectory(filePath)) {
                 getAllFilesInDir(filePath, pathsInDir);
-            } else {
+            } else if (!filePath.toString().equals(filenameManager.MAP_PATH) && !filePath.toString().equals(syncManager.SYNC_PATH)){
                 pathsInDir.add(filePath);
             }
         }
@@ -297,11 +306,15 @@ public class ClientManager {
         this.stegoEnabled = stegoEnabled;
     }
 
+    public boolean isStegoEnabled(String filename) {
+        return filenameManager.isStegOn(filename);
+    }
+
     public boolean copyLocallyAndUpload(String encryptionPassword, File file, String destinationPath) {
         if (isAUTHed && sendHeartBeat()) {
             try {
                 if (file.isDirectory()) {
-                    destinationPath += "/" + file.getName();
+                    destinationPath += File.separator + file.getName();
 
                     FileUtils.copyDirectory(file, new File(destinationPath));
 
@@ -314,7 +327,7 @@ public class ClientManager {
                     }
                 } else {
                     FileUtils.copyFileToDirectory(file, new File(destinationPath));
-                    destinationPath += "/" + file.getName();
+                    destinationPath += File.separator + file.getName();
 
                     uploadFileAndMap(encryptionPassword, destinationPath);
                 }
@@ -344,7 +357,9 @@ public class ClientManager {
             if (stegoEnabled && !encryptedFilename.equals(filenameManager.HEX_MAP_PATH)) {
                 if (SteganographyManager.fitsInImage(encryptedFileBytes, IMAGE_PATH)) {
                     encryptedFileBytes = SteganographyManager.hide(IMAGE_PATH, encryptedFileBytes);
-                    encryptedFilename += ".png";
+                    if (!encryptedFilename.endsWith(".png")) { //if filename does not already have the right format
+                        encryptedFilename += ".png";
+                    }
                 } else {
                     throw new Exception(Error.CANNOT_SAVE_FILE.getDescription()+" : PNG FILE");
                 }
@@ -422,9 +437,7 @@ public class ClientManager {
                 } else {
                     decryptedFile = EncryptionManager.decryptFile(password.toCharArray(), Files.readAllBytes(Paths.get(filename)));
                 }
-                FileOutputStream fos = new FileOutputStream(filename);
-                fos.write(decryptedFile); /** WARNING: will overwrite existing file with same name **/
-                fos.close();
+                StorageManager.store(filename, decryptedFile);
             }
             return true;
         } catch (Exception e) {
@@ -445,9 +458,6 @@ public class ClientManager {
             okOrException();
             transferManager.writeControl(Command.OK);
 
-            File file = new File(filename);
-            file.getParentFile().mkdirs();
-            FileOutputStream fos = new FileOutputStream(new File(filename));
             int sizeOfFile = getSize();
 
             if (sizeOfFile < 0) {
@@ -458,11 +468,10 @@ public class ClientManager {
 
             if (sizeOfFile > 0) {
                 byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                fos.write(buffer, 0, buffer.length);
+                StorageManager.createDirAndStore(filename, buffer);
 
                 transferManager.writeControl(Command.OK);
             }
-            fos.close();
 
             System.out.println(filename + " received!");
         } else {
@@ -547,7 +556,7 @@ public class ClientManager {
     private boolean deleteLocalFile (String filename) {
         System.out.println("\nDeleting " + filename + " from local machine. . .");
 
-        if (new File(filename).delete()) {
+        if (StorageManager.delete(filename)) {
             System.out.println("\nRemoving file from filename encryption map. . .");
 
             if (syncManager.updateEntry(filenameManager.getEncryptedPath(filename), null, false)) {
@@ -619,7 +628,7 @@ public class ClientManager {
     private void recursivelyDeleteDirIfEmpty(File parentDir) {
         if (parentDir.isDirectory() && parentDir.list().length == 0 && parentDir.getName()!=username) {
             File gParent = parentDir.getParentFile();
-            parentDir.delete();
+            StorageManager.delete(parentDir.getPath());
             recursivelyDeleteDirIfEmpty(gParent);
         }
     }

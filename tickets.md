@@ -93,6 +93,10 @@ Create an additional option in the main view, where Admin users will be able to 
 Allow user to choose the PNG he wishes for the stego mode. Also provide a default for ease.<br/>
 **_v1.22.0_**
 
+**`feature-23`**:<br/>
+Create a button in the UI to individually push editing made to the selected file to the server (under the same name and dir).<br/>
+**_v2.1.0_**
+
 ## BUGs
 
 **`bug-1`**:<br/>
@@ -155,6 +159,38 @@ If file exists on server do not allow to re-upload.<br/>
 Refactoring.<br/>
 **_v1.21.5_**
 
+**`bug-16`**:<br/>
+SteganographyManager is not verifying that file to be concealed fits the image. Also needless loops are done for hiding and retrieving file.<br/>
+**_v2.0.1_**
+
+**`bug-17`**:<br/>
+Inform user that needs to be admin when he tries to register a new user.<br/>
+**_v2.0.2_**
+
+**`bug-18`**:<br/>
+Change beaviour of the stego button. Make "on" and "off" change respectivelly to active/inactive.<br/>
+**_v2.1.1_**
+
+**`bug-19`**:<br/>
+Thread to handle multiple users blocks, resulting multiple users to be impossible to connect in parallel.<br/>
+**_v2.1.2_**
+
+**`bug-20`**:<br/>
+App does not work from windows machines. Need to make paths platform independent.<br/>
+**_v2.1.3_**
+
+**`bug-21`**:<br/>
+When a file gets deleted from one machine it does not do so when synchronising from another.<br/>
+**_v2.1.4_**
+
+**`bug-22`**:<br/>
+SYNC file on server is defined under the wrong path.<br/>
+**_v2.1.5_**
+
+**`bug-23`**:<br/>
+Synchronisation bug might cause deletion of files after downloading due to path vs string mismatch.<br/>
+**_v2.1.6_**
+
 ## Other (_not tagged_)
 
 **`other-1`**:<br/>
@@ -187,3 +223,10 @@ Make all changes needed for the client-server to run on AWS. That includes:
 
 **_v1.19.0.1_**
 
+**`other-7`**:<br/>
+Refactoring.<br/>
+**_merged_**
+
+**`other-8`**:<br/>
+Refactoring.<br/>
+**_merged_**

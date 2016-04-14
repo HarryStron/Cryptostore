@@ -40,7 +40,6 @@
                 <TextArea id="" fx:id="alertField" disable="true" editable="false" focusTraversable="false"
                           opacity="1.0" prefWidth="-1.0"
                           style="-fx-text-fill: red;&#10;-fx-background-color: transparent;" styleClass="col"
-                          text="Make sure that you have typed your encryption password correctly. We do not store your encryption password for safety reasons and we do not have any way of verifying the validity of it. If you type it wrong, the program will proceed as normal and crash whenever a file is attempted to be decrypted."
                           visible="true" wrapText="true" GridPane.columnIndex="0" GridPane.halignment="CENTER"
                           GridPane.hgrow="ALWAYS" GridPane.rowIndex="4" GridPane.valignment="CENTER"
                           GridPane.vgrow="ALWAYS">

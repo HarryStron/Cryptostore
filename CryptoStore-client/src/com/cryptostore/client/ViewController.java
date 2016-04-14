@@ -26,8 +26,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-//    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-    public static final String HOST = "52.32.158.110"; //public for testing suite
+    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
+//    public static final String HOST = "52.10.88.155"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
@@ -66,6 +66,8 @@ public class ViewController {
     private Button selectPngBtn;
     @FXML
     private ToggleButton stegoBtn;
+    @FXML
+    private Button pushBtn;
     @FXML
     private Button addBtn;
     @FXML
@@ -156,6 +158,7 @@ public class ViewController {
 
     public void stegoClicked() {
         if (stegoBtn.isSelected()) {
+            stegoBtn.setText("Stego On");
             selectPngBtn.setDisable(false);
             clientManager.setStegoEnabled(true);
             if (firstTimeStegoClicked) {
@@ -163,6 +166,7 @@ public class ViewController {
                 firstTimeStegoClicked = false;
             }
         } else {
+            stegoBtn.setText("Stego Off");
             selectPngBtn.setDisable(true);
             clientManager.setStegoEnabled(false);
         }
@@ -179,6 +183,40 @@ public class ViewController {
             ClientManager.IMAGE_PATH = selectedFile.getAbsolutePath();
             selectPngBtn.setText(selectedFile.getName());
         }
+        blockActions(false);
+    }
+
+    public void handlePushButtonClick() {
+        blockActions(true);
+
+        File file = ((File) listView.getSelectionModel().getSelectedItem());
+
+        if (file!=null) {
+            try {
+                boolean stegoEnabledForFile = clientManager.isStegoEnabled(file.getPath());
+                if (stegoEnabledForFile) {
+                    stegoBtn.setText("Stego On");
+                    stegoBtn.setSelected(true);
+                    selectPngBtn.setDisable(false);
+                    clientManager.setStegoEnabled(true);
+                } else {
+                    stegoBtn.setText("Stego Off");
+                    stegoBtn.setSelected(false);
+                    selectPngBtn.setDisable(true);
+                    clientManager.setStegoEnabled(false);
+                }
+
+                clientManager.uploadFileAndMap(encryptionPassword, file.getPath());
+                updateList();
+                updateSpaceUsed();
+            } catch (Exception e) {
+                notify("Failed to push changes to server!\n" +
+                        "Warning: Push changes will only work for individual files but not directories.");
+            }
+        } else {
+            notify("No file selected!");
+        }
+
         blockActions(false);
     }
 
@@ -272,6 +310,8 @@ public class ViewController {
             stage.initModality(Modality.WINDOW_MODAL);
             stage.show();
 
+            notify("This feature is only available for Admins!\n" +
+                    "The registration will fail if you do not have Admin rights.");
         } catch (IOException e) {
             notify("Cannot to create user!");
         }
@@ -340,7 +380,7 @@ public class ViewController {
         }
 
         for (File file : f.listFiles()) { //never going to be null as enc file and sync file will always be there
-            if (!file.getPath().equals(clientManager.getMAP_PATH().substring(2)) && !file.getPath().equals(clientManager.getSYNC_PATH().substring(2))) {
+            if (!file.getPath().equals(clientManager.getMAP_PATH()) && !file.getPath().equals(clientManager.getSYNC_PATH())) {
                 if (!file.getName().startsWith(".")) {
                     elements.add(file);
                 }

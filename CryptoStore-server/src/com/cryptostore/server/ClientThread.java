@@ -8,10 +8,11 @@ import java.nio.ByteBuffer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Base64;
 
 public class ClientThread extends Thread {
-    private final String HEX_MAP_PATH = "./0000000000.png"; //Must be same as client.FilenameManager
+    private final String HEX_MAP_PATH = "0000000000"; //Must be same as client.FilenameManager
     private SSLSocket clientSocket;
     private String username;
     private TransferManager transferManager;
@@ -127,7 +128,7 @@ public class ClientThread extends Thread {
 
                     writeToDisk(filename);
 
-                    if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                    if (!filename.equals(HEX_MAP_PATH) && !filename.equals(syncManager.SYNC_PATH)) {
                         syncManager.setVersion(syncManager.getVersion()+1);
                     }
                 } else if (request == Command.FILE_FROM_SERVER.getCode()) {
@@ -159,7 +160,7 @@ public class ClientThread extends Thread {
 
                         syncManager.updateEntry(filename, null, false);
 
-                        if (!filename.equals(HEX_MAP_PATH.substring(2)) && !filename.equals(syncManager.SYNC_PATH.substring(2))) {
+                        if (!filename.equals(HEX_MAP_PATH) && !filename.equals(syncManager.SYNC_PATH)) {
                             syncManager.setVersion(syncManager.getVersion()+1);
                         }
                     } else {
@@ -174,7 +175,9 @@ public class ClientThread extends Thread {
 
                         SyncFile syncFile = syncManager.getSyncFile();
 
-                        transferManager.writeFileSize(syncFile.getFiles().size()); //send the number of files on the server
+                        ArrayList<String> localFiles = syncFile.getFiles();
+                        localFiles.remove(HEX_MAP_PATH.toString());
+                        transferManager.writeFileSize(localFiles.size()); //send the number of files on the server (without map)
                         okOrException();
 
                         for (String s : syncFile.getFiles()) {
@@ -271,10 +274,7 @@ public class ClientThread extends Thread {
         clientPrint("Is sending file: " + filename);
         try {
             try {
-                File newFile = new File("UserFiles/"+connectedUser+'/'+filename.substring(1)); //removes leading '.' of the curr dir
-                newFile.getParentFile().mkdirs();
-                FileOutputStream fileOutputStream = new FileOutputStream(newFile);
-
+                String newPath = "UserFiles/"+connectedUser+'/'+filename;
                 try {
                     int sizeOfFile = getSize();
 
@@ -286,18 +286,17 @@ public class ClientThread extends Thread {
 
                     if (sizeOfFile > 0) { //if size is > 0 copy the file to server
                         byte[] buffer = transferManager.read(sizeOfFile).getData(1);
-                        fileOutputStream.write(buffer, 0, buffer.length);
-                        fileOutputStream.close();
+                        StorageManager.createDirAndStore(newPath, buffer);
 
                         transferManager.writeControl(Command.OK);
                     } //if file size is 0 then create an empty file
 
-                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(newFile.toURI())), true);
+                    syncManager.updateEntry(filename, Files.readAllBytes(Paths.get(new File(newPath).toURI())), true);
 
                     clientPrint(filename + " received!");
 
                 } catch (IOException e) {
-                    newFile.delete();
+                    StorageManager.delete(newPath);
                     throw new Exception(Error.CANNOT_SAVE_FILE.getDescription(clientIP));
                 }
             } catch (FileNotFoundException e) {
@@ -331,8 +330,8 @@ public class ClientThread extends Thread {
 
     private void deleteFile (String filename) {
         clientPrint("Is deleting file: " + filename);
-
-        if (new File("UserFiles/"+connectedUser+'/'+filename).delete()) {
+        String path = "UserFiles/"+connectedUser+'/'+filename;
+        if (StorageManager.delete(path)) {
             clientPrint("File \'" + filename + "\' deleted successfully!");
         } else {
             Error.DELETE_FAIL.print(clientIP);

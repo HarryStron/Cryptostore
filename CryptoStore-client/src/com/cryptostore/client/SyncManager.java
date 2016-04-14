@@ -7,7 +7,7 @@ public class SyncManager {
     public String SYNC_PATH;
 
     public SyncManager(String username) {
-        SYNC_PATH = "./"+username+"/SYNC_INFO";
+        SYNC_PATH = username+File.separator+"SYNC_INFO";
     }
 
     //boolean set to true when adding a new fle or editing and to false when deleting
@@ -21,7 +21,7 @@ public class SyncManager {
                 syncFile.removepair(encFilename);
             }
 
-            return store(syncFile);
+            return StorageManager.store(SYNC_PATH, syncFile);
         } catch (Exception e) {
             return false;
         }
@@ -40,7 +40,7 @@ public class SyncManager {
             SyncFile syncFile = getSyncFile();
             syncFile.setVersion(v);
 
-            return store(syncFile);
+            return StorageManager.store(SYNC_PATH, syncFile);
         } catch (Exception e) {
             return false;
         }
@@ -50,12 +50,7 @@ public class SyncManager {
         File syncFile = new File(SYNC_PATH);
         if (!syncFile.exists()) {
             try {
-                syncFile.getParentFile().mkdirs();
-                syncFile.createNewFile();
-                FileOutputStream fileOutputStream = new FileOutputStream(syncFile);
-                ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-                objectOutputStream.writeObject(new SyncFile());
-                objectOutputStream.close();
+                StorageManager.createDirAndStore(SYNC_PATH, new SyncFile());
 
                 System.out.println("New synchronisation file created!");
             } catch (Exception e) {
@@ -66,31 +61,10 @@ public class SyncManager {
 
     public SyncFile getSyncFile() throws Exception {
         try {
-            File file = new File(SYNC_PATH);
-            FileInputStream fis = new FileInputStream(file);
-            ObjectInputStream ois = new ObjectInputStream(fis);
-            SyncFile syncFile = (SyncFile) ois.readObject();
-            ois.close();
-
-            return syncFile;
+            return (SyncFile) StorageManager.getFile(SYNC_PATH);
         } catch (Exception e) {
             createFileIfNotExists();
             return new SyncFile();
-        }
-    }
-
-    private boolean store(SyncFile syncFile) {
-        try {
-            File file = new File(SYNC_PATH);
-            FileOutputStream fileOutputStream = new FileOutputStream(file);
-            ObjectOutputStream objectOutputStream = new ObjectOutputStream(fileOutputStream);
-            objectOutputStream.writeObject(syncFile);
-            objectOutputStream.close();
-
-            return true;
-
-        } catch (Exception e) {
-            return false;
         }
     }
 }
