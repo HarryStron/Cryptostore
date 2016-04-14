@@ -1,45 +1,34 @@
-# CryptoStore #
+### Requirements ###
+Java version 1.8
 
-CryptoStore is a solution for securing sensitive files on remote servers. CryptoStore is a zero-knowledge cloud storage application which encrypts your files locally (on your machine) and then sends them over to the remote server which has no knowledge of what the files stored on it are. The files are only decrypted when they reach back to their owner as no passwords are stored anywhere outside the user's machine.
+### Setup client ###
+For the client to be able to encrypt and decrypt files the Unlimited Strength JCE is required. To set it up:
 
-### What is this repository for? ###
+* go to [this](http://www.oracle.com/technetwork/java/javase/downloads/jce8-download-2133166.html) link and download the Java Cryptography Extension (JCE) Unlimited Strength Jurisdiction Policy Files 8
+* go to jdk1.8 path under *"./Contents/home/jre/lib/security/"* (for OSX machines is normally *"/Library/Java/JavaVirtualMachines/jdk1.8.0_60.jdk/Contents/Home/jre/lib/security/"*)
+* Extract the contents of the downloaded file and replace the existing ones (remember to keep a backup)
 
-* This is the main repository for the development of CryptoStore
-* It contains information on:
-  * How to download/build the application
-  * How to set up the environment
-  * How to install the application
-  * How to use the application
-  * **NONE of that is actually included now. It is just a draft for myself** TOBE updated..
 
-### How do I get set up? ###
-* to pull all branches after cloning repo: 
-`for remote in 'git branch -r | grep -v /HEAD'; do git checkout --track $remote ; done`
+### To setup database and add a default admin with Username "Harry", password "P4$$w0rd" and encryption password "password" ###
 
-#### Server ####
-* Set up MySQL (full instructions [here](http://www3.ntu.edu.sg/home/ehchua/programming/java/JDBC_Basic.html))
-  * download and install [MySQL](http://dev.mysql.com/downloads/mysql/:) (full instructions [here](http://www3.ntu.edu.sg/home/ehchua/programming/sql/MySQL_HowTo.html))
-  * Install a [JDBC Driver](http://dev.mysql.com/downloads/connector/j/)
-  * Copy the JAR file "mysql-connector-java-5.1.{xx}-bin.jar" to JDK's extension directory at "/Library/Java/Extension".
-  * set up the DB and tables
 
-* Set up Database<br/>
-DROP DATABASE serverStorage;<br/>
-CREATE DATABASE serverStorage;<br/>
-<br/>
-CREATE TABLE user\_credentials(<br/>
-username varchar(12) NOT NULL,<br/>
-hash varchar(64) NOT NULL,<br/>
-salt varbinary(16) NOT NULL,<br/>
-PRIMARY KEY (username)<br/>
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;<br/>
+```
+#!mySQL
 
-#### Client ####
-* To connect to the database use the following credentials:
-	* **Host**: mysql.strudent.sussex.ac.uk:3306/cs391
-	* **Username**: cs391
-	* **Password**: r127xxhar1
+CREATE DATABASE cs391;
 
-### Who do I talk to? ###
+CREATE TABLE `user_credentials` (
+  `username` varchar(12) NOT NULL,
+  `hash` varchar(64) NOT NULL,
+  `salt` varchar(25) NOT NULL,
+  `encPass` varchar(64) NOT NULL,
+  `encSalt` varchar(25) NOT NULL,
+  `isAdmin` tinyint(1) unsigned NOT NULL DEFAULT '0',
+  PRIMARY KEY (`username`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-Contact e-mail: Harry.Strongyloudis@protonmail.com
+
+INSERT INTO `user_credentials` (`username`, `hash`, `salt`, `encPass`, `encSalt`, `isAdmin`)
+VALUES
+	('Harry', '54704ACCDE01E05487AAF1069A71F11D401D3ABC7F6785EAD6C7F9E50F5DD942', '9ipQKcPXFyjdoVKXOQI0yg==', '3AECDF584BB0A03B79D999DA842A679A8361B0C4B04E3CCCC44601D6A89B0E65', '5jm+ZANPea3YqNrINlfnvg==', 1);
+```
