@@ -58,16 +58,16 @@ Note: The AWS instance is assigned a new IP address every time is restarted.
 * To run the jar file follow the instruction from section 1
 
 
-## [3] Developer-only section ##
+## [4] Developer-only section ##
 
-### [3.1] To push jar to server ###
+### [4.1] To push jar to server ###
 Open a cmd from the jar directory and do:
 `scp -i {path/to/.pem/file} file.jar ubuntu@{serverIP}:/home/ubuntu/appDir`
 
-### [3.2] To SSH to server ###
+### [4.2] To SSH to server ###
 `ssh -v -i {path/to/.pem/file} ubuntu@{serverIP}`
 
-### [3.3] This is only to reset the database if accidentally gets dropped ###
+### [4.3] This is only to reset the database if accidentally gets dropped ###
 To setup database and add a default admin with Username "Admin1", password "Ch@ngeM3" and encryption password "Ch@ngeM3" run the following query:
 
 CREATE DATABASE cs391;
