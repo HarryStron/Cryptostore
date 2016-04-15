@@ -18,11 +18,11 @@ import java.util.Base64;
 public class ClientManager {
     public static String KEYSTORE_PATH = "mySrvKeystore"; //public for testing purposes
     public static String IMAGE_PATH = "res"+File.separator+"kite.png"; //use a default
+    public static String HOST = "localhost"; //public for testing suite
     private SSLSocket clientSocket;
     private TransferManager transferManager;
     private FilenameManager filenameManager;
     private SyncManager syncManager;
-    private String host;
     private int hostPort;
     private String username;
     private String userPassword;
@@ -30,11 +30,10 @@ public class ClientManager {
     private boolean isAUTHed;
     private boolean stegoEnabled = false;
 
-    public ClientManager(String username, String password, String host, int hostPort, String encPassword) {
+    public ClientManager(String username, String password, int hostPort, String encPassword) {
         setCertificates();
         this.username = username;
         this.userPassword = password;
-        this.host = host;
         this.hostPort = hostPort;
         this.encPassword = encPassword;
         isAUTHed = false;
@@ -64,7 +63,7 @@ public class ClientManager {
         System.out.println("\nConnecting with server. . .");
 
         try { //TODO add timeout if not responsive server
-            clientSocket = establishConnection(host, hostPort);
+            clientSocket = establishConnection(HOST, hostPort);
             reportStatus(clientSocket);
 
             transferManager = new TransferManager(clientSocket);
