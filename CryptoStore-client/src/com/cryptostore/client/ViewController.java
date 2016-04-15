@@ -26,8 +26,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 
 public class ViewController {
-    private static final String HOST = "localhost"; //TODO delete after manual local tests are done
-//    public static final String HOST = "52.10.88.155"; //public for testing suite
     private static final int PORT = 5550;
     private static final int NUM_OF_SYSTEM_FILES = 2;
 
@@ -109,7 +107,7 @@ public class ViewController {
         encryptionPassword = encryptionPassField.getText();
 
         if (!username.equals("") && !userPass.equals("") && !encryptionPassword.equals("")) {
-            clientManager = new ClientManager(username, userPass, HOST, PORT, encryptionPassword);
+            clientManager = new ClientManager(username, userPass, PORT, encryptionPassword);
             primaryStage.setOnCloseRequest(event -> {
                 clientManager.closeConnection();
                 System.exit(0);
