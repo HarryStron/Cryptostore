@@ -1,3 +1,4 @@
+# BSc final year project #
 # Cryptostore #
 ## [1] Requirements ##
 **All steps were tested on a fresh installation of Linux Mint v17.3**
